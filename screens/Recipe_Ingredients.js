@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, Dimensions, StyleSheet } from 'react-native';
 import { Avatar } from "react-native-elements";
 import { Container, Header, Body, Title, Subtitle, Content, Button, Icon, Left, Right, Text} from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
+
+const width = Dimensions.get('window').width - 40; //full width
+const height = Dimensions.get('window').height; //full height
 
 export default class Recipe_Ingredients extends Component {
 
@@ -24,7 +27,7 @@ export default class Recipe_Ingredients extends Component {
         return(
             <Grid>
                 <Row style={{height: 60}}>
-                    <Text style={styles.title}>
+                    <Text style={styles.subtitle}>
                         Number of servings:
                     </Text>
                 </Row>
@@ -38,7 +41,7 @@ export default class Recipe_Ingredients extends Component {
                     }) }
                 </Row>
                 <Row style={{height: 60}}>
-                    <Text style={styles.title}>
+                    <Text style={styles.subtitle}>
                         Ingredients:
                     </Text>
                 </Row>
@@ -50,7 +53,7 @@ export default class Recipe_Ingredients extends Component {
                     );
                 }) }
                 <Row style={{justifyContent: 'center', alignItems: 'center', height: 60}}>
-                    <Text style={styles.title}>
+                    <Text style={styles.subtitle}>
                         Ready to cook!
                     </Text>
                 </Row>
@@ -77,8 +80,8 @@ export default class Recipe_Ingredients extends Component {
                     </Body>
                     <Right />
                 </Header>
-                <Container style={styles.screen_container}>
-                    <Content>
+                <Container style={[styles.screen_container]}>
+                    <Content style={[{width: width, paddingTop: 20,}]}>
                         <Avatar
                         xlarge
                         rounded
@@ -89,6 +92,7 @@ export default class Recipe_Ingredients extends Component {
                         />
                         <Text style={styles.title}>{recipe.recipe_name}</Text>
                         {this._renderGrid(recipe.numberofservings, this.getIngredients(recipe))} 
+                        <Container style={{height: 40,}}></Container>
                     </Content>
                 </Container>
             </Container>
@@ -103,8 +107,9 @@ const styles = StyleSheet.create({
       //justifyContent: 'center',
       alignItems: 'center',
       //backgroundColor: 'skyblue',
-      paddingTop: 50,
-      paddingBottom: 50,
+      //paddingTop: 50,
+      //paddingBottom: 50,
+      //paddingLeft: Platform.OS === 'ios' ? 0 : 20,
     },
     title: {
         textAlignVertical: "center",
@@ -113,6 +118,13 @@ const styles = StyleSheet.create({
         fontSize: 20,
         paddingTop: 20,
         paddingBottom: 20,
+    },
+    subtitle: {
+        textAlignVertical: "center",
+        textAlign: "center",
+        fontWeight: 'bold',
+        fontSize: 20,
+        paddingTop: 20,
     },
     cols: {
         width: 40,

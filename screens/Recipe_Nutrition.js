@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, Dimensions, StyleSheet } from 'react-native';
 import { Avatar } from "react-native-elements";
 import { Container, Header, Body, Title, Subtitle, Content, Button, Icon, Left, Right, Text} from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
+
+const width = Dimensions.get('window').width - 40; //full width
+const height = Dimensions.get('window').height; //full height
 
 export default class Recipe_Nutrition extends Component {
 
@@ -88,7 +91,7 @@ export default class Recipe_Nutrition extends Component {
                     <Right />
                 </Header>
                 <Container style={styles.screen_container}>
-                <Content>
+                    <Content style={[{width: width, paddingTop: 20,}]}>
                         <Avatar
                         xlarge
                         rounded
@@ -99,6 +102,7 @@ export default class Recipe_Nutrition extends Component {
                         />
                         <Text style={styles.title}>{recipe.recipe_name}</Text>
                         {this._renderGrid(this.getNutrients(recipe))} 
+                        <Container style={{height: 20,}}></Container>
                     </Content>
                 </Container>
             </Container>
@@ -113,8 +117,9 @@ const styles = StyleSheet.create({
       //justifyContent: 'center',
       alignItems: 'center',
       //backgroundColor: 'skyblue',
-      paddingTop: 50,
-      paddingBottom: 50,
+      //paddingTop: 50,
+      //paddingBottom: 50,
+      //paddingLeft: Platform.OS === 'ios' ? 0 : 20,
     },
     title: {
         textAlignVertical: "center",

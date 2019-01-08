@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, Dimensions, StyleSheet } from 'react-native';
 import { Avatar } from "react-native-elements";
 import { Container, Header, Body, Title, Subtitle, Content, Button, Icon, Left, Right, Text} from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
+
+
+const width = Dimensions.get('window').width - 40; //full width
+const height = Dimensions.get('window').height; //full height
 
 export default class Recipe_Cooking_Time extends Component {
 
@@ -36,12 +40,12 @@ export default class Recipe_Cooking_Time extends Component {
         if(key in times){
             return[
                 <Row key={'title'+i} style={{height: 60}}>
-                    <Text style={styles.title}>
+                    <Text style={[styles.subtitle]}>
                         {title}:
                     </Text>
                 </Row>,
                 <Row key={'number'+i} style={{height: 60}}>
-                    <Text style={{fontSize: 20}}>
+                    <Text style={[{fontSize: 20}]}>
                         {this.secondsToHms(times[key])}
                     </Text>
                 </Row>
@@ -54,7 +58,7 @@ export default class Recipe_Cooking_Time extends Component {
     _renderGrid(times) {
         if(!times || 0 === times.length){
             return(
-                <Text style={[styles.title, styles.center]}>
+                <Text style={[styles.subtitle, styles.center]}>
                     Sorry, none of the cooking time can be provided at this moment.
                 </Text>
             );
@@ -89,8 +93,8 @@ export default class Recipe_Cooking_Time extends Component {
                     </Body>
                     <Right />
                 </Header>
-                <Container style={styles.screen_container}>
-                    <Content>
+                <Container style={[styles.screen_container]}>
+                    <Content style={[{width: width, paddingTop: 20,}]}>
                         <Avatar
                         xlarge
                         rounded
@@ -101,6 +105,7 @@ export default class Recipe_Cooking_Time extends Component {
                         />
                         <Text style={styles.title}>{recipe.recipe_name}</Text>
                         {this._renderGrid(this.getTimes(recipe))}
+                        <Container style={{height: 20,}}></Container>
                     </Content>
                 </Container>
             </Container>
@@ -115,8 +120,9 @@ const styles = StyleSheet.create({
       //justifyContent: 'center',
       alignItems: 'center',
       //backgroundColor: 'skyblue',
-      paddingTop: 50,
-      paddingBottom: 50,
+      //paddingTop: 50,
+      //paddingBottom: 50,
+      //paddingLeft: Platform.OS === 'ios' ? 0 : 20,
     },
     title: {
         textAlignVertical: "center",
@@ -125,6 +131,13 @@ const styles = StyleSheet.create({
         fontSize: 20,
         paddingTop: 20,
         paddingBottom: 20,
+    },
+    subtitle: {
+        textAlignVertical: "center",
+        textAlign: "center",
+        fontWeight: 'bold',
+        fontSize: 20,
+        paddingTop: 20,
     },
     center: {
         justifyContent: 'center',

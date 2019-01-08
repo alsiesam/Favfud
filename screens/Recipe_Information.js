@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
-import { Platform, StatusBar, StyleSheet, View, Image, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, Linking, ScrollView} from 'react-native';
+import { Platform, Dimensions, StatusBar, StyleSheet, View, Image, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, Linking, ScrollView} from 'react-native';
 import { Rating } from "react-native-elements";
 import { Container, Header, Body, Title, Content, Button, Icon, Left, Right, Text, Accordion } from "native-base";
+
+const width = Dimensions.get('window').width - 40; //full width
+const height = Dimensions.get('window').height; //full height
 
 export default class Recipe_Information extends Component {
   
@@ -41,7 +44,7 @@ export default class Recipe_Information extends Component {
           <Right />
         </Header>
         <Container style={styles.screen_container}>
-          <Content>
+          <Content style={[{width: width,}, styles.content,]}>
             <Image source={{uri: recipe.imageurlsbysize_360}} style={styles.recipe_image} />
             <Text style={styles.title}>{recipe.recipe_name}</Text>
             {/* <Rating
@@ -71,6 +74,7 @@ export default class Recipe_Information extends Component {
                 <Icon type="Feather" size={40} name='external-link'/>
                 <Text>Recipe Link</Text>
               </Button>
+              <Container style={{height: 20,}}></Container>
           </Content>
         </Container>
       </Container>
@@ -86,8 +90,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     //backgroundColor: 'skyblue',
-    paddingTop: 50,
+    //paddingTop: 50,
     //paddingBottom: 50,
+  },
+  content: {
+    //backgroundColor: "red",
+    paddingTop: 20,
+    //margin: 20,
   },
   button: {
     //height: 80,
@@ -108,5 +117,6 @@ const styles = StyleSheet.create({
     width:320,
     height:320,
     backgroundColor: 'transparent',
+    alignSelf: 'center',
   },
 });
