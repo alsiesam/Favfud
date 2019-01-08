@@ -13,26 +13,26 @@ export default class RecSys extends Component {
       super(props);
       this.state = { 
         isLoading: true,
+        dataSource: [],
+        displayData: [],
         hasScrolled: false,
+        pageNum: 0,
       }
-    }
-  
-    _onEndReached = () => {
-      console.log("end");
     }
 
     componentDidMount(){
-      this.fetchData();
+      this.fetchData('all');
     }
 
-    fetchData() {
-      return fetch('http://django-fyp.herokuapp.com/recsys/id/1-10')
+    fetchData(ids) {
+      return fetch('http://django-fyp.herokuapp.com/recsys/id/'+ids)
       .then((response) => response.json())
       .then((responseJson) => {
-
         this.setState({
           isLoading: false,
-          dataSource: responseJson,
+          dataSource: [...this.state.dataSource, ...responseJson],
+          displayData: responseJson.slice(0, 10),
+          pageNum: this.state.pageNum + 1
         }, function(){
           //console.log(responseJson)
         });
@@ -43,22 +43,42 @@ export default class RecSys extends Component {
       });
     }
 
-    fetchMore = () => {
-      return fetch('http://django-fyp.herokuapp.com/recsys/id/1-10')
-      .then((response) => response.json())
-      .then((responseJson) => {
+    fetchMore() {
+      //console.log('fetching');
+      this.displayRecipe(); return;
+      if(this.state.hasScrolled === false){return null;}
+      var next = this.state.pageNum + 1;
+      if(next == 55){return null;}
+      var initial = next * 10 + 1;
+      var end = initial + 9;
+      var queryID = initial + '-' + end;
+      this.fetchData(queryID);
+    }
 
-        this.setState({
-          isLoading: false,
-          dataSource: responseJson,
-        }, function(){
-          //console.log(responseJson)
-        });
-
-      })
-      .catch((error) =>{
-        console.error(error);
+    displayRecipe() {
+      if(this.state.hasScrolled === false){return null;}
+      var originalPageNum = this.state.pageNum;
+      var nextPageNum = originalPageNum + 1;
+      if(nextPageNum >= this.state.dataSource.length / 10 + 1){return null;}
+      var start = originalPageNum * 10;
+      var end = start + 10;
+      //console.log(start); console.log(end);
+      this.setState({
+        displayData: [...this.state.displayData, ...this.state.dataSource.slice(start, end)],
+        pageNum: nextPageNum
       });
+      //return(this.renderPageNum(originalPageNum));
+    }
+
+    renderPageNum(pageNum){
+      console.log(pageNum);
+      return(
+        <Container><Text>{pageNum}</Text></Container>
+      );
+    }
+
+    handleOnScroll() {
+      this.setState({hasScrolled: true});
     }
   
     render() {
@@ -85,21 +105,24 @@ export default class RecSys extends Component {
             <Right />
             </Header>
             <Container style={styles.screen_container}>
-              <Content style={[styles.content, ]}>
+              {/* <Content style={[styles.content, ]}> */}
                 <FlatList
                     //horizontal
-                    data={this.state.dataSource}
+                    style={{flexGrow:1}}
+                    data={this.state.displayData}
+                    onScroll={this.handleOnScroll.bind(this)}
+                    scrollEventThrottle={500}
                     numColumns={1}
                     renderItem={({ item: rowData }) => {
                       return(
                           <TouchableOpacity key={rowData.id} onPress={() => navigate('Recipe_Information', {recipe: rowData})}>
                           <Card
-                          title={rowData.recipe_name}
-                          image={{ 
-                          uri: rowData.imageurlsbysize_360 
-                          }}
-                          imageStyle={styles.recipe_image}
-                          containerStyle={[styles.recipe_container]}
+                            title={rowData.recipe_name}
+                            image={{ 
+                            uri: rowData.imageurlsbysize_360 
+                            }}
+                            imageStyle={styles.recipe_image}
+                            containerStyle={[styles.recipe_container]}
                           >
                           </Card>
                           </TouchableOpacity>
@@ -107,10 +130,10 @@ export default class RecSys extends Component {
                     }}
                     keyExtractor={(item, index) => index.toString()}
                     contentContainerStyle={[{width: width, marginBottom: 30,}, styles.center]}
-                    // onEndReachedThreshold={20}
-                    // onEndReached={this.fetchMore}
+                    onEndReached={(x)=>{this.displayRecipe()}}
+                    onEndReachedThreshold={0.5}
                 />
-                </Content>
+                {/* </Content> */}
               </Container>
             </Container>
         );

@@ -19,7 +19,7 @@ export default class Recipe_Ingredients extends Component {
     getIngredients(recipe) {
         var ingredient_list = recipe.ingredients;
         var delimiter = "$";
-        var ingredient_arr = ingredient_list.split(delimiter);
+        var ingredient_arr = ingredient_list.split(delimiter).map(function(e){return e.trim();});
         return ingredient_arr;
     }
 
@@ -80,7 +80,7 @@ export default class Recipe_Ingredients extends Component {
                     </Body>
                     <Right />
                 </Header>
-                <Container style={[styles.screen_container]}>
+                <Container style={[styles.screen_container,]}>
                     <Content style={[{width: width, paddingTop: 20,}]}>
                         <Avatar
                         xlarge
@@ -133,6 +133,7 @@ const styles = StyleSheet.create({
         //justifyContent: 'center',
         //alignItems: 'center',
         height: 40,
+        marginBottom: 20,
         //backgroundColor: 'skyblue',
     },
   });
