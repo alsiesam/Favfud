@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import { Platform, Dimensions, StatusBar, StyleSheet, View, Text, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity} from 'react-native';
 import { AppLoading, Asset, Font } from 'expo';
-import { Card } from "react-native-elements";
-import { Container, Header, Content, CardItem, Body, Title, Left, Right, Subtitle, Button, Icon } from "native-base";
+import { Card, } from "react-native-elements";
+import { Container, Header, Content, CardItem, Body, Title, Left, Right, Subtitle, Button, Icon, } from "native-base";
 
 const width = Dimensions.get('window').width; //full width
 const height = Dimensions.get('window').height; //full height
+
+const span = 5
 
 export default class RecSys extends Component {
   
@@ -13,6 +15,7 @@ export default class RecSys extends Component {
       super(props);
       this.state = { 
         isLoading: true,
+        isFetching: false,
         dataSource: [],
         displayData: [],
         hasScrolled: false,
@@ -21,7 +24,7 @@ export default class RecSys extends Component {
     }
 
     componentDidMount(){
-      this.fetchData('all');
+      this.fetchData('random/30');
     }
 
     fetchData(ids) {
@@ -31,7 +34,7 @@ export default class RecSys extends Component {
         this.setState({
           isLoading: false,
           dataSource: [...this.state.dataSource, ...responseJson],
-          displayData: responseJson.slice(0, 10),
+          displayData: responseJson.slice(0, span),
           pageNum: this.state.pageNum + 1
         }, function(){
           //console.log(responseJson)
@@ -59,9 +62,9 @@ export default class RecSys extends Component {
       if(this.state.hasScrolled === false){return null;}
       var originalPageNum = this.state.pageNum;
       var nextPageNum = originalPageNum + 1;
-      if(nextPageNum >= this.state.dataSource.length / 10 + 1){return null;}
-      var start = originalPageNum * 10;
-      var end = start + 10;
+      if(nextPageNum >= this.state.dataSource.length / span + 1){return null;}
+      var start = originalPageNum * span;
+      var end = start + span;
       //console.log(start); console.log(end);
       this.setState({
         displayData: [...this.state.displayData, ...this.state.dataSource.slice(start, end)],
@@ -79,6 +82,12 @@ export default class RecSys extends Component {
 
     handleOnScroll() {
       this.setState({hasScrolled: true});
+    }
+
+    refresh() {
+      this.setState({ isFetching: true });
+      this.fetchData('random/30');
+      this.setState({ isFetching: false })
     }
   
     render() {
@@ -110,6 +119,8 @@ export default class RecSys extends Component {
                     //horizontal
                     style={{flexGrow:1}}
                     data={this.state.displayData}
+                    onRefresh={() => this.refresh()}
+                    refreshing={this.state.isFetching}
                     onScroll={this.handleOnScroll.bind(this)}
                     scrollEventThrottle={500}
                     numColumns={1}

@@ -17,7 +17,7 @@ export default class Recipe_Nutrition extends Component {
     }
 
     getNutrients(recipe) {
-        let subset = ({k, na, chole, fatrn, fasat, chocdf, fibtg, ca, fe, sugar, enerc_kcal, fat, vita_iu, starch}) => ({k, na, chole, fatrn, fasat, chocdf, fibtg, ca, fe, sugar, enerc_kcal, fat, vita_iu, starch});
+        let subset = ({k, na, chole, fatrn, fasat, chocdf, fibtg, procnt, vitc, ca, fe, sugar, enerc_kcal, fat, vita_iu, starch}) => ({k, na, chole, fatrn, fasat, chocdf, fibtg, procnt, vitc, ca, fe, sugar, enerc_kcal, fat, vita_iu, starch});
         return subset(recipe);
     }
 
@@ -60,8 +60,8 @@ export default class Recipe_Nutrition extends Component {
                 </Text>
             );
         }
-        var titles = ['Potassium', 'Sodium', 'Cholesterol', 'Trans Fatty acids', 'Saturated Fatty Acids', 'Carbohydrate', 'Fiber', 'Calcium', 'Iron', 'Sugar', 'Energy', 'Fat', 'Vitamin A', 'Starch'];
-        var keys = ['k', 'na', 'chole', 'fatrn', 'fasat', 'chocdf', 'fibtg', 'ca', 'fe', 'sugar', 'enerc_kcal', 'fat', 'vita_iu', 'starch'];
+        var titles = ['Potassium', 'Sodium', 'Cholesterol', 'Trans Fatty acids', 'Saturated Fatty Acids', 'Carbohydrate', 'Fiber', 'Protein', 'Vitamin C', 'Calcium', 'Iron', 'Sugar', 'Energy', 'Fat', 'Vitamin A', 'Starch'];
+        var keys = ['k', 'na', 'chole', 'fatrn', 'fasat', 'chocdf', 'fibtg', 'procnt', 'vitc', 'ca', 'fe', 'sugar', 'enerc_kcal', 'fat', 'vita_iu', 'starch'];
         return(
             <Grid>
                 {[...Array(titles.length).keys()].map((i) => {
