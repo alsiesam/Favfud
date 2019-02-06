@@ -9,6 +9,9 @@ import React from "react";
 import { Platform, StatusBar, } from 'react-native';
 import { Container, Footer, FooterTab, Icon, Button} from "native-base";
 
+const screens = ["RecSys", "Recipe_Information", "Recipe_Cooking_Time", "Recipe_Ingredients", "Recipe_Nutrition", "Recipe_Search"];
+const ratingScreens = ["Recipe_Information", "Recipe_Cooking_Time", "Recipe_Ingredients", "Recipe_Nutrition"];
+
 const RecSysMain = createStackNavigator({
   RecSys: {screen: RecSys},
   Recipe_Information: {screen: Recipe_Information},
@@ -31,7 +34,12 @@ const RecSysFooter = createBottomTabNavigator({
    header: null
   },
   tabBarPosition: "bottom",
-  tabBarComponent: props => {
+  tabBarComponent: (props) => renderDefaultFooter(props),
+});
+
+function renderDefaultFooter(props) {
+  var lastScreen = props.navigation.state.routes.slice(-1).pop().routes.slice(-1).pop().routeName;
+  //if(!ratingScreens.includes(lastScreen)){
     return(
       <Footer>
         <FooterTab>
@@ -50,15 +58,51 @@ const RecSysFooter = createBottomTabNavigator({
         </FooterTab>
       </Footer>
     );
-  }
-});
+  //} 
+  // else {
+  //   return(
+  //     <Footer>
+  //       <FooterTab>
+  //         <Button 
+  //           //active
+  //           onPress={() => {props.navigation.navigate("RecSys")}}
+  //         >
+  //           <Icon name="home" />
+  //         </Button>
+  //         <Button 
+  //           //active
+  //           onPress={() => {props.navigation.navigate("Recipe_Search")}}
+  //         >
+  //           <Icon name="search" />
+  //         </Button>
+  //         <Button
+  //           onPress={() => {}}
+  //         >
+  //           <Icon name="heart" style={{color: 'red',}}/>
+  //         </Button>
+  //         <Button
+  //           onPress={() => {}}
+  //         >
+  //           <Icon name="star" style={{color: 'gold',}}/>
+  //         </Button>
+  //         <Button>
+  //           <Icon name="bookmark" style={{color: 'brown',}}/>
+  //         </Button>
+  //       </FooterTab>
+  //     </Footer>
+  //   );
+  // }
+}
 
 //export default App;
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { loading: true };
+    this.state = { 
+      loading: true,
+      heart_color: 'red',
+    };
   }
 
   async componentWillMount() {

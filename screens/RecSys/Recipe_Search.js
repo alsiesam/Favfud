@@ -11,15 +11,39 @@ export default class Recipe_Search extends Component {
     constructor(props){
       super(props);
       this.state = { 
+        dataSource: [],
         isSearched: false,
         keyword: '',
       }
     }
 
-    someMethod1 = (word) => {
+    fetchData(keyword) {
+      if(keyword.match(/\//g)) {
+        keyword = keyword.replace(/\//g, '\/');
+      }
+      return fetch('http://django-fyp.herokuapp.com/recsys/search/'+keyword)
+      .then((response) => response.json())
+      .then((responseJson) => {
         this.setState({
-            keyword: word
+          //isLoading: false,
+          dataSource: [...this.state.dataSource, ...responseJson],
+          //displayData: responseJson.slice(0, span),
+          //pageNum: this.state.pageNum + 1
+        }, function(){
+          //console.log(responseJson)
         });
+
+      })
+      .catch((error) =>{
+        console.error(error);
+      });
+    }
+
+    someMethod1 = (event) => {
+        this.setState({
+            keyword: event.nativeEvent.text
+        });
+        this.fetchData(this.state.keyword);
     }
 
     someMethod2 = () => {
@@ -41,15 +65,13 @@ export default class Recipe_Search extends Component {
                 <SearchBar
                     lightTheme
                     //showLoading
-                    platform="ios"
                     ref={search => this.search = search}
                     cancelButtonTitle="Cancel"
-                    cancelIcon={{ type: 'font-awesome', name: 'chevron-left' }}
                     clearIcon={{ }}
                     placeholder='Search your recipe here...' 
-                    onChangeText={this.someMethod1}
-                    onClear={this.someMethod2}
-                    onCancel={this.someMethod2}
+                    onSubmitEditing={this.someMethod1}
+                    //onChangeText={this.someMethod1}
+                    onClearText={this.someMethod2}
                     containerStyle = {{width: width, }}
                 />
                 <Text>{this.state.keyword}</Text>

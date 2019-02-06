@@ -79,7 +79,7 @@ export default class Recipe_Nutrition extends Component {
             <Container>
                 <Header>
                     <Left>
-                        <Button transparent onPress={()=>navigate('Recipe_Information', {recipe: recipe})}>
+                        <Button transparent onPress={()=>navigate({routeName: 'Recipe_Information', params: {recipe: recipe}, key: 'Info'+recipe.id})}>
                         <Icon name="arrow-back" />
                         <Text> Back </Text>
                         </Button>

@@ -1,8 +1,13 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StatusBar, StyleSheet, View, Text, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity} from 'react-native';
+import { Platform, Dimensions, StatusBar, StyleSheet, View, Text, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, ScrollView, Image} from 'react-native';
 import { AppLoading, Asset, Font } from 'expo';
+import { Rating, Divider } from "react-native-elements";
 import { Card, } from "react-native-elements";
-import { Container, Header, Content, CardItem, Body, Title, Left, Right, Subtitle, Button, Icon, } from "native-base";
+import { Container, Header, Content, 
+  //Card, 
+CardItem, Body, Title, Left, Right, Subtitle, Button, Icon} from "native-base";
+import { Col, Row, Grid } from "react-native-easy-grid";
+import Carousel from 'react-native-snap-carousel';
 
 const width = Dimensions.get('window').width; //full width
 const height = Dimensions.get('window').height; //full height
@@ -17,25 +22,79 @@ export default class RecSys extends Component {
         isLoading: true,
         isFetching: false,
         dataSource: [],
-        displayData: [],
-        hasScrolled: false,
-        pageNum: 0,
+        favoriteRecipes: [],
+        popularRecipes: [],
+        randomRecipes: [],
+        //hasScrolled: false,
+        //pageNum: 0,
+        greeting: 'Hi, Guest.',
       }
     }
 
     componentDidMount(){
-      this.fetchData('random/30');
+      this.fetchFavoriteRecipes();
+      this.fetchPopularRecipes();
+      this.fetchRandomRecipes();
+      var d = new Date();
+      var n = d.getHours();
+      var greet = 'Hi';
+      if(n >= 6 && n < 12) {
+        greet = 'Good morning, ';
+      } else if(n >= 12 && n < 18) {
+        greet = 'Good Afternoon, ';
+      } else {
+        greet = 'Good night, ';
+      }
+      this.setState({greeting: greet+'Guest'+'.'})
     }
 
-    fetchData(ids) {
-      return fetch('http://django-fyp.herokuapp.com/recsys/id/'+ids)
+    fetchFavoriteRecipes() {
+      return fetch('http://django-fyp.herokuapp.com/recsys/id/random/8')
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
           isLoading: false,
-          dataSource: [...this.state.dataSource, ...responseJson],
-          displayData: responseJson.slice(0, span),
-          pageNum: this.state.pageNum + 1
+          //dataSource: [...this.state.dataSource, ...responseJson],
+          favoriteRecipes: responseJson, //responseJson.slice(0, span),
+          //pageNum: this.state.pageNum + 1
+        }, function(){
+          //console.log(responseJson)
+        });
+
+      })
+      .catch((error) =>{
+        console.error(error);
+      });
+    }
+
+    fetchPopularRecipes() {
+      return fetch('http://django-fyp.herokuapp.com/recsys/id/random/8')
+      .then((response) => response.json())
+      .then((responseJson) => {
+        this.setState({
+          //isLoading: false,
+          //dataSource: [...this.state.dataSource, ...responseJson],
+          popularRecipes: responseJson, //responseJson.slice(0, span),
+          //pageNum: this.state.pageNum + 1
+        }, function(){
+          //console.log(responseJson)
+        });
+
+      })
+      .catch((error) =>{
+        console.error(error);
+      });
+    }
+
+    fetchRandomRecipes() {
+      return fetch('http://django-fyp.herokuapp.com/recsys/id/random/8')
+      .then((response) => response.json())
+      .then((responseJson) => {
+        this.setState({
+          //isLoading: false,
+          //dataSource: [...this.state.dataSource, ...responseJson],
+          randomRecipes: responseJson, //responseJson.slice(0, span),
+          //pageNum: this.state.pageNum + 1
         }, function(){
           //console.log(responseJson)
         });
@@ -86,7 +145,7 @@ export default class RecSys extends Component {
 
     refresh() {
       this.setState({ isFetching: true });
-      this.fetchData('random/30');
+      this.fetchData('random/5');
       this.setState({ isFetching: false })
     }
   
@@ -115,15 +174,115 @@ export default class RecSys extends Component {
             </Header>
             <Container style={styles.screen_container}>
               {/* <Content style={[styles.content, ]}> */}
-                <FlatList
-                    //horizontal
-                    style={{flexGrow:1}}
+                <ScrollView>
+                  <Text style={[styles.title]}>{this.state.greeting}</Text>
+                  {/* <Divider style={{ marginBottom: 20, }} /> */}
+                  <Text style={[styles.subtitle]}>Your Favorites</Text>
+                  <FlatList
+                      horizontal={true}
+                      data={this.state.favoriteRecipes}
+                      // onRefresh={() => this.refresh()}
+                      // refreshing={this.state.isFetching}
+                      // onScroll={this.handleOnScroll.bind(this)}
+                      // scrollEventThrottle={500}
+                      // numColumns={1}
+                      renderItem={({ item: rowData }) => {
+                        return(
+                            <TouchableOpacity key={rowData.id} onPress={() => navigate('Recipe_Information', {recipe: rowData})}>
+                            <Card
+                              //title={rowData.recipe_name}
+                              image={{ 
+                              uri: rowData.imageurlsbysize_360 
+                              }}
+                              imageStyle={styles.recipe_image}
+                              containerStyle={[styles.recipe_container]}
+                            >
+                            <Row style={{height: 50}}><Text numberOfLines={2}>{rowData.recipe_name}</Text></Row>
+                            </Card>
+                            {/* <Card transparent>
+                              <CardItem>
+                                <Image source={{uri: rowData.imageurlsbysize_360 }} style={styles.recipe_image} />
+                              </CardItem>
+                              <CardItem>
+                                <Row style={{height: 50}}><Text numberOfLines={2}>{rowData.recipe_name}</Text></Row>
+                              </CardItem>
+                            </Card> */}
+                            </TouchableOpacity> 
+                        );
+                      }}
+                      keyExtractor={(item, index) => index.toString()}
+                      contentContainerStyle={[{marginBottom: 20,}, styles.center]}
+                      //onEndReached={(x)=>{this.displayRecipe()}}
+                      //onEndReachedThreshold={0.5}
+                      showsHorizontalScrollIndicator={false}
+                  />
+                  <Divider style={{ marginBottom: 20, }} />
+                  <Text style={[styles.subtitle]}>Popular Cuisines</Text>
+                  <FlatList
+                      horizontal={true}
+                      data={this.state.popularRecipes}
+                      // onRefresh={() => this.refresh()}
+                      // refreshing={this.state.isFetching}
+                      // onScroll={this.handleOnScroll.bind(this)}
+                      // scrollEventThrottle={500}
+                      // numColumns={1}
+                      renderItem={({ item: rowData }) => {
+                        return(
+                            <TouchableOpacity key={rowData.id} onPress={() => navigate('Recipe_Information', {recipe: rowData})}>
+                            <Card
+                              //title={rowData.recipe_name}
+                              image={{ 
+                              uri: rowData.imageurlsbysize_360 
+                              }}
+                              imageStyle={styles.recipe_image}
+                              containerStyle={[styles.recipe_container]}
+                            >
+                            <Row style={{height: 50}}><Text numberOfLines={2}>{rowData.recipe_name}</Text></Row>
+                            </Card>
+                            </TouchableOpacity>
+                        );
+                      }}
+                      keyExtractor={(item, index) => index.toString()}
+                      contentContainerStyle={[{marginBottom: 20,}, styles.center]}
+                      //onEndReached={(x)=>{this.displayRecipe()}}
+                      //onEndReachedThreshold={0.5}
+                      showsHorizontalScrollIndicator={false}
+                  />
+                  <Divider style={{ marginBottom: 20, }} />
+                  <Text style={[styles.subtitle]}>Random Picks</Text>
+                  <FlatList
+                      horizontal={true}
+                      data={this.state.randomRecipes}
+                      // onRefresh={() => this.refresh()}
+                      // refreshing={this.state.isFetching}
+                      // onScroll={this.handleOnScroll.bind(this)}
+                      // scrollEventThrottle={500}
+                      // numColumns={1}
+                      renderItem={({ item: rowData }) => {
+                        return(
+                            <TouchableOpacity key={rowData.id} onPress={() => navigate('Recipe_Information', {recipe: rowData})}>
+                            <Card
+                              //title={rowData.recipe_name}
+                              image={{ 
+                              uri: rowData.imageurlsbysize_360 
+                              }}
+                              imageStyle={styles.recipe_image}
+                              containerStyle={[styles.recipe_container]}
+                            >
+                            <Row style={{height: 50}}><Text numberOfLines={2}>{rowData.recipe_name}</Text></Row>
+                            </Card>
+                            </TouchableOpacity>
+                        );
+                      }}
+                      keyExtractor={(item, index) => index.toString()}
+                      contentContainerStyle={[{marginBottom: 20,}, styles.center]}
+                      //onEndReached={(x)=>{this.displayRecipe()}}
+                      //onEndReachedThreshold={0.5}
+                      showsHorizontalScrollIndicator={false}
+                  />
+                  {/* <Carousel
+                    ref={(c) => { this._carousel = c; }}
                     data={this.state.displayData}
-                    onRefresh={() => this.refresh()}
-                    refreshing={this.state.isFetching}
-                    onScroll={this.handleOnScroll.bind(this)}
-                    scrollEventThrottle={500}
-                    numColumns={1}
                     renderItem={({ item: rowData }) => {
                       return(
                           <TouchableOpacity key={rowData.id} onPress={() => navigate('Recipe_Information', {recipe: rowData})}>
@@ -139,11 +298,10 @@ export default class RecSys extends Component {
                           </TouchableOpacity>
                       );
                     }}
-                    keyExtractor={(item, index) => index.toString()}
-                    contentContainerStyle={[{width: width, marginBottom: 30,}, styles.center]}
-                    onEndReached={(x)=>{this.displayRecipe()}}
-                    onEndReachedThreshold={0.5}
-                />
+                    sliderWidth={width}
+                    itemWidth={width}
+                  /> */}
+                </ScrollView>
                 {/* </Content> */}
               </Container>
             </Container>
@@ -160,19 +318,27 @@ export default class RecSys extends Component {
       //backgroundColor: 'skyblue',
     },
     title: {
+      margin: 20,
+      fontSize: 24,
       fontWeight: 'bold',
-      fontSize: 30,
+    },
+    subtitle: {
+      marginTop: 20,
+      marginLeft: 20,
+      marginRight: 20,
+      fontSize: 20,
+      fontWeight: 'bold'
     },
     recipe_container: {
       padding: 0,
-      width: 350,
+      width: 160,
       borderColor: 'transparent',
       backgroundColor: 'transparent',
       justifyContent: 'center',
     },
     recipe_image: {
-      width: 320,
-      height: 320,
+      width: 150,
+      height: 150,
       backgroundColor: 'transparent',
       alignSelf: 'center',
     },
