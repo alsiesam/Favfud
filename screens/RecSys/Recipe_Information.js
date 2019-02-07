@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StatusBar, StyleSheet, View, Image, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, Linking, ScrollView} from 'react-native';
+import { Platform, Dimensions, StatusBar, StyleSheet, View, Image, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, Linking, ScrollView, Modal, TouchableHighlight} from 'react-native';
 import { Rating, Divider } from "react-native-elements";
 import { Card, } from "react-native-elements";
 import { Container, Header, Body, Title, Content, Button, Icon, Left, Right, Text, Accordion } from "native-base";
@@ -14,7 +14,9 @@ export default class Recipe_Information extends Component {
   constructor(props){
     super(props);
     this.state = { 
-      recipe: props.navigation.state.params.recipe
+      recipe: props.navigation.state.params.recipe,
+      modalVisible: false,
+      recipe_rating: -1,
     }
   }
 
@@ -110,6 +112,23 @@ export default class Recipe_Information extends Component {
     );
   }
 
+  setModalVisible(visible) {
+    this.setState({modalVisible: visible});
+  }
+
+  ratingCompleted(rating) {
+    //console.log(rating);
+    this.setState({recipe_rating: rating});
+  }
+
+  renderRatingInfo() {
+    if(this.state.recipe_rating == -1){
+      return(<Text style={[{marginBottom: 10,}, styles.title]}>How would you rate this recipe?</Text>);
+    } else {
+      return(<Text style={[{marginBottom: 10,}, styles.title]}>You have rated the recipe {this.state.recipe_rating}/5</Text>);
+    }
+  }
+
   render() {
     const {navigate} = this.props.navigation;
     const recipe = this.state.recipe;
@@ -177,7 +196,7 @@ export default class Recipe_Information extends Component {
           <Left>
               <Button transparent onPress={()=>navigate('RecSys')}>
               <Icon name="arrow-back" />
-              <Text>Back To RecSys</Text>
+              <Text>Back</Text>
             </Button>
           </Left>
           <Body>
@@ -209,7 +228,10 @@ export default class Recipe_Information extends Component {
                     <Button transparent style={styles.button} onPress={()=>this.redirectRecipeURL(recipe.sourcerecipeurl)} >
                       <Icon type='Feather' name='external-link'/>
                     </Button>
-                    <Button transparent style={styles.button}>
+                    <Button transparent style={styles.button}
+                    onPress={() => {
+                      this.setModalVisible(true);
+                    }}>
                       <Icon type='Ionicons' name='ios-more'/>
                     </Button>
                   </Row>
@@ -218,6 +240,17 @@ export default class Recipe_Information extends Component {
               <Row>
                 {this.renderIngredients(func.getIngredients(recipe))}
               </Row>
+              <Row style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginBottom: 20, }}>
+                {this.renderRatingInfo()}
+                <Rating
+                  showRating
+                  onFinishRating={(rating) => this.ratingCompleted(rating)}
+                  imageSize={30}
+                  startingValue={0}
+                  showRating={false}
+                />
+              </Row>
+              <Divider style={{ marginBottom: 20, }} />
               <Row>
                 {this.renderCorrelatedRecipes()}
               </Row>

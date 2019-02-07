@@ -49,12 +49,12 @@ function renderDefaultFooter(props) {
           >
             <Icon name="home" />
           </Button>
-          <Button 
+          {/* <Button 
             //active
             onPress={() => {props.navigation.navigate("Recipe_Search")}}
           >
             <Icon name="search" />
-          </Button>
+          </Button> */}
         </FooterTab>
       </Footer>
     );
