@@ -27,18 +27,20 @@ export default class Recipe_Bookmarked extends Component {
         AsyncStorage.getItem('bookmarked_recipe')
         .then((recipes) => {
             const r = recipes ? JSON.parse(recipes) : [];
-            if(r.join(',') != this.state.bookmarked_recipe_ids){
+            if(r.length != 0 && r.join(',') != this.state.bookmarked_recipe_ids){
                 ids_str = r.join(',');
                 this.setState({bookmarked_recipe_ids: ids_str});
                 this.fetchData(this.state.bookmarked_recipe_ids);
             }
+            this.setState({isLoading: false});
         });
         AsyncStorage.getItem('user_token')
         .then((ut) => {
             if(ut){
-            this.setState({user_token: ut});
+                this.setState({user_token: ut});
             }
         });
+
     }
 
     getRefreshedData() {
@@ -72,7 +74,6 @@ export default class Recipe_Bookmarked extends Component {
         .then((responseJson) => {
           this.setState({
             dataSource: [...this.state.dataSource, ...responseJson],
-            isLoading: false,
           }, function(){
             //console.log(responseJson)
           });
@@ -96,7 +97,7 @@ export default class Recipe_Bookmarked extends Component {
     renderBookmarkedRecipes() {
         const {navigate} = this.props.navigation;
         data = this.state.dataSource;
-        if(data == []){
+        if(data.length == 0){
             return(<Container style={styles.center}><Text style={styles.remind_text}>There is no bookmarked recipe</Text><Text style={styles.remind_text}>at this moment.</Text></Container>);
         } else {
             return(
