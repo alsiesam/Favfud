@@ -18,3 +18,12 @@ export function getIngredients(recipe) {
     var ingredient_arr = ingredient_list.split(delimiter).map(function(e){return e.trim();});
     return ingredient_arr;
 }
+
+export function arr_diff(a1, a2) {
+    var result = {};
+    var more = a1.filter(function(i) {return a2.indexOf(i) < 0;});
+    var less = a2.filter(function(i) {return a1.indexOf(i) < 0;});
+    result["more"] = more;
+    result["less"] = less;
+    return result;
+}

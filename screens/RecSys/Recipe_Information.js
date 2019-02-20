@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StatusBar, StyleSheet, View, Image, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, Linking, ScrollView, Modal, TouchableHighlight} from 'react-native';
+import { Platform, Dimensions, StatusBar, StyleSheet, View, Image, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, Linking, ScrollView, Modal, TouchableHighlight, AsyncStorage} from 'react-native';
 import { Rating, Divider } from "react-native-elements";
 import { Card, } from "react-native-elements";
 import { Container, Header, Body, Title, Content, Button, Icon, Left, Right, Text, Accordion } from "native-base";
@@ -14,14 +14,68 @@ export default class Recipe_Information extends Component {
   constructor(props){
     super(props);
     this.state = { 
+      isLoading: true,
       recipe: props.navigation.state.params.recipe,
+      user_token: props.navigation.state.params.user_token,
       modalVisible: false,
       recipe_rating: -1,
+      similar_recipes: '',
+      bookmarked: false,
     }
   }
 
-  componentDidMount(){
+  componentWillMount(){
+    //console.log("mounted");
+    //console.log(thi.state,user_token);
+    this.updateInteraction('tapview');
     this.fetchSimilarRecipes(this.state.recipe);
+    recipe_id = this.state.recipe.id.toString();
+    AsyncStorage.getItem('bookmarked_recipe')
+    .then((recipes) => {
+      const r = recipes ? JSON.parse(recipes) : [];
+      if(r.includes(recipe_id)){
+        this.setState({bookmarked: true});
+      }
+    });
+    AsyncStorage.getItem('recipe_ratings')
+    .then((ratings) => {
+      const rat = ratings ? JSON.parse(ratings) : {};
+      if(recipe_id in rat){
+        this.setState({recipe_rating: rat[recipe_id]});
+      }
+      this.setState({
+        isLoading: false
+      });
+    });
+  }
+
+  updateInteraction(act, remarks) {
+    update_header = {usertoken: this.state.user_token, recipeid: this.state.recipe.id, recipetoken: this.state.recipe.recipe_token};
+    switch(act) {
+      case 'tapview':
+        update_header.action = act;
+        break;
+      case 'bookmark':
+        update_header.action = act+'$'+remarks.flag.toString();
+        break;
+      case 'rating':
+        update_header.action = act+'$'+remarks.rating.toString();
+        break;
+      default:
+        break;
+    }
+    console.log(update_header);
+    fetch('http://django-fyp.herokuapp.com/recsys/interaction/', {
+      method: 'POST',
+      headers: new Headers (update_header),
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      //console.log(responseJson);
+    })
+    .catch((error) =>{
+      //console.error(error);
+    });
   }
 
   fetchSimilarRecipes(recipe) {
@@ -91,7 +145,7 @@ export default class Recipe_Information extends Component {
               data={this.state.similar_recipes}
               renderItem={({ item: rowData }) => {
               return(
-                <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData}, key: 'Info'+rowData.id})}>
+                <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
                   <Card
                     image={{ 
                       uri: rowData.imageurlsbysize_360 
@@ -116,9 +170,75 @@ export default class Recipe_Information extends Component {
     this.setState({modalVisible: visible});
   }
 
+  setBookmark(_bookmarked) {
+    if(_bookmarked == true){
+      this.setState({bookmarked: false});
+    } else {
+      this.setState({bookmarked: true});
+    }
+    AsyncStorage.getItem('bookmarked_recipe')
+    .then((recipes) => {
+      const r = recipes ? JSON.parse(recipes) : [];
+      const newValue = this.state.recipe.id.toString();
+      if(r.includes(newValue)){
+        var index = r.indexOf(newValue);
+        if (index > -1) {
+          r.splice(index, 1);
+        }
+      } else {
+        r.push(newValue);
+      }
+      AsyncStorage.setItem('bookmarked_recipe', JSON.stringify(r));
+    });
+    bookmark_flag = !_bookmarked ? 'true' : 'false';
+    this.updateInteraction('bookmark', {flag: bookmark_flag});
+  }
+
+  setBookmarkStyle(_color) {
+    return {
+      color: _color,
+    }
+  }
+
   ratingCompleted(rating) {
     //console.log(rating);
-    this.setState({recipe_rating: rating});
+    this.renderRatingAlertBox(rating);
+  }
+
+  renderRatingAlertBox(rating){
+    Alert.alert(
+      'You have rated '+rating+'/5',
+      'Confirm your rating?',
+      [
+        {
+          text: 'OK', 
+          onPress: () => this.setRating(rating)
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ],
+      {cancelable: false},
+    );
+  }
+
+  getRating() {
+    rating = this.state.recipe_rating == -1 ? 0 : parseInt(this.state.recipe_rating);
+    //console.log("rating:"+rating);
+    return rating;
+  }
+
+  setRating(_rating) {
+    this.setState({recipe_rating: _rating});
+    AsyncStorage.getItem('recipe_ratings')
+    .then((ratings) => {
+      const rat = ratings ? JSON.parse(ratings) : {};
+      const newValue = this.state.recipe.id.toString();
+      rat[newValue] = _rating;
+      AsyncStorage.setItem('recipe_ratings', JSON.stringify(rat));
+    });
+    this.updateInteraction('rating', {rating: _rating});
   }
 
   renderRatingInfo() {
@@ -130,138 +250,154 @@ export default class Recipe_Information extends Component {
   }
 
   render() {
-    const {navigate} = this.props.navigation;
-    const recipe = this.state.recipe;
-    //console.log(recipe);
-
-    rating = '';
-    if('rating' in recipe){
-      rating = 
-      <Row style={{height:'auto', marginBottom:20}}>
-        <Rating
-          type="star"
-          fractions={1}
-          startingValue={recipe.rating}
-          readonly
-          imageSize={12}
-          //onFinishRating={this.ratingCompleted}
-          style={{ }}
-        />
-      </Row>;
-    }
-
-    totaltime = '';
-    if('totaltimeinseconds' in recipe){
-      totaltime = 
-      <Row style={{height:'auto', marginBottom:10}}>
-        <Icon type='Entypo' name='time-slot' style={{fontSize:12, marginTop:1,}}/>
-        <Text style={{fontSize: 12, textAlign: 'center', textAlignVertical: 'center',}}> {
-          func.secondsToHms(recipe.totaltimeinseconds)
-        }
-        </Text>
-      </Row>;
-    }
-
-    numofservings = '';
-    if('numberofservings' in recipe){
-      // if(recipe.numberofservings > 18){
-      //   recipe.numberofservings = 18;
-      // }
-      // _fontSize = recipe.numberofservings <= 8 ? 25 : 20;
-      // _iconWidth = recipe.numberofservings <= 8 ? 30 : 20;
-      numofservings = 
-      <Row style={{height:'auto', marginBottom:10}}>
-        <Icon type='Ionicons' name='md-person' style={{fontSize:16, marginTop:0,}}/>
-        <Text style={{fontSize: 12, textAlign: 'center', textAlignVertical: 'center',}}> {
-          recipe.numberofservings
-        } servings
-        </Text>
-      </Row>;
-      // <Row style={{
-      //   flexDirection:'row', height:'auto', justifyContent:'flex-start', flexWrap: 'wrap',
-      // }}>
-      //   { [...Array(recipe.numberofservings).keys()].map((i) => {
-      //     return(
-      //       <Col key={i} style={{width:_iconWidth,}}>
-      //         <Icon type="Ionicons" name="md-person" style={{fontSize: _fontSize}}/>
-      //       </Col>
-      //     );
-      //   }) }
-      // </Row>;
-    }
-
-    return(
-      <Container>
-        <Header>
-          <Left>
-              <Button transparent onPress={()=>navigate('RecSys')}>
-              <Icon name="arrow-back" />
-              <Text>Back</Text>
-            </Button>
-          </Left>
-          <Body>
-            <Title>Recipe</Title>
-          </Body>
-          <Right />
-        </Header>
+    if (this.state.isLoading) {
+      return(
         <Container style={styles.screen_container}>
-          <Content style={[{width: width,}, styles.content,]}>
-            <Grid>
-              <Row style={{
-                flex:2, justifyContent:'space-between', alignSelf:'center',
-                marginBottom:20, height:180, 
-              }}>
-                <Col style={{flex:1, marginRight:10}}>
-                  <Image source={{uri: recipe.imageurlsbysize_360}} style={styles.recipe_image} />
-                </Col>
-                <Col style={{flex:1, marginLeft:10}}>
-                  <Row style={{height:'auto'}}>
-                      <Text numberOfLines={3} style={styles.title}>{recipe.recipe_name}</Text>
-                  </Row>
-                  {rating}
-                  {totaltime}
-                  {numofservings}
-                  <Row style={{alignItems:'flex-end', }}>
-                    <Button transparent style={styles.button}  onPress={()=>navigate({routeName: 'Recipe_Nutrition', params: {recipe: recipe}, key: 'Nut'+recipe.id})}>
-                      <Icon type='MaterialCommunityIcons' name='nutrition'/>
-                    </Button>
-                    <Button transparent style={styles.button} onPress={()=>this.redirectRecipeURL(recipe.sourcerecipeurl)} >
-                      <Icon type='Feather' name='external-link'/>
-                    </Button>
-                    <Button transparent style={styles.button}
-                    onPress={() => {
-                      this.setModalVisible(true);
-                    }}>
-                      <Icon type='Ionicons' name='ios-more'/>
-                    </Button>
-                  </Row>
-                </Col>
-              </Row>
-              <Row>
-                {this.renderIngredients(func.getIngredients(recipe))}
-              </Row>
-              <Row style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginBottom: 20, }}>
-                {this.renderRatingInfo()}
-                <Rating
-                  showRating
-                  onFinishRating={(rating) => this.ratingCompleted(rating)}
-                  imageSize={30}
-                  startingValue={0}
-                  showRating={false}
-                />
-              </Row>
-              <Divider style={{ marginBottom: 20, }} />
-              <Row>
-                {this.renderCorrelatedRecipes()}
-              </Row>
-              <Container style={{height: 30,}}></Container>
-            </Grid>
-          </Content>
+        <StatusBar
+            barStyle="light-content"
+        />
+        <Text>Loading...</Text>
+            <ActivityIndicator/>
         </Container>
-      </Container>
-    );
-  }
+        )
+      } else {
+        const {navigate} = this.props.navigation;
+        const {goBack} = this.props.navigation;
+        const recipe = this.state.recipe;
+        //console.log(recipe);
 
+        rating = '';
+        if('rating' in recipe){
+          rating = 
+          <Row style={{height:'auto', marginBottom:20}}>
+            <Rating
+              type="star"
+              fractions={1}
+              startingValue={recipe.rating}
+              readonly
+              imageSize={12}
+              //onFinishRating={this.ratingCompleted}
+              style={{ }}
+            />
+          </Row>;
+        }
+
+        totaltime = '';
+        if('totaltimeinseconds' in recipe){
+          totaltime = 
+          <Row style={{height:'auto', marginBottom:10}}>
+            <Icon type='Entypo' name='time-slot' style={{fontSize:12, marginTop:1,}}/>
+            <Text style={{fontSize: 12, textAlign: 'center', textAlignVertical: 'center',}}> {
+              func.secondsToHms(recipe.totaltimeinseconds)
+            }
+            </Text>
+          </Row>;
+        }
+
+        numofservings = '';
+        if('numberofservings' in recipe){
+          // if(recipe.numberofservings > 18){
+          //   recipe.numberofservings = 18;
+          // }
+          // _fontSize = recipe.numberofservings <= 8 ? 25 : 20;
+          // _iconWidth = recipe.numberofservings <= 8 ? 30 : 20;
+          numofservings = 
+          <Row style={{height:'auto', marginBottom:10}}>
+            <Icon type='Ionicons' name='md-person' style={{fontSize:16, marginTop:0,}}/>
+            <Text style={{fontSize: 12, textAlign: 'center', textAlignVertical: 'center',}}> {
+              recipe.numberofservings
+            } servings
+            </Text>
+          </Row>;
+          // <Row style={{
+          //   flexDirection:'row', height:'auto', justifyContent:'flex-start', flexWrap: 'wrap',
+          // }}>
+          //   { [...Array(recipe.numberofservings).keys()].map((i) => {
+          //     return(
+          //       <Col key={i} style={{width:_iconWidth,}}>
+          //         <Icon type="Ionicons" name="md-person" style={{fontSize: _fontSize}}/>
+          //       </Col>
+          //     );
+          //   }) }
+          // </Row>;
+        }
+
+        return(
+          <Container>
+            <Header>
+              <Left>
+                  <Button transparent onPress={()=>goBack()}>
+                    <Icon name="arrow-back" />
+                    <Text>Back</Text>
+                  </Button>
+              </Left>
+              <Body>
+                <Title>Recipe</Title>
+              </Body>
+              <Right />
+            </Header>
+            <Container style={styles.screen_container}>
+              <Content style={[{width: width,}, styles.content,]}>
+                <Grid>
+                  <Row style={{
+                    flex:2, justifyContent:'space-between', alignSelf:'center',
+                    marginBottom:20, height:180, 
+                  }}>
+                    <Col style={{flex:1, marginRight:10}}>
+                      <Image source={{uri: recipe.imageurlsbysize_360}} style={styles.recipe_image} />
+                    </Col>
+                    <Col style={{flex:1, marginLeft:10}}>
+                      <Row style={{height:'auto'}}>
+                          <Text numberOfLines={3} style={styles.title}>{recipe.recipe_name}</Text>
+                      </Row>
+                      {rating}
+                      {totaltime}
+                      {numofservings}
+                      <Row>
+                        <Button transparent style={styles.button} onPress={()=>this.redirectRecipeURL(recipe.sourcerecipeurl)} >
+                          <Icon type='Ionicons' name='ios-link' style={{}}/>
+                        </Button>
+                        <Button transparent style={styles.button}  onPress={()=>navigate({routeName: 'Recipe_Nutrition', params: {recipe: recipe}, key: 'Nut'+recipe.id})}>
+                          <Icon type='MaterialCommunityIcons' name='nutrition' style={{'color':'green'}}/>
+                        </Button>
+                        <Button transparent style={styles.button}
+                        // onPress={() => {
+                        //   this.setModalVisible(true);
+                        // }}
+                        onPress={() => {
+                          this.setBookmark(this.state.bookmarked);
+                        }}
+                        >
+                          <Icon type='Ionicons' name='ios-bookmark' style={this.state.bookmarked ? this.setBookmarkStyle('brown') : this.setBookmarkStyle('gray')}/>
+                        </Button>
+                      </Row>
+                    </Col>
+                  </Row>
+                  <Row>
+                    {this.renderIngredients(func.getIngredients(recipe))}
+                  </Row>
+                  <Row style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginBottom: 20, }}>
+                    {this.renderRatingInfo()}
+                    <Rating
+                      showRating
+                      onFinishRating={(rating) => this.ratingCompleted(rating)}
+                      imageSize={30}
+                      startingValue={this.getRating()}
+                      showRating={false}
+                    />
+                  </Row>
+                  <Divider style={{ marginBottom: 20, }} />
+                  <Row>
+                    {this.renderCorrelatedRecipes()}
+                  </Row>
+                  <Container style={{height: 30,}}></Container>
+                </Grid>
+              </Content>
+            </Container>
+          </Container>
+        );
+      }
+    }
 }
 
 const styles = StyleSheet.create({
@@ -280,10 +416,7 @@ const styles = StyleSheet.create({
     //margin: 20,
   },
   button: {
-    //height: 80,
-    alignSelf: 'flex-end',
-    //width: 200,
-    //marginRight: 40,
+
   },
   title: {
     //textAlignVertical: 'center',
@@ -323,5 +456,8 @@ const styles = StyleSheet.create({
     height: 180,
     backgroundColor: 'transparent',
     alignSelf: 'center',
+  },
+  bookmark: {
+    color: 'red',
   },
 });

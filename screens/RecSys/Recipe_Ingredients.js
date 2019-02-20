@@ -63,13 +63,14 @@ export default class Recipe_Ingredients extends Component {
 
     render() {
         const {navigate} = this.props.navigation;
+        const {goBack} = this.props.navigation;
         const recipe = this.state.recipe;
         //console.log(recipe);
         return(
             <Container>
                 <Header>
                     <Left>
-                    <Button transparent onPress={()=>navigate('Recipe_Information', {recipe: recipe})}>
+                    <Button transparent onPress={()=>goBack()}>
                         <Icon name="arrow-back" />
                         <Text> Back </Text>
                         </Button>

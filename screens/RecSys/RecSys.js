@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StatusBar, StyleSheet, View, Text, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, ScrollView, Image} from 'react-native';
+import { Platform, Dimensions, StatusBar, StyleSheet, View, Text, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, ScrollView, Image, AsyncStorage} from 'react-native';
 import { AppLoading, Asset, Font } from 'expo';
 import { Rating, Divider } from "react-native-elements";
 import { Card, } from "react-native-elements";
@@ -27,11 +27,13 @@ export default class RecSys extends Component {
         randomRecipes: [],
         //hasScrolled: false,
         //pageNum: 0,
+        user_token: 'abc1234',
+        user_name: 'Guest',
         greeting: 'Hi, Guest.',
       }
     }
 
-    componentDidMount(){
+    componentWillMount(){
       this.fetchFavoriteRecipes();
       this.fetchPopularRecipes();
       this.fetchRandomRecipes();
@@ -45,11 +47,23 @@ export default class RecSys extends Component {
       } else {
         greet = 'Good night, ';
       }
-      this.setState({greeting: greet+'Guest'+'.'})
+      AsyncStorage.getItem('user_token')
+      .then((ut) => {
+        if(ut){
+          this.setState({user_token: ut});
+        }
+      });
+      AsyncStorage.getItem('user_name')
+      .then((un) => {
+        if(un){
+          this.setState({user_name: un});
+        }
+      });
+      this.setState({greeting: greet+this.state.user_name+'.'})
     }
 
     fetchFavoriteRecipes() {
-      return fetch('http://django-fyp.herokuapp.com/recsys/id/random/8')
+      return fetch('http://django-fyp.herokuapp.com/recsys/id/ids/1-8')
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
@@ -188,7 +202,7 @@ export default class RecSys extends Component {
                       // numColumns={1}
                       renderItem={({ item: rowData }) => {
                         return(
-                            <TouchableOpacity key={rowData.id} onPress={() => navigate('Recipe_Information', {recipe: rowData})}>
+                            <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
                             <Card
                               //title={rowData.recipe_name}
                               image={{ 
@@ -228,7 +242,7 @@ export default class RecSys extends Component {
                       // numColumns={1}
                       renderItem={({ item: rowData }) => {
                         return(
-                            <TouchableOpacity key={rowData.id} onPress={() => navigate('Recipe_Information', {recipe: rowData})}>
+                          <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
                             <Card
                               //title={rowData.recipe_name}
                               image={{ 
@@ -260,7 +274,7 @@ export default class RecSys extends Component {
                       // numColumns={1}
                       renderItem={({ item: rowData }) => {
                         return(
-                            <TouchableOpacity key={rowData.id} onPress={() => navigate('Recipe_Information', {recipe: rowData})}>
+                          <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
                             <Card
                               //title={rowData.recipe_name}
                               image={{ 

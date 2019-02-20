@@ -4,6 +4,7 @@ import Recipe_Cooking_Time from './screens/RecSys/Recipe_Cooking_Time';
 import Recipe_Ingredients from './screens/RecSys/Recipe_Ingredients';
 import Recipe_Nutrition from './screens/RecSys/Recipe_Nutrition';
 import Recipe_Search from './screens/RecSys/Recipe_Search';
+import Recipe_Bookmarked from './screens/RecSys/Recipe_Bookmarked';
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
 import React from "react";
 import { Platform, StatusBar, } from 'react-native';
@@ -15,10 +16,11 @@ const ratingScreens = ["Recipe_Information", "Recipe_Cooking_Time", "Recipe_Ingr
 const RecSysMain = createStackNavigator({
   RecSys: {screen: RecSys},
   Recipe_Information: {screen: Recipe_Information},
-  Recipe_Cooking_Time: {screen: Recipe_Cooking_Time},
-  Recipe_Ingredients: {screen: Recipe_Ingredients},
+  //Recipe_Cooking_Time: {screen: Recipe_Cooking_Time},
+  //Recipe_Ingredients: {screen: Recipe_Ingredients},
   Recipe_Nutrition: {screen: Recipe_Nutrition},
   Recipe_Search: {screen: Recipe_Search},
+  Recipe_Bookmarked: {screen: Recipe_Bookmarked},
 },{
   initialRouteName: 'RecSys',
   navigationOptions: {
@@ -55,6 +57,11 @@ function renderDefaultFooter(props) {
           >
             <Icon name="search" />
           </Button> */}
+          <Button 
+            onPress={() => {props.navigation.navigate("Recipe_Bookmarked")}}
+          >
+            <Icon type='Ionicons' name='ios-bookmark' />
+          </Button>
         </FooterTab>
       </Footer>
     );
