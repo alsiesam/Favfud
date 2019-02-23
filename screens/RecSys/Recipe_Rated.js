@@ -9,7 +9,7 @@ import * as func from './Recipe_Functions.js';
 const width = Dimensions.get('window').width - 40; //full width
 const height = Dimensions.get('window').height; //full height
 
-export default class Recipe_Bookmarked extends Component {
+export default class Recipe_Rated extends Component {
   
     constructor(props){
       super(props);
@@ -17,19 +17,19 @@ export default class Recipe_Bookmarked extends Component {
         isLoading: true,
         isRefreshing: false,
         dataSource: [],
-        bookmarked_recipe_ids: '',
+        rated_recipe_ids: '',
         hasScrolled: false,
       }
     }
 
     componentDidMount() {
-        AsyncStorage.getItem('bookmarked_recipe')
+        AsyncStorage.getItem('recipe_ratings')
         .then((recipes) => {
-            const r = recipes ? JSON.parse(recipes) : [];
-            if(r.length != 0 && r.join(',') != this.state.bookmarked_recipe_ids){
+            const r = recipes ? Object.keys(JSON.parse(recipes)) : [];
+            if(r.length != 0 && r.join(',') != this.state.rated_recipe_ids){
                 ids_str = r.join(',');
-                this.setState({bookmarked_recipe_ids: ids_str});
-                this.fetchData(this.state.bookmarked_recipe_ids);
+                this.setState({rated_recipe_ids: ids_str});
+                this.fetchData(this.state.rated_recipe_ids);
             }
         });
         AsyncStorage.getItem('user_token')
@@ -42,25 +42,27 @@ export default class Recipe_Bookmarked extends Component {
     }
 
     getRefreshedData() {
-        func.fetchBookmarkedRecipes(this.state.user_token);
-        AsyncStorage.getItem('bookmarked_recipe')
+        //this.setState({isLoading: true,});
+        func.fetchRatedRecipes(this.state.user_token);
+        AsyncStorage.getItem('recipe_ratings')
         .then((recipes) => {
-            const r1 = recipes ? JSON.parse(recipes) : [];
-            r2 = this.state.bookmarked_recipe_ids.split(',');
+            const r1 = recipes ? Object.keys(JSON.parse(recipes)) : [];
+            r2 = this.state.rated_recipe_ids.split(',');
             diff_ids = func.arr_diff(r1, r2);
-            //console.log(diff_ids);
+            console.log(diff_ids);
             if(diff_ids["more"].length != 0) {
                 this.setState({isLoading: true,});
-                this.setState({bookmarked_recipe_ids: r1.join(',')});
+                this.setState({rated_recipe_ids: r1.join(',')});
                 ids_str = diff_ids["more"].join(',');
                 this.fetchData(ids_str);
             }
             if(diff_ids["less"].length != 0) {
-                this.setState({bookmarked_recipe_ids: r1.join(',')});
+                this.setState({rated_recipe_ids: r1.join(',')});
                 for(var i = 0; i < diff_ids["less"].length; i++){
                     this.setState({ dataSource: this.state.dataSource.filter(function(rec) {return rec.id != diff_ids["less"][i];}) });
                 };
             }
+            //this.setState({isLoading: false,});
         });
     }
 
@@ -95,11 +97,11 @@ export default class Recipe_Bookmarked extends Component {
         this.setState({ isRefreshing: false });
     }
 
-    renderBookmarkedRecipes() {
+    renderRatedRecipes() {
         const {navigate} = this.props.navigation;
         data = this.state.dataSource;
         if(data.length == 0){
-            return(<Container style={styles.center}><Text style={styles.remind_text}>There is no bookmarked recipe</Text><Text style={styles.remind_text}>at this moment.</Text></Container>);
+            return(<Container style={styles.center}><Text style={styles.remind_text}>There is no rated recipe</Text><Text style={styles.remind_text}>at this moment.</Text></Container>);
         } else {
             return(
                 <FlatList
@@ -142,7 +144,7 @@ export default class Recipe_Bookmarked extends Component {
                     <Header>
                             <Left />
                             <Body>
-                                <Title>Bookmarked</Title>
+                                <Title>Rated</Title>
                             </Body>
                             <Right />
                     </Header>
@@ -161,12 +163,12 @@ export default class Recipe_Bookmarked extends Component {
                     <Header>
                     <Left />
                     <Body>
-                        <Title>Bookmarked</Title>
+                        <Title>Rated</Title>
                     </Body>
                     <Right />
                     </Header>
                     <Container style={styles.screen_container}>
-                        {this.renderBookmarkedRecipes()}
+                        {this.renderRatedRecipes()}
                     </Container>
                 </Container>
             );

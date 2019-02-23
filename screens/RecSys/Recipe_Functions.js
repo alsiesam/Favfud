@@ -1,3 +1,5 @@
+import { AsyncStorage } from 'react-native';
+
 export function secondsToHms(d) {
     //console.log(d);
     d = Number(d);
@@ -26,4 +28,43 @@ export function arr_diff(a1, a2) {
     result["more"] = more;
     result["less"] = less;
     return result;
+}
+
+
+export function fetchBookmarkedRecipes(user_token) {
+    fetch('http://django-fyp.herokuapp.com/recsys/interaction/enquire/bookmark/', {
+      headers: new Headers ({
+        usertoken: user_token,
+      }),
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if('result' in responseJson){
+        arr = responseJson['result']
+        for(var i = 0; i < arr.length; i++){
+          arr[i] = arr[i].toString()
+        }
+        AsyncStorage.setItem('bookmarked_recipe', JSON.stringify(arr));
+      } else {
+        AsyncStorage.setItem('bookmarked_recipe', JSON.stringify([]));
+      }
+    })
+    .catch((error) =>{
+      console.error(error);
+    });
+  }
+
+export function fetchRatedRecipes(user_token) {
+    fetch('http://django-fyp.herokuapp.com/recsys/interaction/enquire/rating/', {
+      headers: new Headers ({
+        usertoken: user_token,
+      }),
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      AsyncStorage.setItem('recipe_ratings', JSON.stringify(responseJson));
+    })
+    .catch((error) =>{
+      console.error(error);
+    });
 }

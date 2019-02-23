@@ -27,43 +27,45 @@ export default class RecSys extends Component {
         randomRecipes: [],
         //hasScrolled: false,
         //pageNum: 0,
-        user_token: 'abc1234',
-        user_name: 'Guest',
         greeting: 'Hi, Guest.',
       }
     }
 
-    componentWillMount(){
-      this.fetchFavoriteRecipes();
-      this.fetchPopularRecipes();
-      this.fetchRandomRecipes();
-      var d = new Date();
-      var n = d.getHours();
-      var greet = 'Hi';
-      if(n >= 6 && n < 12) {
-        greet = 'Good morning, ';
-      } else if(n >= 12 && n < 18) {
-        greet = 'Good Afternoon, ';
-      } else {
-        greet = 'Good night, ';
-      }
+    componentDidMount(){
       AsyncStorage.getItem('user_token')
       .then((ut) => {
         if(ut){
           this.setState({user_token: ut});
         }
+        this.fetchFavoriteRecipes();
+        this.fetchPopularRecipes();
+        this.fetchRandomRecipes();
       });
       AsyncStorage.getItem('user_name')
       .then((un) => {
         if(un){
           this.setState({user_name: un});
+          var d = new Date();
+          var n = d.getHours();
+          var greet = 'Hi';
+          if(n >= 6 && n < 12) {
+            greet = 'Good morning, ';
+          } else if(n >= 12 && n < 18) {
+            greet = 'Good Afternoon, ';
+          } else {
+            greet = 'Good night, ';
+          }
+          this.setState({greeting: greet+this.state.user_name+'.'})
         }
       });
-      this.setState({greeting: greet+this.state.user_name+'.'})
     }
 
     fetchFavoriteRecipes() {
-      return fetch('http://django-fyp.herokuapp.com/recsys/id/ids/1-8')
+      return fetch('http://django-fyp.herokuapp.com/recsys/recommendation/yrfav/', {
+        headers: new Headers ({
+          usertoken: this.state.user_token,
+        }),
+      })
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
@@ -82,7 +84,7 @@ export default class RecSys extends Component {
     }
 
     fetchPopularRecipes() {
-      return fetch('http://django-fyp.herokuapp.com/recsys/id/random/8')
+      return fetch('http://django-fyp.herokuapp.com/recsys/recommendation/popular/')
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
@@ -101,7 +103,7 @@ export default class RecSys extends Component {
     }
 
     fetchRandomRecipes() {
-      return fetch('http://django-fyp.herokuapp.com/recsys/id/random/8')
+      return fetch('http://django-fyp.herokuapp.com/recsys/recipe/id/random/8')
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({

@@ -24,22 +24,32 @@ export default class Recipe_Information extends Component {
     }
   }
 
-  componentWillMount(){
-    //console.log("mounted");
-    //console.log(thi.state,user_token);
+  componentWillMount() {
+    //console.log("Will:"+this.state.recipe.id.toString());
+  }
+
+  componentDidMount(){
     this.updateInteraction('tapview');
     this.fetchSimilarRecipes(this.state.recipe);
+    //console.log("Did:"+this.state.recipe.id.toString());
     recipe_id = this.state.recipe.id.toString();
     AsyncStorage.getItem('bookmarked_recipe')
     .then((recipes) => {
       const r = recipes ? JSON.parse(recipes) : [];
+
+      //console.log(r);
+
       if(r.includes(recipe_id)){
         this.setState({bookmarked: true});
       }
+
     });
     AsyncStorage.getItem('recipe_ratings')
     .then((ratings) => {
       const rat = ratings ? JSON.parse(ratings) : {};
+
+      //console.log(rat);
+
       if(recipe_id in rat){
         this.setState({recipe_rating: rat[recipe_id]});
       }
@@ -47,6 +57,7 @@ export default class Recipe_Information extends Component {
         isLoading: false
       });
     });
+
   }
 
   updateInteraction(act, remarks) {
@@ -64,8 +75,8 @@ export default class Recipe_Information extends Component {
       default:
         break;
     }
-    console.log(update_header);
-    fetch('http://django-fyp.herokuapp.com/recsys/interaction/', {
+    //console.log(update_header);
+    fetch('http://django-fyp.herokuapp.com/recsys/interaction/update/', {
       method: 'POST',
       headers: new Headers (update_header),
     })
@@ -79,7 +90,7 @@ export default class Recipe_Information extends Component {
   }
 
   fetchSimilarRecipes(recipe) {
-    return fetch('http://django-fyp.herokuapp.com/recsys/id/ids', {
+    return fetch('http://django-fyp.herokuapp.com/recsys/recipe/id/ids', {
       headers: new Headers ({
         ids: recipe.similar_recipe_id.split('$')
       }),
@@ -235,7 +246,7 @@ export default class Recipe_Information extends Component {
     .then((ratings) => {
       const rat = ratings ? JSON.parse(ratings) : {};
       const newValue = this.state.recipe.id.toString();
-      rat[newValue] = _rating;
+      rat[newValue] = _rating.toString();
       AsyncStorage.setItem('recipe_ratings', JSON.stringify(rat));
     });
     this.updateInteraction('rating', {rating: _rating});
@@ -279,6 +290,7 @@ export default class Recipe_Information extends Component {
               //onFinishRating={this.ratingCompleted}
               style={{ }}
             />
+            <Text style={{fontSize: 12}}> ({this.state.recipe.rating})</Text>
           </Row>;
         }
 
