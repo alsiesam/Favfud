@@ -152,27 +152,29 @@ export default class Recipe_Information extends Component {
               </Text>
           </Row>
           <FlatList
-              horizontal={true}
-              data={this.state.similar_recipes}
-              renderItem={({ item: rowData }) => {
-              return(
-                <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
-                  <Card
-                    image={{ 
-                      uri: rowData.imageurlsbysize_360 
-                    }}
-                    imageStyle={styles.related_recipe_image}
-                    containerStyle={[styles.related_recipe_container]}
-                  >
-                  <Text numberOfLines={3}>{rowData.recipe_name}</Text>
-                  </Card>
-                </TouchableOpacity>
-              );
-              }}
-              keyExtractor={(item, index) => index.toString()}
-              contentContainerStyle={[]}
-              showsHorizontalScrollIndicator={false}
-            />
+                  horizontal={horizontal}
+                  data={this.state.similar_recipes}
+                  numColumns={numCol}
+                  renderItem={({ item: rowData }) => {
+                    return(
+                      <View style={{marginTop: 20, marginRight: 30, marginBottom: 20,}}>
+                        <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
+                          <Image
+                            style={styles.recipe_image}
+                            source={{uri: rowData.imageurlsbysize_360}}
+                          />
+                          <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
+                            <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
+                              {rowData.recipe_name}
+                            </Text>
+                          </Row>
+                        </TouchableOpacity> 
+                      </View>
+                    );
+                  }}
+                  keyExtractor={(item, index) => index.toString()}
+                  showsHorizontalScrollIndicator={false}
+          />
       </Grid>
     );
   }
@@ -439,6 +441,7 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
   },
   recipe_image: {
+    marginBottom: 5,
     width: 180,
     height: 180,
     backgroundColor: 'transparent',

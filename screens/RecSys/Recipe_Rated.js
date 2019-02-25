@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StatusBar, StyleSheet, View, ActivityIndicator, Text, FlatList, AsyncStorage, TouchableOpacity} from 'react-native';
+import { Platform, Dimensions, StatusBar, StyleSheet, View, ActivityIndicator, Text, FlatList, AsyncStorage, TouchableOpacity, Image} from 'react-native';
 import { SearchBar, } from "react-native-elements";
 import { Card, } from "react-native-elements";
 import { Container, Header, Content, CardItem, Body, Title, Left, Right, Subtitle, Button, Icon, } from "native-base";
@@ -49,7 +49,7 @@ export default class Recipe_Rated extends Component {
             const r1 = recipes ? Object.keys(JSON.parse(recipes)) : [];
             r2 = this.state.rated_recipe_ids.split(',');
             diff_ids = func.arr_diff(r1, r2);
-            console.log(diff_ids);
+            //console.log(diff_ids);
             if(diff_ids["more"].length != 0) {
                 this.setState({isLoading: true,});
                 this.setState({rated_recipe_ids: r1.join(',')});
@@ -101,12 +101,15 @@ export default class Recipe_Rated extends Component {
         const {navigate} = this.props.navigation;
         data = this.state.dataSource;
         if(data.length == 0){
-            return(<Container style={styles.center}><Text style={styles.remind_text}>There is no rated recipe</Text><Text style={styles.remind_text}>at this moment.</Text></Container>);
+            return(
+                <Container style={styles.center}>
+                    <Text style={styles.remind_text}>There is no rated recipe</Text>
+                    <Text style={styles.remind_text}>at this moment.</Text>
+                </Container>
+            );
         } else {
             return(
                 <FlatList
-                    //horizontal
-                    style={{flexGrow:1}}
                     data={data}
                     onRefresh={() => this.refresh()}
                     refreshing={this.state.isRefreshing}
@@ -115,8 +118,12 @@ export default class Recipe_Rated extends Component {
                     numColumns={2}
                     renderItem={({ item: rowData }) => {
                       return(
-                          <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
-                          <Card
+                        <View style={styles.recipe_container}>
+                          <TouchableOpacity 
+                          key={rowData.id} 
+                          onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}
+                          >
+                          {/* <Card
                             image={{ 
                             uri: rowData.imageurlsbysize_360 
                             }}
@@ -124,12 +131,22 @@ export default class Recipe_Rated extends Component {
                             containerStyle={[styles.recipe_container]}
                           >
                           <Row style={{height: 50}}><Text numberOfLines={2}>{rowData.recipe_name}</Text></Row>
-                          </Card>
+                          </Card> */}
+                            <Image
+                                style={styles.recipe_image}
+                                source={{uri: rowData.imageurlsbysize_360}}
+                            />
+                            <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
+                                <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
+                                {rowData.recipe_name}
+                                </Text>
+                            </Row>
                           </TouchableOpacity>
+                        </View>
                       );
                     }}
                     keyExtractor={(item, index) => index.toString()}
-                    contentContainerStyle={[{width: width, marginBottom: 30,}, styles.center]}
+                    contentContainerStyle={[{width: width + 40, marginBottom: 30,}, styles.center]}
                     // onEndReached={(x)=>{this.displayRecipe()}}
                     // onEndReachedThreshold={0.5}
                 />
@@ -192,23 +209,25 @@ export default class Recipe_Rated extends Component {
         color: 'gray',
     },
     recipe_container: {
-        padding: 0,
-        width: width/2-10,
+        margin: 15,
+        marginTop: 20,
+        width: width/2-20,
         borderColor: 'transparent',
         backgroundColor: 'transparent',
         justifyContent: 'center',
-      },
-      recipe_image: {
-        width: width/2-10,
-        height: width/2-10,
+    },
+    recipe_image: {
+        marginBottom: 5,
+        width: width/2-20,
+        height: width/2-20,
         backgroundColor: 'transparent',
         alignSelf: 'center',
-      },
-      recipe_text: {
+    },
+    recipe_text: {
         marginBottom: 10,
         textAlignVertical: "center",
         textAlign: 'center',
         backgroundColor: 'transparent',
-      },
+    },
   });
   

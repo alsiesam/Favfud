@@ -1,4 +1,6 @@
-import { AsyncStorage } from 'react-native';
+import React, { Component } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, AsyncStorage} from 'react-native';
+import { Col, Row, Grid } from "react-native-easy-grid";
 
 export function secondsToHms(d) {
     //console.log(d);
@@ -68,3 +70,55 @@ export function fetchRatedRecipes(user_token) {
       console.error(error);
     });
 }
+
+export function renderRecipes(data, horizontal, numCol, navigate, state) {
+  return(
+      <FlatList
+                  horizontal={horizontal}
+                  data={data}
+                  numColumns={numCol}
+                  renderItem={({ item: rowData }) => {
+                    return(
+                      <View style={{marginTop: 20, marginLeft: 20, marginRight: 20, marginBottom: 20,}}>
+                        <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: state.user_token}, key: 'Info'+rowData.id})}>
+                          <Image
+                            style={styles.recipe_image}
+                            source={{uri: rowData.imageurlsbysize_360}}
+                          />
+                          <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
+                            <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
+                              {rowData.recipe_name}
+                            </Text>
+                          </Row>
+                        </TouchableOpacity> 
+                      </View>
+                    );
+                  }}
+                  keyExtractor={(item, index) => index.toString()}
+                  showsHorizontalScrollIndicator={false}
+      />
+  );
+}
+
+const styles = StyleSheet.create({
+  recipe_image: {
+    marginBottom: 5,
+    width: 150,
+    height: 150,
+    backgroundColor: 'transparent',
+    alignSelf: 'center',
+  },
+  recipe_text: {
+    marginBottom: 10,
+    textAlignVertical: "center",
+    textAlign: 'center',
+    backgroundColor: 'transparent',
+  },
+  content: {
+    paddingTop: 0,
+  },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

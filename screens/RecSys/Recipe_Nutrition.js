@@ -91,7 +91,7 @@ export default class Recipe_Nutrition extends Component {
                     <Right />
                 </Header>
                 <Container style={styles.screen_container}>
-                    <Content style={[{width: width, paddingTop: 20,}]}>
+                    <Content style={[{width: width+40, paddingTop: 20,}]}>
                         <Avatar
                         xlarge
                         rounded

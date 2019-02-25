@@ -8,6 +8,7 @@ import { Container, Header, Content,
 CardItem, Body, Title, Left, Right, Subtitle, Button, Icon} from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import Carousel from 'react-native-snap-carousel';
+import * as func from './Recipe_Functions.js';
 
 const width = Dimensions.get('window').width; //full width
 const height = Dimensions.get('window').height; //full height
@@ -194,108 +195,13 @@ export default class RecSys extends Component {
                   <Text style={[styles.title]}>{this.state.greeting}</Text>
                   {/* <Divider style={{ marginBottom: 20, }} /> */}
                   <Text style={[styles.subtitle]}>Your Favorites</Text>
-                  <FlatList
-                      horizontal={true}
-                      data={this.state.favoriteRecipes}
-                      // onRefresh={() => this.refresh()}
-                      // refreshing={this.state.isFetching}
-                      // onScroll={this.handleOnScroll.bind(this)}
-                      // scrollEventThrottle={500}
-                      // numColumns={1}
-                      renderItem={({ item: rowData }) => {
-                        return(
-                            <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
-                            <Card
-                              //title={rowData.recipe_name}
-                              image={{ 
-                              uri: rowData.imageurlsbysize_360 
-                              }}
-                              imageStyle={styles.recipe_image}
-                              containerStyle={[styles.recipe_container]}
-                            >
-                            <Row style={{height: 50}}><Text numberOfLines={2}>{rowData.recipe_name}</Text></Row>
-                            </Card>
-                            {/* <Card transparent>
-                              <CardItem>
-                                <Image source={{uri: rowData.imageurlsbysize_360 }} style={styles.recipe_image} />
-                              </CardItem>
-                              <CardItem>
-                                <Row style={{height: 50}}><Text numberOfLines={2}>{rowData.recipe_name}</Text></Row>
-                              </CardItem>
-                            </Card> */}
-                            </TouchableOpacity> 
-                        );
-                      }}
-                      keyExtractor={(item, index) => index.toString()}
-                      contentContainerStyle={[{marginBottom: 20,}, styles.center]}
-                      //onEndReached={(x)=>{this.displayRecipe()}}
-                      //onEndReachedThreshold={0.5}
-                      showsHorizontalScrollIndicator={false}
-                  />
+                  {func.renderRecipes(this.state.favoriteRecipes, horizontal=true, numCol=1, navigate, this.state)}
                   <Divider style={{ marginBottom: 20, }} />
                   <Text style={[styles.subtitle]}>Popular Cuisines</Text>
-                  <FlatList
-                      horizontal={true}
-                      data={this.state.popularRecipes}
-                      // onRefresh={() => this.refresh()}
-                      // refreshing={this.state.isFetching}
-                      // onScroll={this.handleOnScroll.bind(this)}
-                      // scrollEventThrottle={500}
-                      // numColumns={1}
-                      renderItem={({ item: rowData }) => {
-                        return(
-                          <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
-                            <Card
-                              //title={rowData.recipe_name}
-                              image={{ 
-                              uri: rowData.imageurlsbysize_360 
-                              }}
-                              imageStyle={styles.recipe_image}
-                              containerStyle={[styles.recipe_container]}
-                            >
-                            <Row style={{height: 50}}><Text numberOfLines={2}>{rowData.recipe_name}</Text></Row>
-                            </Card>
-                            </TouchableOpacity>
-                        );
-                      }}
-                      keyExtractor={(item, index) => index.toString()}
-                      contentContainerStyle={[{marginBottom: 20,}, styles.center]}
-                      //onEndReached={(x)=>{this.displayRecipe()}}
-                      //onEndReachedThreshold={0.5}
-                      showsHorizontalScrollIndicator={false}
-                  />
+                  {func.renderRecipes(this.state.popularRecipes, horizontal=true, numCol=1, navigate, this.state)}
                   <Divider style={{ marginBottom: 20, }} />
                   <Text style={[styles.subtitle]}>Random Picks</Text>
-                  <FlatList
-                      horizontal={true}
-                      data={this.state.randomRecipes}
-                      // onRefresh={() => this.refresh()}
-                      // refreshing={this.state.isFetching}
-                      // onScroll={this.handleOnScroll.bind(this)}
-                      // scrollEventThrottle={500}
-                      // numColumns={1}
-                      renderItem={({ item: rowData }) => {
-                        return(
-                          <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
-                            <Card
-                              //title={rowData.recipe_name}
-                              image={{ 
-                              uri: rowData.imageurlsbysize_360 
-                              }}
-                              imageStyle={styles.recipe_image}
-                              containerStyle={[styles.recipe_container]}
-                            >
-                            <Row style={{height: 50}}><Text numberOfLines={2}>{rowData.recipe_name}</Text></Row>
-                            </Card>
-                            </TouchableOpacity>
-                        );
-                      }}
-                      keyExtractor={(item, index) => index.toString()}
-                      contentContainerStyle={[{marginBottom: 20,}, styles.center]}
-                      //onEndReached={(x)=>{this.displayRecipe()}}
-                      //onEndReachedThreshold={0.5}
-                      showsHorizontalScrollIndicator={false}
-                  />
+                  {func.renderRecipes(this.state.randomRecipes, horizontal=true, numCol=1, navigate, this.state)}
                   {/* <Carousel
                     ref={(c) => { this._carousel = c; }}
                     data={this.state.displayData}
@@ -344,25 +250,6 @@ export default class RecSys extends Component {
       marginRight: 20,
       fontSize: 20,
       fontWeight: 'bold'
-    },
-    recipe_container: {
-      padding: 0,
-      width: 160,
-      borderColor: 'transparent',
-      backgroundColor: 'transparent',
-      justifyContent: 'center',
-    },
-    recipe_image: {
-      width: 150,
-      height: 150,
-      backgroundColor: 'transparent',
-      alignSelf: 'center',
-    },
-    recipe_text: {
-      marginBottom: 10,
-      textAlignVertical: "center",
-      textAlign: 'center',
-      backgroundColor: 'transparent',
     },
     content: {
       paddingTop: 0,

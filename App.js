@@ -128,6 +128,9 @@ export default class App extends React.Component {
       Roboto_medium: require("native-base/Fonts/Roboto_medium.ttf"),
       Ionicons: require("@expo/vector-icons/fonts/Ionicons.ttf"),
     });
+  }
+
+  componentDidMount() {
     AsyncStorage.setItem('user_token', this.state.user_token);
     AsyncStorage.setItem('user_name', this.state.user_name);
     func.fetchBookmarkedRecipes(this.state.user_token);
