@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, AsyncStorage} from 'react-native';
+import { Divider } from "react-native-elements";
 import { Col, Row, Grid } from "react-native-easy-grid";
 
 export function secondsToHms(d) {
@@ -71,32 +72,43 @@ export function fetchRatedRecipes(user_token) {
     });
 }
 
-export function renderRecipes(data, horizontal, numCol, navigate, state) {
+export function renderMainMenuRecipes(title, data, want_divider, navigate, state) {
+  if(Object.keys(data[0]).length == 0){
+    return;
+  }
+  divider = null;
+  if(want_divider){
+    divider = <Divider style={{ marginBottom: 20, }} />
+  }
   return(
-      <FlatList
-                  horizontal={horizontal}
-                  data={data}
-                  numColumns={numCol}
-                  renderItem={({ item: rowData }) => {
-                    return(
-                      <View style={{marginTop: 20, marginLeft: 20, marginRight: 20, marginBottom: 20,}}>
-                        <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: state.user_token}, key: 'Info'+rowData.id})}>
-                          <Image
-                            style={styles.recipe_image}
-                            source={{uri: rowData.imageurlsbysize_360}}
-                          />
-                          <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
-                            <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
-                              {rowData.recipe_name}
-                            </Text>
-                          </Row>
-                        </TouchableOpacity> 
-                      </View>
-                    );
-                  }}
-                  keyExtractor={(item, index) => index.toString()}
-                  showsHorizontalScrollIndicator={false}
-      />
+      <View>
+        <Text style={[styles.subtitle]}>{title}</Text>
+        <FlatList
+                    horizontal={true}
+                    data={data}
+                    numColumns={1}
+                    renderItem={({ item: rowData }) => {
+                      return(
+                        <View style={{marginTop: 20, marginLeft: 20, marginRight: 20, marginBottom: 20,}}>
+                          <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: state.user_token}, key: 'Info'+rowData.id})}>
+                            <Image
+                              style={styles.recipe_image}
+                              source={{uri: rowData.imageurlsbysize_360}}
+                            />
+                            <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
+                              <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
+                                {rowData.recipe_name}
+                              </Text>
+                            </Row>
+                          </TouchableOpacity> 
+                        </View>
+                      );
+                    }}
+                    keyExtractor={(item, index) => index.toString()}
+                    showsHorizontalScrollIndicator={false}
+        />
+        {divider}
+      </View>
   );
 }
 
@@ -120,5 +132,12 @@ const styles = StyleSheet.create({
   center: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  subtitle: {
+    marginTop: 20,
+    marginLeft: 20,
+    marginRight: 20,
+    fontSize: 20,
+    fontWeight: 'bold'
   },
 });

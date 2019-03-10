@@ -77,7 +77,7 @@ export default class Recipe_Nutrition extends Component {
         //console.log(recipe);
         return(
             <Container>
-                <Header>
+                {/* <Header>
                     <Left>
                         <Button transparent onPress={()=>navigate({routeName: 'Recipe_Information', params: {recipe: recipe}, key: 'Info'+recipe.id})}>
                         <Icon name="arrow-back" />
@@ -89,7 +89,7 @@ export default class Recipe_Nutrition extends Component {
                         <Subtitle> Nutrition Fact </Subtitle>
                     </Body>
                     <Right />
-                </Header>
+                </Header> */}
                 <Container style={styles.screen_container}>
                     <Content style={[{width: width+40, paddingTop: 20,}]}>
                         <Avatar
@@ -127,6 +127,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 20,
         paddingTop: 20,
+        paddingLeft: 10,
+        paddingRight: 10,
         paddingBottom: 20,
     },
     center: {

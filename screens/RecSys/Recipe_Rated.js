@@ -10,7 +10,11 @@ const width = Dimensions.get('window').width - 40; //full width
 const height = Dimensions.get('window').height; //full height
 
 export default class Recipe_Rated extends Component {
-  
+
+    static navigationOptions = {
+        title: 'Rated Recipes',
+    };
+    
     constructor(props){
       super(props);
       this.state = { 
@@ -26,7 +30,9 @@ export default class Recipe_Rated extends Component {
         AsyncStorage.getItem('recipe_ratings')
         .then((recipes) => {
             const r = recipes ? Object.keys(JSON.parse(recipes)) : [];
-            if(r.length != 0 && r.join(',') != this.state.rated_recipe_ids){
+            if(r.length == 0) {
+                this.setState({isLoading: false});
+            } else if(r.join(',') != this.state.rated_recipe_ids){
                 ids_str = r.join(',');
                 this.setState({rated_recipe_ids: ids_str});
                 this.fetchData(this.state.rated_recipe_ids);
@@ -158,13 +164,13 @@ export default class Recipe_Rated extends Component {
         if (this.state.isLoading) {
             return(
                 <Container>
-                    <Header>
+                    {/* <Header>
                             <Left />
                             <Body>
                                 <Title>Rated</Title>
                             </Body>
                             <Right />
-                    </Header>
+                    </Header> */}
                     <Container style={styles.screen_container}>
                         <StatusBar
                             barStyle="light-content"
@@ -177,13 +183,13 @@ export default class Recipe_Rated extends Component {
         } else {
             return(
                 <Container>
-                    <Header>
+                    {/* <Header>
                     <Left />
                     <Body>
                         <Title>Rated</Title>
                     </Body>
                     <Right />
-                    </Header>
+                    </Header> */}
                     <Container style={styles.screen_container}>
                         {this.renderRatedRecipes()}
                     </Container>

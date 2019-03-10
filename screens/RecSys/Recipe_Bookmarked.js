@@ -10,6 +10,10 @@ const width = Dimensions.get('window').width - 40; //full width
 const height = Dimensions.get('window').height; //full height
 
 export default class Recipe_Bookmarked extends Component {
+
+    static navigationOptions = {
+        title: 'Bookmarked Recipes',
+    };
   
     constructor(props){
       super(props);
@@ -26,7 +30,9 @@ export default class Recipe_Bookmarked extends Component {
         AsyncStorage.getItem('bookmarked_recipe')
         .then((recipes) => {
             const r = recipes ? JSON.parse(recipes) : [];
-            if(r.length != 0 && r.join(',') != this.state.bookmarked_recipe_ids){
+            if(r.length == 0) {
+                this.setState({isLoading: false});
+            } else if(r.join(',') != this.state.bookmarked_recipe_ids){
                 ids_str = r.join(',');
                 this.setState({bookmarked_recipe_ids: ids_str});
                 this.fetchData(this.state.bookmarked_recipe_ids);
@@ -156,13 +162,13 @@ export default class Recipe_Bookmarked extends Component {
         if (this.state.isLoading) {
             return(
                 <Container>
-                    <Header>
+                    {/* <Header>
                             <Left />
                             <Body>
                                 <Title>Bookmarked</Title>
                             </Body>
                             <Right />
-                    </Header>
+                    </Header> */}
                     <Container style={styles.screen_container}>
                         <StatusBar
                             barStyle="light-content"
@@ -175,13 +181,13 @@ export default class Recipe_Bookmarked extends Component {
         } else {
             return(
                 <Container>
-                    <Header>
+                    {/* <Header>
                     <Left />
                     <Body>
                         <Title>Bookmarked</Title>
                     </Body>
                     <Right />
-                    </Header>
+                    </Header> */}
                     <Container style={styles.screen_container}>
                         {this.renderBookmarkedRecipes()}
                     </Container>

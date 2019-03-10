@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Platform, Dimensions, StatusBar, StyleSheet, View, Text, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, ScrollView, Image, AsyncStorage} from 'react-native';
-import { AppLoading, Asset, Font } from 'expo';
 import { Rating, Divider } from "react-native-elements";
 import { Card, } from "react-native-elements";
 import { Container, Header, Content, 
@@ -13,9 +12,26 @@ import * as func from './Recipe_Functions.js';
 const width = Dimensions.get('window').width; //full width
 const height = Dimensions.get('window').height; //full height
 
+const async_storage_keys = ['user_token', 'email_address'];
+
 const span = 5
 
+// const NavigationBar = (props) => {
+//   console.log(props);
+//   icon_name = Platform.OS === 'ios' ? 'ios-menu' : 'md-menu'
+//   return(
+//     <Button transparent onPress={() => Alert.alert('aaa')}>
+//       <Icon name={icon_name} style={{marginLeft: 20, color: 'black'}}/>
+//     </Button>
+//   );
+// }
+
 export default class RecSys extends Component {
+
+    static navigationOptions = ({navigation}) => ({
+      title: 'RecSys',
+      //headerLeft: <NavigationBar />,
+    });
   
     constructor(props){
       super(props);
@@ -23,9 +39,9 @@ export default class RecSys extends Component {
         isLoading: true,
         isFetching: false,
         dataSource: [],
-        favoriteRecipes: [],
-        popularRecipes: [],
-        randomRecipes: [],
+        favoriteRecipes: [{}],
+        popularRecipes: [{}],
+        randomRecipes: [{}],
         //hasScrolled: false,
         //pageNum: 0,
         greeting: 'Hi, Guest.',
@@ -33,19 +49,19 @@ export default class RecSys extends Component {
     }
 
     componentDidMount(){
-      AsyncStorage.getItem('user_token')
-      .then((ut) => {
-        if(ut){
-          this.setState({user_token: ut});
+      AsyncStorage.multiGet(async_storage_keys).then((response) => {
+        var user_token = response[0][1];
+        var user_name = response[1][1];
+        if(user_token){
+          this.setState({user_token: user_token});
+          this.fetchFavoriteRecipes(this.state.user_token);
+          this.fetchPopularRecipes();
+          this.fetchRandomRecipes();
+          func.fetchBookmarkedRecipes(this.state.user_token);
+          func.fetchRatedRecipes(this.state.user_token);
         }
-        this.fetchFavoriteRecipes();
-        this.fetchPopularRecipes();
-        this.fetchRandomRecipes();
-      });
-      AsyncStorage.getItem('user_name')
-      .then((un) => {
-        if(un){
-          this.setState({user_name: un});
+        if(user_name){
+          this.setState({user_name: user_name});
           var d = new Date();
           var n = d.getHours();
           var greet = 'Hi';
@@ -58,19 +74,23 @@ export default class RecSys extends Component {
           }
           this.setState({greeting: greet+this.state.user_name+'.'})
         }
+        this.setState({isLoading: false,})
       });
     }
 
-    fetchFavoriteRecipes() {
+    fetchFavoriteRecipes(user_token) {
+      if(!user_token){
+        return;
+      }
       return fetch('http://django-fyp.herokuapp.com/recsys/recommendation/yrfav/', {
         headers: new Headers ({
-          usertoken: this.state.user_token,
+          usertoken: user_token,
         }),
       })
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
-          isLoading: false,
+          //isLoading: false,
           //dataSource: [...this.state.dataSource, ...responseJson],
           favoriteRecipes: responseJson, //responseJson.slice(0, span),
           //pageNum: this.state.pageNum + 1
@@ -104,7 +124,7 @@ export default class RecSys extends Component {
     }
 
     fetchRandomRecipes() {
-      return fetch('http://django-fyp.herokuapp.com/recsys/recipe/id/random/8')
+      return fetch('http://django-fyp.herokuapp.com/recsys/recommendation/random/8')
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
@@ -179,29 +199,26 @@ export default class RecSys extends Component {
             </Container>
             )
         }
-
         return(
           <Container>
-            <Header>
+            {/* <Header>
             <Left />
               <Body>
                 <Title>RecSys</Title>
               </Body>
             <Right />
-            </Header>
+            </Header> */}
             <Container style={styles.screen_container}>
               {/* <Content style={[styles.content, ]}> */}
                 <ScrollView>
                   <Text style={[styles.title]}>{this.state.greeting}</Text>
                   {/* <Divider style={{ marginBottom: 20, }} /> */}
-                  <Text style={[styles.subtitle]}>Your Favorites</Text>
-                  {func.renderRecipes(this.state.favoriteRecipes, horizontal=true, numCol=1, navigate, this.state)}
-                  <Divider style={{ marginBottom: 20, }} />
-                  <Text style={[styles.subtitle]}>Popular Cuisines</Text>
-                  {func.renderRecipes(this.state.popularRecipes, horizontal=true, numCol=1, navigate, this.state)}
-                  <Divider style={{ marginBottom: 20, }} />
-                  <Text style={[styles.subtitle]}>Random Picks</Text>
-                  {func.renderRecipes(this.state.randomRecipes, horizontal=true, numCol=1, navigate, this.state)}
+                  
+                  {func.renderMainMenuRecipes('Your Favorites', this.state.favoriteRecipes, want_divider=true, navigate, this.state)}
+                  {func.renderMainMenuRecipes('Popular Cuisines', this.state.popularRecipes, want_divider=true, navigate, this.state)}
+                  {func.renderMainMenuRecipes('Random Picks', this.state.randomRecipes, want_divider=false, navigate, this.state)}
+
+
                   {/* <Carousel
                     ref={(c) => { this._carousel = c; }}
                     data={this.state.displayData}
@@ -235,8 +252,8 @@ export default class RecSys extends Component {
   const styles = StyleSheet.create({
     screen_container: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      //justifyContent: 'center',
+      //alignItems: 'center',
       //backgroundColor: 'skyblue',
     },
     title: {

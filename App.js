@@ -1,152 +1,93 @@
-import RecSys from './screens/RecSys/RecSys';
-import Recipe_Information from './screens/RecSys/Recipe_Information';
-//import Recipe_Cooking_Time from './screens/RecSys/Recipe_Cooking_Time';
-//import Recipe_Ingredients from './screens/RecSys/Recipe_Ingredients';
-import Recipe_Nutrition from './screens/RecSys/Recipe_Nutrition';
-import Recipe_Search from './screens/RecSys/Recipe_Search';
-import Recipe_Bookmarked from './screens/RecSys/Recipe_Bookmarked';
-import Recipe_Rated from './screens/RecSys/Recipe_Rated';
-import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
-import React from "react";
-import { Platform, StatusBar, Text, AsyncStorage } from 'react-native';
-import { Container, Footer, FooterTab, Icon, Button} from "native-base";
-import * as func from './screens/RecSys/Recipe_Functions.js';
+import React from 'react';
+import { Platform, StatusBar, StyleSheet, View, YellowBox } from 'react-native';
+import { AppLoading, Asset, Font, Icon } from 'expo';
+import AppNavigator from './navigation/Login/LoginAppNavigator';
 
-const screens = ["RecSys", "Recipe_Information", "Recipe_Cooking_Time", "Recipe_Ingredients", "Recipe_Nutrition", "Recipe_Search"];
-const ratingScreens = ["Recipe_Information", "Recipe_Cooking_Time", "Recipe_Ingredients", "Recipe_Nutrition"];
+const ignoredWarnings = [
+  'Require cycles are allowed',
+  'Support for the old syntax will be removed in SDK 33.', 
+];
 
-const RecSysMain = createStackNavigator({
-  RecSys: {screen: RecSys},
-  Recipe_Information: {screen: Recipe_Information},
-  //Recipe_Cooking_Time: {screen: Recipe_Cooking_Time},
-  //Recipe_Ingredients: {screen: Recipe_Ingredients},
-  Recipe_Nutrition: {screen: Recipe_Nutrition},
-  Recipe_Search: {screen: Recipe_Search},
-  Recipe_Bookmarked: {screen: Recipe_Bookmarked},
-  Recipe_Rated: {screen: Recipe_Rated},
-},{
-  initialRouteName: 'RecSys',
-  navigationOptions: {
-   header: null
-  },
-});
-
-const RecSysFooter = createBottomTabNavigator({
-  RecSysStack: RecSysMain
-},{
-  initialRouteName: 'RecSysStack',
-  navigationOptions: {
-   header: null
-  },
-  tabBarPosition: "bottom",
-  tabBarComponent: (props) => renderDefaultFooter(props),
-});
-
-function renderDefaultFooter(props) {
-  var lastScreen = props.navigation.state.routes.slice(-1).pop().routes.slice(-1).pop().routeName;
-  //if(!ratingScreens.includes(lastScreen)){
-    return(
-      <Footer>
-        <FooterTab>
-          <Button 
-            //active
-            onPress={() => {props.navigation.navigate("RecSys")}}
-          >
-            <Icon name="home" />
-          </Button>
-          {/* <Button 
-            //active
-            onPress={() => {props.navigation.navigate("Recipe_Search")}}
-          >
-            <Icon name="search" />
-          </Button> */}
-          <Button 
-            onPress={() => {props.navigation.navigate("Recipe_Bookmarked")}}
-          >
-            <Icon type='Ionicons' name='ios-bookmark' />
-          </Button>
-          <Button 
-            onPress={() => {props.navigation.navigate("Recipe_Rated")}}
-          >
-            <Icon type='Ionicons' name='ios-star' />
-          </Button>
-        </FooterTab>
-      </Footer>
-    );
-  //} 
-  // else {
-  //   return(
-  //     <Footer>
-  //       <FooterTab>
-  //         <Button 
-  //           //active
-  //           onPress={() => {props.navigation.navigate("RecSys")}}
-  //         >
-  //           <Icon name="home" />
-  //         </Button>
-  //         <Button 
-  //           //active
-  //           onPress={() => {props.navigation.navigate("Recipe_Search")}}
-  //         >
-  //           <Icon name="search" />
-  //         </Button>
-  //         <Button
-  //           onPress={() => {}}
-  //         >
-  //           <Icon name="heart" style={{color: 'red',}}/>
-  //         </Button>
-  //         <Button
-  //           onPress={() => {}}
-  //         >
-  //           <Icon name="star" style={{color: 'gold',}}/>
-  //         </Button>
-  //         <Button>
-  //           <Icon name="bookmark" style={{color: 'brown',}}/>
-  //         </Button>
-  //       </FooterTab>
-  //     </Footer>
-  //   );
-  // }
-}
-
-//export default App;
+YellowBox.ignoreWarnings(ignoredWarnings);
 
 export default class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { 
-      isLoading: true,
-      heart_color: 'red',
-      user_token: 'abc1234',
-      user_name: 'Guest',
-    };
-  }
+  state = {
+    isLoadingComplete: false,
+    fontsAreLoaded: false,
+  };
 
   async componentWillMount() {
-    await Expo.Font.loadAsync({
+    await Font.loadAsync({
       Roboto: require("native-base/Fonts/Roboto.ttf"),
       Roboto_medium: require("native-base/Fonts/Roboto_medium.ttf"),
       Ionicons: require("@expo/vector-icons/fonts/Ionicons.ttf"),
+      
+      'Rubik-Black': require('./node_modules/@shoutem/ui/fonts/Rubik-Black.ttf'),
+      'Rubik-BlackItalic': require('./node_modules/@shoutem/ui/fonts/Rubik-BlackItalic.ttf'),
+      'Rubik-Bold': require('./node_modules/@shoutem/ui/fonts/Rubik-Bold.ttf'),
+      'Rubik-BoldItalic': require('./node_modules/@shoutem/ui/fonts/Rubik-BoldItalic.ttf'),
+      'Rubik-Italic': require('./node_modules/@shoutem/ui/fonts/Rubik-Italic.ttf'),
+      'Rubik-Light': require('./node_modules/@shoutem/ui/fonts/Rubik-Light.ttf'),
+      'Rubik-LightItalic': require('./node_modules/@shoutem/ui/fonts/Rubik-LightItalic.ttf'),
+      'Rubik-Medium': require('./node_modules/@shoutem/ui/fonts/Rubik-Medium.ttf'),
+      'Rubik-MediumItalic': require('./node_modules/@shoutem/ui/fonts/Rubik-MediumItalic.ttf'),
+      'Rubik-Regular': require('./node_modules/@shoutem/ui/fonts/Rubik-Regular.ttf'),
+      'rubicon-icon-font': require('./node_modules/@shoutem/ui/fonts/rubicon-icon-font.ttf'),
     });
-  }
-
-  componentDidMount() {
-    AsyncStorage.setItem('user_token', this.state.user_token);
-    AsyncStorage.setItem('user_name', this.state.user_name);
-    func.fetchBookmarkedRecipes(this.state.user_token);
-    func.fetchRatedRecipes(this.state.user_token);
-    this.setState({ isLoading: false });
+    console.log("Finish Loading Fonts");
+    this.setState({ fontsAreLoaded: true });
   }
 
   render() {
-    if (this.state.isLoading) {
-      return <Expo.AppLoading />;
+    if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen && !this.state.fontsAreLoaded) {
+      return (
+        <AppLoading
+          startAsync={this._loadResourcesAsync}
+          onError={this._handleLoadingError}
+          onFinish={this._handleFinishLoading}
+        />
+      );
+    } else {
+      return (
+        <View style={styles.container}>
+          {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+          <AppNavigator />
+        </View>
+      );
     }
-    //return <Container style={{flex:1, justifyContent: 'center', alignItems: 'center',}}><Text>Testing here</Text></Container>;
-    return (
-      <Container style={{ paddingTop: Platform.OS === 'ios' ? 0 : StatusBar.currentHeight, }}>
-        <RecSysFooter />
-      </Container>
-    );
   }
+
+
+
+  _loadResourcesAsync = async () => {
+    return Promise.all([
+      Asset.loadAsync([
+      ]),
+      Font.loadAsync({
+        // This is the font that we are using for our tab bar
+        ...Icon.Ionicons.font,
+        // We include SpaceMono because we use it in HomeScreen.js. Feel free
+        // to remove this if you are not using it in your app
+        'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
+      }),
+    ]);
+  };
+
+  _handleLoadingError = error => {
+    // In this case, you might want to report the error to your error
+    // reporting service, for example Sentry
+    console.warn(error);
+  };
+
+  _handleFinishLoading = () => {
+    console.log("Finish Loading");
+    this.setState({ isLoadingComplete: true });
+  };
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});

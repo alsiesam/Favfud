@@ -152,9 +152,9 @@ export default class Recipe_Information extends Component {
               </Text>
           </Row>
           <FlatList
-                  horizontal={horizontal}
+                  horizontal={true}
                   data={this.state.similar_recipes}
-                  numColumns={numCol}
+                  numColumns={1}
                   renderItem={({ item: rowData }) => {
                     return(
                       <View style={{marginTop: 20, marginRight: 30, marginBottom: 20,}}>
@@ -338,7 +338,7 @@ export default class Recipe_Information extends Component {
 
         return(
           <Container>
-            <Header>
+            {/* <Header>
               <Left>
                   <Button transparent onPress={()=>goBack()}>
                     <Icon name="arrow-back" />
@@ -349,7 +349,7 @@ export default class Recipe_Information extends Component {
                 <Title>Recipe</Title>
               </Body>
               <Right />
-            </Header>
+            </Header> */}
             <Container style={styles.screen_container}>
               <Content style={[{width: width,}, styles.content,]}>
                 <Grid>
