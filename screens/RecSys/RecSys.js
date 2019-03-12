@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StatusBar, StyleSheet, View, Text, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, ScrollView, Image, AsyncStorage} from 'react-native';
-import { Rating, Divider } from "react-native-elements";
+import { Platform, Dimensions, StatusBar, StyleSheet, View, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, ScrollView, Image, AsyncStorage} from 'react-native';
+import { Rating, Divider, Avatar } from "react-native-elements";
 import { Card, } from "react-native-elements";
 import { Container, Header, Content, 
   //Card, 
 CardItem, Body, Title, Left, Right, Subtitle, Button, Icon} from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
-import Carousel from 'react-native-snap-carousel';
 import * as func from './Recipe_Functions.js';
+import { Heading, Text } from '@shoutem/ui';
 
 const width = Dimensions.get('window').width; //full width
 const height = Dimensions.get('window').height; //full height
@@ -44,6 +44,8 @@ export default class RecSys extends Component {
         randomRecipes: [{}],
         //hasScrolled: false,
         //pageNum: 0,
+        user_token: '',
+        user_name: 'Guest',
         greeting: 'Hi, Guest.',
       }
     }
@@ -209,39 +211,26 @@ export default class RecSys extends Component {
             <Right />
             </Header> */}
             <Container style={styles.screen_container}>
-              {/* <Content style={[styles.content, ]}> */}
                 <ScrollView>
-                  <Text style={[styles.title]}>{this.state.greeting}</Text>
+                  <Row>
+                    <Col style={{width: width*0.8}}>
+                      <Heading style={styles.title}>{this.state.greeting}</Heading>
+                    </Col>
+                    <Col style={{width: width*0.2, flex:1, flexDirection: 'row', justifyContent: 'flex-end'}}>
+                      <Avatar
+                        medium
+                        rounded
+                        title={this.state.user_name[0].toUpperCase()}
+                        containerStyle={styles.avatar} 
+                        onPress={() => navigate('Profile')}
+                      />
+                    </Col>
+                  </Row>
                   {/* <Divider style={{ marginBottom: 20, }} /> */}
-                  
-                  {func.renderMainMenuRecipes('Your Favorites', this.state.favoriteRecipes, want_divider=true, navigate, this.state)}
-                  {func.renderMainMenuRecipes('Popular Cuisines', this.state.popularRecipes, want_divider=true, navigate, this.state)}
-                  {func.renderMainMenuRecipes('Random Picks', this.state.randomRecipes, want_divider=false, navigate, this.state)}
-
-
-                  {/* <Carousel
-                    ref={(c) => { this._carousel = c; }}
-                    data={this.state.displayData}
-                    renderItem={({ item: rowData }) => {
-                      return(
-                          <TouchableOpacity key={rowData.id} onPress={() => navigate('Recipe_Information', {recipe: rowData})}>
-                          <Card
-                            title={rowData.recipe_name}
-                            image={{ 
-                            uri: rowData.imageurlsbysize_360 
-                            }}
-                            imageStyle={styles.recipe_image}
-                            containerStyle={[styles.recipe_container]}
-                          >
-                          </Card>
-                          </TouchableOpacity>
-                      );
-                    }}
-                    sliderWidth={width}
-                    itemWidth={width}
-                  /> */}
+                  {func.renderMainMenuRecipesInComplexCarousel('Your Favorites', this.state.favoriteRecipes, want_divider=true, navigate, this.state)}
+                  {func.renderMainMenuRecipesInSimpleCarousel('Popular Cuisines', this.state.popularRecipes, want_divider=true, navigate, this.state)}
+                  {func.renderMainMenuRecipesInSimpleCarousel('Random Picks', this.state.randomRecipes, want_divider=false, navigate, this.state)}
                 </ScrollView>
-                {/* </Content> */}
               </Container>
             </Container>
         );
@@ -258,15 +247,10 @@ export default class RecSys extends Component {
     },
     title: {
       margin: 20,
-      fontSize: 24,
       fontWeight: 'bold',
     },
-    subtitle: {
-      marginTop: 20,
-      marginLeft: 20,
-      marginRight: 20,
-      fontSize: 20,
-      fontWeight: 'bold'
+    avatar: {
+      margin: 20,
     },
     content: {
       paddingTop: 0,

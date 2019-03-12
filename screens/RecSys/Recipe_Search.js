@@ -7,6 +7,10 @@ const width = Dimensions.get('window').width; //full width
 const height = Dimensions.get('window').height; //full height
 
 export default class Recipe_Search extends Component {
+
+    static navigationOptions = {
+      title: 'Search Recipes',
+    }
   
     constructor(props){
       super(props);
@@ -43,25 +47,17 @@ export default class Recipe_Search extends Component {
         this.setState({
             keyword: event.nativeEvent.text
         });
-        this.fetchData(this.state.keyword);
+        //this.fetchData(this.state.keyword);
     }
 
     someMethod2 = () => {
-        //console.log('clear');
+        console.log('clear');
     }
 
     render() {
         return(
           <Container>
-            <Header>
-            <Left />
-              <Body>
-                <Title>Search Recipes</Title>
-              </Body>
-            <Right />
-            </Header>
             <Container style={styles.screen_container}>
-                <Content>
                 <SearchBar
                     lightTheme
                     //showLoading
@@ -75,7 +71,6 @@ export default class Recipe_Search extends Component {
                     containerStyle = {{width: width, }}
                 />
                 <Text>{this.state.keyword}</Text>
-                </Content>
               </Container>
             </Container>
         );
@@ -86,8 +81,6 @@ export default class Recipe_Search extends Component {
   const styles = StyleSheet.create({
     screen_container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
       },
   });
   

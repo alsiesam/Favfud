@@ -12,6 +12,7 @@ import Recipe_Information from '../../screens/RecSys/Recipe_Information';
 import Recipe_Nutrition from '../../screens/RecSys/Recipe_Nutrition';
 import Recipe_Rated from '../../screens/RecSys/Recipe_Rated';
 import Recipe_Bookmarked from '../../screens/RecSys/Recipe_Bookmarked';
+import Recipe_Search from '../../screens/RecSys/Recipe_Search';
 
 const HomeStack = createStackNavigator({
   Home: HomeScreen,
@@ -59,6 +60,7 @@ const RecSysStack = createStackNavigator({
   RecSys: {screen: RecSys},
   Recipe_Information: {screen: Recipe_Information},
   Recipe_Nutrition: {screen: Recipe_Nutrition},
+  Profile: {screen: ProfileScreen},
 },{
   initialRouteName: 'RecSys',
 });
@@ -101,12 +103,27 @@ BookmarkStack.navigationOptions = {
   ),
 };
 
+const SearchStack = createStackNavigator({
+  Recipe_Search: Recipe_Search,
+});
+
+SearchStack.navigationOptions = {
+  tabBarLabel: 'Search',
+  tabBarIcon: ({ focused }) => (
+    <TabBarIcon
+      focused={focused}
+      name={Platform.OS === 'ios' ? 'ios-search' : 'md-search'}
+    />
+  ),
+};
+
 export default createBottomTabNavigator({
   //HomeStack,
-  ProfileStack,
+  //ProfileStack,
   RecSysStack,
   RatedStack,
   BookmarkStack,
   DiaryStack,
+  SearchStack,
 });
 

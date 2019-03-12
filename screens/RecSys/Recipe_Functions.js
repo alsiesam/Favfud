@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, AsyncStorage} from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, Image, AsyncStorage, Dimensions} from 'react-native';
 import { Divider } from "react-native-elements";
 import { Col, Row, Grid } from "react-native-easy-grid";
+import Carousel from 'react-native-snap-carousel';
+import { Title, Text } from '@shoutem/ui';
+
+const width = Dimensions.get('window').width; //full width
+const height = Dimensions.get('window').height; //full height
 
 export function secondsToHms(d) {
     //console.log(d);
@@ -72,40 +77,128 @@ export function fetchRatedRecipes(user_token) {
     });
 }
 
-export function renderMainMenuRecipes(title, data, want_divider, navigate, state) {
+export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider, navigate, state){
   if(Object.keys(data[0]).length == 0){
     return;
   }
   divider = null;
   if(want_divider){
-    divider = <Divider style={{ marginBottom: 20, }} />
+    divider = <Divider style={{ marginBottom: 10, }} />
+  }
+  renderGrid = (rowData, numRow, numCol) => {
+    let render = [];
+    for(var i = 0; i < numRow*numCol; i += numCol){
+      tmp = []
+      for(var j = i; j < i+numCol; j += 1){
+        tmp.push(j);
+      }
+      render.push(<Row key={i}>{
+        tmp.map((index) => {
+          return(
+            <View key={index} style={{marginTop: 5, marginLeft: 5, marginRight: 5, marginBottom: 5,}}>
+              <TouchableOpacity 
+              key={rowData['recommend_recipes'][index].id} 
+              onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData['recommend_recipes'][index], user_token: state.user_token}, key: 'Info'+rowData['recommend_recipes'][index].id})}
+              >
+                <Image
+                  style={styles.small_recipe_image}
+                  source={{uri: rowData['recommend_recipes'][index].imageurlsbysize_360}}
+                />
+              </TouchableOpacity>
+            </View>
+          );        
+        })
+      }</Row>);
+    }
+    return render;
   }
   return(
+    <View>
+        <Title style={styles.subtitle}>{title}</Title>
+        <Carousel
+          ref={(c) => { this._carousel = c; }}
+          data={data}
+          renderItem={({ item: rowData }) => {
+            return(
+              <View style={styles.carouselView}>
+                <View style={{flexDirection:'row'}}>
+                  <Text numberOfLines={2} style={{ flex: 1, flexWrap: 'wrap', textAlign: 'center', marginBottom: 10, }}>Since you like {rowData.reason_recipe_name}</Text>
+                </View>
+                <Grid>
+                  {renderGrid(rowData,2,2)}
+                </Grid>
+              </View>
+            );
+          }}
+          sliderWidth={width}
+          itemWidth={width}
+        />
+        {divider}
+    </View>
+  );
+}
+
+export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider, navigate, state) {
+  if(Object.keys(data[0]).length == 0){
+    return;
+  }
+  divider = null;
+  if(want_divider){
+    divider = <Divider style={{ marginBottom: 10, }} />
+  }
+  return(
+      // <View>
+      //   <Title style={styles.subtitle}>{title}</Title>
+      //   <FlatList
+      //               horizontal={true}
+      //               data={data}
+      //               numColumns={1}
+      //               renderItem={({ item: rowData }) => {
+      //                 return(
+      //                   <View style={{marginTop: 20, marginLeft: 20, marginRight: 20, marginBottom: 20,}}>
+      //                     <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: state.user_token}, key: 'Info'+rowData.id})}>
+      //                       <Image
+      //                         style={styles.recipe_image}
+      //                         source={{uri: rowData.imageurlsbysize_360}}
+      //                       />
+      //                       <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
+      //                         <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
+      //                           {rowData.recipe_name}
+      //                         </Text>
+      //                       </Row>
+      //                     </TouchableOpacity> 
+      //                   </View>
+      //                 );
+      //               }}
+      //               keyExtractor={(item, index) => index.toString()}
+      //               showsHorizontalScrollIndicator={false}
+      //   />
+      //   {divider}
+      // </View>
       <View>
-        <Text style={[styles.subtitle]}>{title}</Text>
-        <FlatList
-                    horizontal={true}
-                    data={data}
-                    numColumns={1}
-                    renderItem={({ item: rowData }) => {
-                      return(
-                        <View style={{marginTop: 20, marginLeft: 20, marginRight: 20, marginBottom: 20,}}>
-                          <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: state.user_token}, key: 'Info'+rowData.id})}>
-                            <Image
-                              style={styles.recipe_image}
-                              source={{uri: rowData.imageurlsbysize_360}}
-                            />
-                            <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
-                              <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
-                                {rowData.recipe_name}
-                              </Text>
-                            </Row>
-                          </TouchableOpacity> 
-                        </View>
-                      );
-                    }}
-                    keyExtractor={(item, index) => index.toString()}
-                    showsHorizontalScrollIndicator={false}
+        <Title style={styles.subtitle}>{title}</Title>
+        <Carousel
+          ref={(c) => { this._carousel = c; }}
+          data={data}
+          renderItem={({ item: rowData }) => {
+            return(
+              <View style={{marginTop: 20, marginLeft: 20, marginRight: 20, marginBottom: 20,}}>
+                <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: state.user_token}, key: 'Info'+rowData.id})}>
+                <Image
+                  style={styles.big_recipe_image}
+                  source={{uri: rowData.imageurlsbysize_360}}
+                />
+                <Row style={{height: 50, width: styles.big_recipe_image.width, flexDirection:'row'}}>
+                  <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
+                    {rowData.recipe_name}
+                  </Text>
+                </Row>
+              </TouchableOpacity> 
+            </View>
+            );
+          }}
+          sliderWidth={width}
+          itemWidth={styles.big_recipe_image.width + 40}
         />
         {divider}
       </View>
@@ -113,12 +206,19 @@ export function renderMainMenuRecipes(title, data, want_divider, navigate, state
 }
 
 const styles = StyleSheet.create({
-  recipe_image: {
-    marginBottom: 5,
-    width: 150,
-    height: 150,
+  small_recipe_image: {
+    width: (width-40)/2-10,
+    height: (width-40)/2-10,
     backgroundColor: 'transparent',
-    alignSelf: 'center',
+    borderRadius: 25,
+  },
+  big_recipe_image: {
+    marginBottom: 5,
+    width: width-100,
+    height: width-100,
+    backgroundColor: 'transparent',
+    borderRadius: 25,
+    //alignSelf: 'center',
   },
   recipe_text: {
     marginBottom: 10,
@@ -138,6 +238,12 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     marginRight: 20,
     fontSize: 20,
-    fontWeight: 'bold'
+  },
+  carouselView: {
+    margin: 20,
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

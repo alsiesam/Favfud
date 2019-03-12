@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import { Platform, Dimensions, StyleSheet } from 'react-native';
 import { Avatar } from "react-native-elements";
-import { Container, Header, Body, Title, Subtitle, Content, Button, Icon, Left, Right, Text} from "native-base";
+import { Container, Header, Body, Title, Subtitle, Content, Button, Icon, Left, Right} from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
+
+import { Heading, Text } from '@shoutem/ui';
 
 const width = Dimensions.get('window').width - 40; //full width
 const height = Dimensions.get('window').height; //full height
@@ -35,13 +37,17 @@ export default class Recipe_Nutrition extends Component {
         if(key in nutrients){
             return(
                 <Row key={i}>
-                    <Col key={'title'+i} style={[{height: 60}, styles.center]}>
-                        <Text style={{fontSize: 18, textAlign: 'center'}}>
+                    <Col key={'title'+i} style={[{
+                        //backgroundColor:'pink',
+                    }, styles.cell]}>
+                        <Text style={{fontSize: 18, textAlign: 'left'}}>
                             {title}
                         </Text>
                     </Col>
-                    <Col key={'amount'+i} style={[{height: 60}, styles.center]}>
-                        <Text style={{fontSize: 18, textAlign: 'center'}}>
+                    <Col key={'amount'+i} style={[{
+                        //backgroundColor:'aliceblue'
+                    }, styles.cell]}>
+                        <Text style={{fontSize: 18, textAlign: 'right'}}>
                             {this.amount(nutrients[key])}
                         </Text>
                     </Col>
@@ -55,15 +61,15 @@ export default class Recipe_Nutrition extends Component {
     _renderGrid(nutrients) {
         if(!nutrients || 0 === nutrients.length){
             return(
-                <Text style={[styles.title, styles.center]}>
+                <Heading style={styles.title}>
                     Sorry, no nutrition fact can be provided at this moment.
-                </Text>
+                </Heading>
             );
         }
         var titles = ['Potassium', 'Sodium', 'Cholesterol', 'Trans Fatty acids', 'Saturated Fatty Acids', 'Carbohydrate', 'Fiber', 'Protein', 'Vitamin C', 'Calcium', 'Iron', 'Sugar', 'Energy', 'Fat', 'Vitamin A', 'Starch'];
         var keys = ['k', 'na', 'chole', 'fatrn', 'fasat', 'chocdf', 'fibtg', 'procnt', 'vitc', 'ca', 'fe', 'sugar', 'enerc_kcal', 'fat', 'vita_iu', 'starch'];
         return(
-            <Grid>
+            <Grid style={styles.grid}>
                 {[...Array(titles.length).keys()].map((i) => {
                     return(this._renderNutrientTable(keys[i], titles[i], nutrients, i));
                 })}
@@ -100,7 +106,7 @@ export default class Recipe_Nutrition extends Component {
                         containerStyle={{justifyContent: 'center',
                         alignSelf: 'center',}}
                         />
-                        <Text style={styles.title}>{recipe.recipe_name}</Text>
+                        <Heading style={styles.title}>{recipe.recipe_name}</Heading>
                         {this._renderGrid(this.getNutrients(recipe))} 
                         <Container style={{height: 20,}}></Container>
                     </Content>
@@ -124,12 +130,24 @@ const styles = StyleSheet.create({
     title: {
         textAlignVertical: "center",
         textAlign: "center",
+        justifyContent: 'center',
+        alignItems: 'center',
         fontWeight: 'bold',
         fontSize: 20,
         paddingTop: 20,
         paddingLeft: 10,
         paddingRight: 10,
         paddingBottom: 20,
+    },
+    grid: {
+        alignSelf: 'center',
+        width: width - 80,
+    },
+    cell: {
+        flex: 1,
+        flexDirection: 'column',
+        height: 60, 
+        justifyContent: 'center',
     },
     center: {
         justifyContent: 'center',

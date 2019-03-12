@@ -2,11 +2,13 @@ import React, { Component } from 'react';
 import { Platform, Dimensions, StatusBar, StyleSheet, View, Image, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, Linking, ScrollView, Modal, TouchableHighlight, AsyncStorage} from 'react-native';
 import { Rating, Divider } from "react-native-elements";
 import { Card, } from "react-native-elements";
-import { Container, Header, Body, Title, Content, Button, Icon, Left, Right, Text, Accordion } from "native-base";
+import { Container, Header, Body, Title, Content, Button, Icon, Left, Right, Accordion } from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import * as func from './Recipe_Functions.js';
 
-const width = Dimensions.get('window').width - 40; //full width
+import { Heading, Text } from '@shoutem/ui';
+
+const width = Dimensions.get('window').width; //full width
 const height = Dimensions.get('window').height; //full height
 
 export default class Recipe_Information extends Component {
@@ -124,9 +126,9 @@ export default class Recipe_Information extends Component {
     return(
         <Grid>
             <Row style={{height: 'auto', marginBottom: 10,}}>
-                <Text style={styles.subtitle}>
+                <Heading style={styles.subtitle}>
                     Ingredients
-                </Text>
+                </Heading>
                 
             </Row>
             <Divider style={{ marginBottom: 20, }} />
@@ -146,7 +148,7 @@ export default class Recipe_Information extends Component {
     const {navigate} = this.props.navigation;
     return(
       <Grid>
-          <Row style={{height: 'auto', marginBottom: 10,}}>
+          <Row style={{height: 'auto',}}>
               <Text style={styles.subtitle}>
                   Related Recipes
               </Text>
@@ -157,7 +159,7 @@ export default class Recipe_Information extends Component {
                   numColumns={1}
                   renderItem={({ item: rowData }) => {
                     return(
-                      <View style={{marginTop: 20, marginRight: 30, marginBottom: 20,}}>
+                      <View style={{marginTop: 20, marginRight: 30,}}>
                         <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
                           <Image
                             style={styles.recipe_image}
@@ -256,9 +258,9 @@ export default class Recipe_Information extends Component {
 
   renderRatingInfo() {
     if(this.state.recipe_rating == -1){
-      return(<Text style={[{marginBottom: 10,}, styles.title]}>How would you rate this recipe?</Text>);
+      return(<Text style={{marginBottom: 10,}}>How would you rate this recipe?</Text>);
     } else {
-      return(<Text style={[{marginBottom: 10,}, styles.title]}>You have rated the recipe {this.state.recipe_rating}/5</Text>);
+      return(<Text style={{marginBottom: 10,}}>You have rated the recipe {this.state.recipe_rating}/5</Text>);
     }
   }
 
@@ -310,11 +312,6 @@ export default class Recipe_Information extends Component {
 
         numofservings = '';
         if('numberofservings' in recipe){
-          // if(recipe.numberofservings > 18){
-          //   recipe.numberofservings = 18;
-          // }
-          // _fontSize = recipe.numberofservings <= 8 ? 25 : 20;
-          // _iconWidth = recipe.numberofservings <= 8 ? 30 : 20;
           numofservings = 
           <Row style={{height:'auto', marginBottom:10}}>
             <Icon type='Ionicons' name='md-person' style={{fontSize:16, marginTop:0,}}/>
@@ -323,17 +320,6 @@ export default class Recipe_Information extends Component {
             } servings
             </Text>
           </Row>;
-          // <Row style={{
-          //   flexDirection:'row', height:'auto', justifyContent:'flex-start', flexWrap: 'wrap',
-          // }}>
-          //   { [...Array(recipe.numberofservings).keys()].map((i) => {
-          //     return(
-          //       <Col key={i} style={{width:_iconWidth,}}>
-          //         <Icon type="Ionicons" name="md-person" style={{fontSize: _fontSize}}/>
-          //       </Col>
-          //     );
-          //   }) }
-          // </Row>;
         }
 
         return(
@@ -351,7 +337,9 @@ export default class Recipe_Information extends Component {
               <Right />
             </Header> */}
             <Container style={styles.screen_container}>
-              <Content style={[{width: width,}, styles.content,]}>
+              <ScrollView>
+              {/* <Content style={[{width: width,}, styles.content,]}> */}
+              <View style={{margin: 20,}}>
                 <Grid>
                   <Row style={{
                     flex:2, justifyContent:'space-between', alignSelf:'center',
@@ -404,9 +392,10 @@ export default class Recipe_Information extends Component {
                   <Row>
                     {this.renderCorrelatedRecipes()}
                   </Row>
-                  <Container style={{height: 30,}}></Container>
                 </Grid>
-              </Content>
+              </View>
+              {/* </Content> */}
+              </ScrollView>
             </Container>
           </Container>
         );
@@ -419,7 +408,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     justifyContent: 'center',
-    alignItems: 'center',
     //backgroundColor: 'skyblue',
     //paddingTop: 50,
     //paddingBottom: 50,
@@ -446,6 +434,7 @@ const styles = StyleSheet.create({
     height: 180,
     backgroundColor: 'transparent',
     alignSelf: 'center',
+    borderRadius: 25,
   },
   rows: {
     alignSelf:'center',

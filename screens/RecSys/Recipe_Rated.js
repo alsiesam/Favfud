@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StatusBar, StyleSheet, View, ActivityIndicator, Text, FlatList, AsyncStorage, TouchableOpacity, Image} from 'react-native';
+import { Platform, Dimensions, StatusBar, StyleSheet, View, ActivityIndicator, FlatList, AsyncStorage, TouchableOpacity, Image} from 'react-native';
 import { SearchBar, } from "react-native-elements";
 import { Card, } from "react-native-elements";
 import { Container, Header, Content, CardItem, Body, Title, Left, Right, Subtitle, Button, Icon, } from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import * as func from './Recipe_Functions.js';
+import { Text } from '@shoutem/ui';
 
 const width = Dimensions.get('window').width - 40; //full width
 const height = Dimensions.get('window').height; //full height
