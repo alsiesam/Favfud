@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StyleSheet } from 'react-native';
+import { Platform, Dimensions, View, ScrollView, StyleSheet } from 'react-native';
 import { Avatar } from "react-native-elements";
-import { Container, Header, Body, Title, Subtitle, Content, Button, Icon, Left, Right} from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
 
 import { Heading, Text } from '@shoutem/ui';
 
-const width = Dimensions.get('window').width - 40; //full width
-const height = Dimensions.get('window').height; //full height
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+var NUTRIENTS = ['Potassium', 'Sodium', 'Cholesterol', 'Trans Fatty acids', 'Saturated Fatty Acids', 'Carbohydrate', 'Fiber', 'Protein', 'Vitamin C', 'Calcium', 'Iron', 'Sugar', 'Energy', 'Fat', 'Vitamin A', 'Starch'];
+var NUTRIENTS_ABBR = ['k', 'na', 'chole', 'fatrn', 'fasat', 'chocdf', 'fibtg', 'procnt', 'vitc', 'ca', 'fe', 'sugar', 'enerc_kcal', 'fat', 'vita_iu', 'starch'];
 
 export default class Recipe_Nutrition extends Component {
 
@@ -66,66 +67,45 @@ export default class Recipe_Nutrition extends Component {
                 </Heading>
             );
         }
-        var titles = ['Potassium', 'Sodium', 'Cholesterol', 'Trans Fatty acids', 'Saturated Fatty Acids', 'Carbohydrate', 'Fiber', 'Protein', 'Vitamin C', 'Calcium', 'Iron', 'Sugar', 'Energy', 'Fat', 'Vitamin A', 'Starch'];
-        var keys = ['k', 'na', 'chole', 'fatrn', 'fasat', 'chocdf', 'fibtg', 'procnt', 'vitc', 'ca', 'fe', 'sugar', 'enerc_kcal', 'fat', 'vita_iu', 'starch'];
         return(
             <Grid style={styles.grid}>
-                {[...Array(titles.length).keys()].map((i) => {
-                    return(this._renderNutrientTable(keys[i], titles[i], nutrients, i));
+                {[...Array(NUTRIENTS.length).keys()].map((i) => {
+                    return(this._renderNutrientTable(NUTRIENTS_ABBR[i], NUTRIENTS[i], nutrients, i));
                 })}
             </Grid>
         );
     }
 
     render() {
-        const {navigate} = this.props.navigation;
         const recipe = this.state.recipe;
-        //console.log(recipe);
         return(
-            <Container>
-                {/* <Header>
-                    <Left>
-                        <Button transparent onPress={()=>navigate({routeName: 'Recipe_Information', params: {recipe: recipe}, key: 'Info'+recipe.id})}>
-                        <Icon name="arrow-back" />
-                        <Text> Back </Text>
-                        </Button>
-                    </Left>
-                    <Body>
-                        <Title> Recipe  </Title>
-                        <Subtitle> Nutrition Fact </Subtitle>
-                    </Body>
-                    <Right />
-                </Header> */}
-                <Container style={styles.screen_container}>
-                    <Content style={[{width: width+40, paddingTop: 20,}]}>
-                        <Avatar
-                        xlarge
-                        rounded
-                        source={{uri: recipe.imageurlsbysize_360}}
-                        activeOpacity={0.7}
-                        containerStyle={{justifyContent: 'center',
-                        alignSelf: 'center',}}
-                        />
+            <ScrollView>
+                <View style={styles.screen_view}>
+                    <Avatar
+                    xlarge
+                    rounded
+                    source={{uri: recipe.imageurlsbysize_360}}
+                    activeOpacity={0.7}
+                    containerStyle={{justifyContent: 'center',
+                    alignSelf: 'center',}}
+                    />
+                    <View style={{flexDirection:'row', flex: 1, flexWrap: 'wrap'}}> 
                         <Heading style={styles.title}>{recipe.recipe_name}</Heading>
-                        {this._renderGrid(this.getNutrients(recipe))} 
-                        <Container style={{height: 20,}}></Container>
-                    </Content>
-                </Container>
-            </Container>
+                    </View>
+                    {this._renderGrid(this.getNutrients(recipe))} 
+                </View>
+            </ScrollView>
         );
     }
 }
 
 const styles = StyleSheet.create({
-    screen_container: {
+    screen_view: {
       flex: 1,
       flexDirection: 'column',
-      //justifyContent: 'center',
       alignItems: 'center',
-      //backgroundColor: 'skyblue',
-      //paddingTop: 50,
-      //paddingBottom: 50,
-      //paddingLeft: Platform.OS === 'ios' ? 0 : 20,
+      marginBottom: 20,
+      marginTop: 20,
     },
     title: {
         textAlignVertical: "center",
@@ -141,7 +121,7 @@ const styles = StyleSheet.create({
     },
     grid: {
         alignSelf: 'center',
-        width: width - 80,
+        width: SCREEN_WIDTH - 80,
     },
     cell: {
         flex: 1,

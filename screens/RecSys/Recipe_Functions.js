@@ -1,12 +1,17 @@
-import React, { Component } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Image, AsyncStorage, Dimensions} from 'react-native';
+import React from 'react';
+import { View, StyleSheet, TouchableOpacity, Image, AsyncStorage, Dimensions} from 'react-native';
 import { Divider } from "react-native-elements";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import Carousel from 'react-native-snap-carousel';
 import { Title, Text } from '@shoutem/ui';
 
-const width = Dimensions.get('window').width; //full width
-const height = Dimensions.get('window').height; //full height
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE = 'bookmarked_recipe';
+const ASYNC_STORAGE_KEYS_FOR_RECIPE_RATINGS = 'recipe_ratings';
+const API_HOST = 'http://django-fyp.herokuapp.com/';
+const EQUIRE_BOOKMARKED_URL = `${API_HOST}recsys/interaction/enquire/bookmark/`;
+const EQUIRE_RATED_URL = `${API_HOST}recsys/interaction/enquire/rating/`;
 
 export function secondsToHms(d) {
     //console.log(d);
@@ -40,7 +45,7 @@ export function arr_diff(a1, a2) {
 
 
 export function fetchBookmarkedRecipes(user_token) {
-    fetch('http://django-fyp.herokuapp.com/recsys/interaction/enquire/bookmark/', {
+    fetch(EQUIRE_BOOKMARKED_URL, {
       headers: new Headers ({
         usertoken: user_token,
       }),
@@ -52,9 +57,9 @@ export function fetchBookmarkedRecipes(user_token) {
         for(var i = 0; i < arr.length; i++){
           arr[i] = arr[i].toString()
         }
-        AsyncStorage.setItem('bookmarked_recipe', JSON.stringify(arr));
+        AsyncStorage.setItem(ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE, JSON.stringify(arr));
       } else {
-        AsyncStorage.setItem('bookmarked_recipe', JSON.stringify([]));
+        AsyncStorage.setItem(ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE, JSON.stringify([]));
       }
     })
     .catch((error) =>{
@@ -63,14 +68,14 @@ export function fetchBookmarkedRecipes(user_token) {
   }
 
 export function fetchRatedRecipes(user_token) {
-    fetch('http://django-fyp.herokuapp.com/recsys/interaction/enquire/rating/', {
+    fetch(EQUIRE_RATED_URL, {
       headers: new Headers ({
         usertoken: user_token,
       }),
     })
     .then((response) => response.json())
     .then((responseJson) => {
-      AsyncStorage.setItem('recipe_ratings', JSON.stringify(responseJson));
+      AsyncStorage.setItem(ASYNC_STORAGE_KEYS_FOR_RECIPE_RATINGS, JSON.stringify(responseJson));
     })
     .catch((error) =>{
       console.error(error);
@@ -130,8 +135,8 @@ export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider
               </View>
             );
           }}
-          sliderWidth={width}
-          itemWidth={width}
+          sliderWidth={SCREEN_WIDTH}
+          itemWidth={SCREEN_WIDTH}
         />
         {divider}
     </View>
@@ -147,34 +152,6 @@ export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider,
     divider = <Divider style={{ marginBottom: 10, }} />
   }
   return(
-      // <View>
-      //   <Title style={styles.subtitle}>{title}</Title>
-      //   <FlatList
-      //               horizontal={true}
-      //               data={data}
-      //               numColumns={1}
-      //               renderItem={({ item: rowData }) => {
-      //                 return(
-      //                   <View style={{marginTop: 20, marginLeft: 20, marginRight: 20, marginBottom: 20,}}>
-      //                     <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: state.user_token}, key: 'Info'+rowData.id})}>
-      //                       <Image
-      //                         style={styles.recipe_image}
-      //                         source={{uri: rowData.imageurlsbysize_360}}
-      //                       />
-      //                       <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
-      //                         <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
-      //                           {rowData.recipe_name}
-      //                         </Text>
-      //                       </Row>
-      //                     </TouchableOpacity> 
-      //                   </View>
-      //                 );
-      //               }}
-      //               keyExtractor={(item, index) => index.toString()}
-      //               showsHorizontalScrollIndicator={false}
-      //   />
-      //   {divider}
-      // </View>
       <View>
         <Title style={styles.subtitle}>{title}</Title>
         <Carousel
@@ -197,7 +174,7 @@ export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider,
             </View>
             );
           }}
-          sliderWidth={width}
+          sliderWidth={SCREEN_WIDTH}
           itemWidth={styles.big_recipe_image.width + 40}
         />
         {divider}
@@ -207,18 +184,17 @@ export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider,
 
 const styles = StyleSheet.create({
   small_recipe_image: {
-    width: (width-40)/2-10,
-    height: (width-40)/2-10,
+    width: (SCREEN_WIDTH-40)/2-10,
+    height: (SCREEN_WIDTH-40)/2-10,
     backgroundColor: 'transparent',
     borderRadius: 25,
   },
   big_recipe_image: {
     marginBottom: 5,
-    width: width-100,
-    height: width-100,
+    width: SCREEN_WIDTH-100,
+    height: SCREEN_WIDTH-100,
     backgroundColor: 'transparent',
     borderRadius: 25,
-    //alignSelf: 'center',
   },
   recipe_text: {
     marginBottom: 10,

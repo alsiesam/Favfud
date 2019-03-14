@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import { Platform, Dimensions, StatusBar, StyleSheet, View, Text, } from 'react-native';
 import { SearchBar, } from "react-native-elements";
-import { Container, Header, Content, CardItem, Body, Title, Left, Right, Subtitle, Button, Icon, } from "native-base";
+import { Container, } from "native-base";
 
-const width = Dimensions.get('window').width; //full width
-const height = Dimensions.get('window').height; //full height
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const API_HOST = 'http://django-fyp.herokuapp.com/';
+const SEARCH_URL = `${API_HOST}recsys/search/`;
 
 export default class Recipe_Search extends Component {
 
@@ -25,7 +27,7 @@ export default class Recipe_Search extends Component {
       if(keyword.match(/\//g)) {
         keyword = keyword.replace(/\//g, '\/');
       }
-      return fetch('http://django-fyp.herokuapp.com/recsys/search/'+keyword)
+      return fetch(`${SEARCH_URL}${keyword}`)
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
@@ -68,7 +70,7 @@ export default class Recipe_Search extends Component {
                     onSubmitEditing={this.someMethod1}
                     //onChangeText={this.someMethod1}
                     onClearText={this.someMethod2}
-                    containerStyle = {{width: width, }}
+                    containerStyle = {{width: SCREEN_WIDTH, }}
                 />
                 <Text>{this.state.keyword}</Text>
               </Container>

@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StatusBar, StyleSheet, View, ActivityIndicator, FlatList, AsyncStorage, TouchableOpacity, Image} from 'react-native';
-import { SearchBar, } from "react-native-elements";
-import { Card, } from "react-native-elements";
-import { Container, Header, Content, CardItem, Body, Title, Left, Right, Subtitle, Button, Icon, } from "native-base";
-import { Col, Row, Grid } from "react-native-easy-grid";
+import { Dimensions, StyleSheet, View, ActivityIndicator, FlatList, AsyncStorage, TouchableOpacity, Image} from 'react-native';
+import { Row } from "react-native-easy-grid";
 import * as func from './Recipe_Functions.js';
 import { Text } from '@shoutem/ui';
 
-const width = Dimensions.get('window').width - 40; //full width
-const height = Dimensions.get('window').height; //full height
+const SCREEN_WIDTH = Dimensions.get('window').width - 40;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const ASYNC_STORAGE_KEYS = ['user_token', 'recipe_ratings'];
+const API_HOST = 'http://django-fyp.herokuapp.com/';
+const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 
 export default class Recipe_Rated extends Component {
 
@@ -28,35 +28,29 @@ export default class Recipe_Rated extends Component {
     }
 
     componentDidMount() {
-        AsyncStorage.getItem('recipe_ratings')
-        .then((recipes) => {
-            const r = recipes ? Object.keys(JSON.parse(recipes)) : [];
-            if(r.length == 0) {
+        AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then((response) => {
+            var user_token = response[0][1];
+            if(user_token){
+                this.setState({user_token: user_token});
+            }
+            var rated_recipe_list = response[1][1] ? Object.keys(JSON.parse(response[1][1])) : [];
+            if(rated_recipe_list.length == 0) {
                 this.setState({isLoading: false});
-            } else if(r.join(',') != this.state.rated_recipe_ids){
-                ids_str = r.join(',');
+            } else if(rated_recipe_list.join(',') != this.state.rated_recipe_ids){
+                ids_str = rated_recipe_list.join(',');
                 this.setState({rated_recipe_ids: ids_str});
                 this.fetchData(this.state.rated_recipe_ids);
             }
         });
-        AsyncStorage.getItem('user_token')
-        .then((ut) => {
-            if(ut){
-                this.setState({user_token: ut});
-            }
-        });
-
     }
 
     getRefreshedData() {
-        //this.setState({isLoading: true,});
         func.fetchRatedRecipes(this.state.user_token);
         AsyncStorage.getItem('recipe_ratings')
         .then((recipes) => {
             const r1 = recipes ? Object.keys(JSON.parse(recipes)) : [];
             r2 = this.state.rated_recipe_ids.split(',');
             diff_ids = func.arr_diff(r1, r2);
-            //console.log(diff_ids);
             if(diff_ids["more"].length != 0) {
                 this.setState({isLoading: true,});
                 this.setState({rated_recipe_ids: r1.join(',')});
@@ -69,12 +63,11 @@ export default class Recipe_Rated extends Component {
                     this.setState({ dataSource: this.state.dataSource.filter(function(rec) {return rec.id != diff_ids["less"][i];}) });
                 };
             }
-            //this.setState({isLoading: false,});
         });
     }
 
     fetchData(recipe_ids) {
-        return fetch('http://django-fyp.herokuapp.com/recsys/recipe/id/ids', {
+        return fetch(GET_MULTIPLE_RECIPES_URL, {
             headers: new Headers ({
                 ids: recipe_ids
             }),
@@ -84,10 +77,7 @@ export default class Recipe_Rated extends Component {
           this.setState({
             dataSource: [...this.state.dataSource, ...responseJson],
             isLoading: false,
-          }, function(){
-            //console.log(responseJson)
           });
-  
         })
         .catch((error) =>{
           console.error(error);
@@ -109,10 +99,10 @@ export default class Recipe_Rated extends Component {
         data = this.state.dataSource;
         if(data.length == 0){
             return(
-                <Container style={styles.center}>
+                <View style={styles.center}>
                     <Text style={styles.remind_text}>There is no rated recipe</Text>
                     <Text style={styles.remind_text}>at this moment.</Text>
-                </Container>
+                </View>
             );
         } else {
             return(
@@ -125,20 +115,11 @@ export default class Recipe_Rated extends Component {
                     numColumns={2}
                     renderItem={({ item: rowData }) => {
                       return(
-                        <View style={styles.recipe_container}>
+                        <View style={styles.recipe_view}>
                           <TouchableOpacity 
                           key={rowData.id} 
                           onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}
                           >
-                          {/* <Card
-                            image={{ 
-                            uri: rowData.imageurlsbysize_360 
-                            }}
-                            imageStyle={styles.recipe_image}
-                            containerStyle={[styles.recipe_container]}
-                          >
-                          <Row style={{height: 50}}><Text numberOfLines={2}>{rowData.recipe_name}</Text></Row>
-                          </Card> */}
                             <Image
                                 style={styles.recipe_image}
                                 source={{uri: rowData.imageurlsbysize_360}}
@@ -153,9 +134,7 @@ export default class Recipe_Rated extends Component {
                       );
                     }}
                     keyExtractor={(item, index) => index.toString()}
-                    contentContainerStyle={[{width: width + 40, marginBottom: 30,}, styles.center]}
-                    // onEndReached={(x)=>{this.displayRecipe()}}
-                    // onEndReachedThreshold={0.5}
+                    contentContainerStyle={[{width: SCREEN_WIDTH + 40, marginBottom: 30,}, styles.center]}
                 />
             );
         }
@@ -164,37 +143,16 @@ export default class Recipe_Rated extends Component {
     render() {
         if (this.state.isLoading) {
             return(
-                <Container>
-                    {/* <Header>
-                            <Left />
-                            <Body>
-                                <Title>Rated</Title>
-                            </Body>
-                            <Right />
-                    </Header> */}
-                    <Container style={styles.screen_container}>
-                        <StatusBar
-                            barStyle="light-content"
-                        />
-                        <Text>Loading...</Text>
-                        <ActivityIndicator/>
-                    </Container>
-                </Container>
+                <View style={styles.screen_view}>
+                    <Text>Loading...</Text>
+                    <ActivityIndicator/>
+                </View>
             )
         } else {
             return(
-                <Container>
-                    {/* <Header>
-                    <Left />
-                    <Body>
-                        <Title>Rated</Title>
-                    </Body>
-                    <Right />
-                    </Header> */}
-                    <Container style={styles.screen_container}>
-                        {this.renderRatedRecipes()}
-                    </Container>
-                </Container>
+                <View style={styles.screen_view}>
+                    {this.renderRatedRecipes()}
+                </View>
             );
         }
     }
@@ -202,7 +160,7 @@ export default class Recipe_Rated extends Component {
   }
   
   const styles = StyleSheet.create({
-    screen_container: {
+    screen_view: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -215,20 +173,20 @@ export default class Recipe_Rated extends Component {
         fontSize: 20,
         color: 'gray',
     },
-    recipe_container: {
+    recipe_view: {
         margin: 15,
         marginTop: 20,
-        width: width/2-20,
+        width: SCREEN_WIDTH/2-20,
         borderColor: 'transparent',
         backgroundColor: 'transparent',
         justifyContent: 'center',
     },
     recipe_image: {
         marginBottom: 5,
-        width: width/2-20,
-        height: width/2-20,
+        width: SCREEN_WIDTH/2-20,
+        height: SCREEN_WIDTH/2-20,
         backgroundColor: 'transparent',
-        alignSelf: 'center',
+        borderRadius: 25,
     },
     recipe_text: {
         marginBottom: 10,

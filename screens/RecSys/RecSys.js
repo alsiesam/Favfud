@@ -1,37 +1,24 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StatusBar, StyleSheet, View, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, ScrollView, Image, AsyncStorage} from 'react-native';
-import { Rating, Divider, Avatar } from "react-native-elements";
-import { Card, } from "react-native-elements";
-import { Container, Header, Content, 
-  //Card, 
-CardItem, Body, Title, Left, Right, Subtitle, Button, Icon} from "native-base";
-import { Col, Row, Grid } from "react-native-easy-grid";
+import { Dimensions, StatusBar, StyleSheet, ActivityIndicator, ScrollView, AsyncStorage} from 'react-native';
+import { Avatar } from "react-native-elements";
+import { Container} from "native-base";
+import { Col, Row } from "react-native-easy-grid";
 import * as func from './Recipe_Functions.js';
 import { Heading, Text } from '@shoutem/ui';
 
-const width = Dimensions.get('window').width; //full width
-const height = Dimensions.get('window').height; //full height
-
-const async_storage_keys = ['user_token', 'email_address'];
-
-const span = 5
-
-// const NavigationBar = (props) => {
-//   console.log(props);
-//   icon_name = Platform.OS === 'ios' ? 'ios-menu' : 'md-menu'
-//   return(
-//     <Button transparent onPress={() => Alert.alert('aaa')}>
-//       <Icon name={icon_name} style={{marginLeft: 20, color: 'black'}}/>
-//     </Button>
-//   );
-// }
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const ASYNC_STORAGE_KEYS = ['user_token', 'email_address'];
+const API_HOST = 'http://django-fyp.herokuapp.com/';
+const YOUR_FAVORITES_URL = `${API_HOST}recsys/recommendation/yrfav/`;
+const POPULAR_RECIPES_URL = `${API_HOST}recsys/recommendation/popular/`;
+const RANDOM_PICKS_URL = `${API_HOST}recsys/recommendation/random/8`;
 
 export default class RecSys extends Component {
 
-    static navigationOptions = ({navigation}) => ({
+    static navigationOptions = {
       title: 'RecSys',
-      //headerLeft: <NavigationBar />,
-    });
+    };
   
     constructor(props){
       super(props);
@@ -42,8 +29,6 @@ export default class RecSys extends Component {
         favoriteRecipes: [{}],
         popularRecipes: [{}],
         randomRecipes: [{}],
-        //hasScrolled: false,
-        //pageNum: 0,
         user_token: '',
         user_name: 'Guest',
         greeting: 'Hi, Guest.',
@@ -51,7 +36,7 @@ export default class RecSys extends Component {
     }
 
     componentDidMount(){
-      AsyncStorage.multiGet(async_storage_keys).then((response) => {
+      AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then((response) => {
         var user_token = response[0][1];
         var user_name = response[1][1];
         if(user_token){
@@ -68,13 +53,13 @@ export default class RecSys extends Component {
           var n = d.getHours();
           var greet = 'Hi';
           if(n >= 6 && n < 12) {
-            greet = 'Good morning, ';
+            greet = 'Good morning';
           } else if(n >= 12 && n < 18) {
-            greet = 'Good Afternoon, ';
+            greet = 'Good Afternoon';
           } else {
-            greet = 'Good night, ';
+            greet = 'Good night';
           }
-          this.setState({greeting: greet+this.state.user_name+'.'})
+          this.setState({greeting: `${greet}, ${this.state.user_name}.`})
         }
         this.setState({isLoading: false,})
       });
@@ -84,7 +69,7 @@ export default class RecSys extends Component {
       if(!user_token){
         return;
       }
-      return fetch('http://django-fyp.herokuapp.com/recsys/recommendation/yrfav/', {
+      return fetch(YOUR_FAVORITES_URL, {
         headers: new Headers ({
           usertoken: user_token,
         }),
@@ -92,12 +77,7 @@ export default class RecSys extends Component {
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
-          //isLoading: false,
-          //dataSource: [...this.state.dataSource, ...responseJson],
-          favoriteRecipes: responseJson, //responseJson.slice(0, span),
-          //pageNum: this.state.pageNum + 1
-        }, function(){
-          //console.log(responseJson)
+          favoriteRecipes: responseJson,
         });
 
       })
@@ -107,16 +87,11 @@ export default class RecSys extends Component {
     }
 
     fetchPopularRecipes() {
-      return fetch('http://django-fyp.herokuapp.com/recsys/recommendation/popular/')
+      return fetch(POPULAR_RECIPES_URL)
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
-          //isLoading: false,
-          //dataSource: [...this.state.dataSource, ...responseJson],
-          popularRecipes: responseJson, //responseJson.slice(0, span),
-          //pageNum: this.state.pageNum + 1
-        }, function(){
-          //console.log(responseJson)
+          popularRecipes: responseJson,
         });
 
       })
@@ -126,16 +101,11 @@ export default class RecSys extends Component {
     }
 
     fetchRandomRecipes() {
-      return fetch('http://django-fyp.herokuapp.com/recsys/recommendation/random/8')
+      return fetch(RANDOM_PICKS_URL)
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
-          //isLoading: false,
-          //dataSource: [...this.state.dataSource, ...responseJson],
-          randomRecipes: responseJson, //responseJson.slice(0, span),
-          //pageNum: this.state.pageNum + 1
-        }, function(){
-          //console.log(responseJson)
+          randomRecipes: responseJson,
         });
 
       })
@@ -143,80 +113,26 @@ export default class RecSys extends Component {
         console.error(error);
       });
     }
-
-    fetchMore() {
-      //console.log('fetching');
-      this.displayRecipe(); return;
-      if(this.state.hasScrolled === false){return null;}
-      var next = this.state.pageNum + 1;
-      if(next == 55){return null;}
-      var initial = next * 10 + 1;
-      var end = initial + 9;
-      var queryID = initial + '-' + end;
-      this.fetchData(queryID);
-    }
-
-    displayRecipe() {
-      if(this.state.hasScrolled === false){return null;}
-      var originalPageNum = this.state.pageNum;
-      var nextPageNum = originalPageNum + 1;
-      if(nextPageNum >= this.state.dataSource.length / span + 1){return null;}
-      var start = originalPageNum * span;
-      var end = start + span;
-      //console.log(start); console.log(end);
-      this.setState({
-        displayData: [...this.state.displayData, ...this.state.dataSource.slice(start, end)],
-        pageNum: nextPageNum
-      });
-      //return(this.renderPageNum(originalPageNum));
-    }
-
-    renderPageNum(pageNum){
-      console.log(pageNum);
-      return(
-        <Container><Text>{pageNum}</Text></Container>
-      );
-    }
-
-    handleOnScroll() {
-      this.setState({hasScrolled: true});
-    }
-
-    refresh() {
-      this.setState({ isFetching: true });
-      this.fetchData('random/5');
-      this.setState({ isFetching: false })
-    }
   
     render() {
         const {navigate} = this.props.navigation;
         if(this.state.isLoading){
             return(
-            <Container style={styles.screen_container}>
-            <StatusBar
-                barStyle="light-content"
-            />
-            <Text>Loading...</Text>
+              <Container style={styles.screen_container}>
+                <Text>Loading...</Text>
                 <ActivityIndicator/>
-            </Container>
+              </Container>
             )
         }
         return(
           <Container>
-            {/* <Header>
-            <Left />
-              <Body>
-                <Title>RecSys</Title>
-              </Body>
-            <Right />
-            </Header> */}
             <Container style={styles.screen_container}>
                 <ScrollView>
                   <Row>
-                    <Col style={{width: width*0.8}}>
+                    <Col style={{width: SCREEN_WIDTH*0.8}}>
                       <Heading style={styles.title}>{this.state.greeting}</Heading>
                     </Col>
-                    <Col style={{width: width*0.2, flex:1, flexDirection: 'row', justifyContent: 'flex-end'}}>
+                    <Col style={{width: SCREEN_WIDTH*0.2, flex:1, flexDirection: 'row', justifyContent: 'flex-end'}}>
                       <Avatar
                         medium
                         rounded
@@ -226,7 +142,6 @@ export default class RecSys extends Component {
                       />
                     </Col>
                   </Row>
-                  {/* <Divider style={{ marginBottom: 20, }} /> */}
                   {func.renderMainMenuRecipesInComplexCarousel('Your Favorites', this.state.favoriteRecipes, want_divider=true, navigate, this.state)}
                   {func.renderMainMenuRecipesInSimpleCarousel('Popular Cuisines', this.state.popularRecipes, want_divider=true, navigate, this.state)}
                   {func.renderMainMenuRecipesInSimpleCarousel('Random Picks', this.state.randomRecipes, want_divider=false, navigate, this.state)}
@@ -241,9 +156,6 @@ export default class RecSys extends Component {
   const styles = StyleSheet.create({
     screen_container: {
       flex: 1,
-      //justifyContent: 'center',
-      //alignItems: 'center',
-      //backgroundColor: 'skyblue',
     },
     title: {
       margin: 20,

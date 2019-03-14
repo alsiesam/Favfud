@@ -1,15 +1,20 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StatusBar, StyleSheet, View, Image, FlatList, ActivityIndicator, WebView, List, Alert, TouchableOpacity, Linking, ScrollView, Modal, TouchableHighlight, AsyncStorage} from 'react-native';
+import { Platform, Dimensions, StyleSheet, View, Image, FlatList, ActivityIndicator, Alert, TouchableOpacity, Linking, ScrollView, AsyncStorage} from 'react-native';
 import { Rating, Divider } from "react-native-elements";
-import { Card, } from "react-native-elements";
-import { Container, Header, Body, Title, Content, Button, Icon, Left, Right, Accordion } from "native-base";
+import { Container, Button, Icon, } from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import * as func from './Recipe_Functions.js';
 
 import { Heading, Text } from '@shoutem/ui';
 
-const width = Dimensions.get('window').width; //full width
-const height = Dimensions.get('window').height; //full height
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const ASYNC_STORAGE_KEYS = ['bookmarked_recipe', 'recipe_ratings'];
+const ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE = 'bookmarked_recipe';
+const ASYNC_STORAGE_KEYS_FOR_RECIPE_RATINGS = 'recipe_ratings';
+const API_HOST = 'http://django-fyp.herokuapp.com/';
+const UPDATE_INTERACTION_URL = `${API_HOST}recsys/interaction/update/`;
+const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 
 export default class Recipe_Information extends Component {
   
@@ -26,40 +31,24 @@ export default class Recipe_Information extends Component {
     }
   }
 
-  componentWillMount() {
-    //console.log("Will:"+this.state.recipe.id.toString());
-  }
-
   componentDidMount(){
     this.updateInteraction('tapview');
     this.fetchSimilarRecipes(this.state.recipe);
-    //console.log("Did:"+this.state.recipe.id.toString());
     recipe_id = this.state.recipe.id.toString();
-    AsyncStorage.getItem('bookmarked_recipe')
-    .then((recipes) => {
-      const r = recipes ? JSON.parse(recipes) : [];
 
-      //console.log(r);
-
-      if(r.includes(recipe_id)){
+    AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then((response) => {
+      const bookmarked_recipes_list = response[0][1] ? JSON.parse(response[0][1]) : [];
+      if(bookmarked_recipes_list.includes(recipe_id)){
         this.setState({bookmarked: true});
       }
-
-    });
-    AsyncStorage.getItem('recipe_ratings')
-    .then((ratings) => {
-      const rat = ratings ? JSON.parse(ratings) : {};
-
-      //console.log(rat);
-
-      if(recipe_id in rat){
-        this.setState({recipe_rating: rat[recipe_id]});
+      const rating_list = response[1][1] ? JSON.parse(response[1][1]) : [];
+      if(recipe_id in rating_list){
+        this.setState({recipe_rating: rating_list[recipe_id]});
       }
       this.setState({
         isLoading: false
       });
     });
-
   }
 
   updateInteraction(act, remarks) {
@@ -78,7 +67,7 @@ export default class Recipe_Information extends Component {
         break;
     }
     //console.log(update_header);
-    fetch('http://django-fyp.herokuapp.com/recsys/interaction/update/', {
+    fetch(UPDATE_INTERACTION_URL, {
       method: 'POST',
       headers: new Headers (update_header),
     })
@@ -87,12 +76,12 @@ export default class Recipe_Information extends Component {
       //console.log(responseJson);
     })
     .catch((error) =>{
-      //console.error(error);
+      console.error(error);
     });
   }
 
   fetchSimilarRecipes(recipe) {
-    return fetch('http://django-fyp.herokuapp.com/recsys/recipe/id/ids', {
+    return fetch(GET_MULTIPLE_RECIPES_URL, {
       headers: new Headers ({
         ids: recipe.similar_recipe_id.split('$')
       }),
@@ -101,11 +90,7 @@ export default class Recipe_Information extends Component {
     .then((responseJson) => {
       this.setState({
         similar_recipes: responseJson
-      }, function(){
-        //console.log(responseJson)
-        //console.log(this.state.recipe.similar_recipe_id)
       });
-
     })
     .catch((error) =>{
       console.error(error);
@@ -191,7 +176,7 @@ export default class Recipe_Information extends Component {
     } else {
       this.setState({bookmarked: true});
     }
-    AsyncStorage.getItem('bookmarked_recipe')
+    AsyncStorage.getItem(ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE)
     .then((recipes) => {
       const r = recipes ? JSON.parse(recipes) : [];
       const newValue = this.state.recipe.id.toString();
@@ -203,7 +188,7 @@ export default class Recipe_Information extends Component {
       } else {
         r.push(newValue);
       }
-      AsyncStorage.setItem('bookmarked_recipe', JSON.stringify(r));
+      AsyncStorage.setItem(ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE, JSON.stringify(r));
     });
     bookmark_flag = !_bookmarked ? 'true' : 'false';
     this.updateInteraction('bookmark', {flag: bookmark_flag});
@@ -216,13 +201,12 @@ export default class Recipe_Information extends Component {
   }
 
   ratingCompleted(rating) {
-    //console.log(rating);
     this.renderRatingAlertBox(rating);
   }
 
   renderRatingAlertBox(rating){
     Alert.alert(
-      'You have rated '+rating+'/5',
+      `You have rated ${rating}/5`,
       'Confirm your rating?',
       [
         {
@@ -240,18 +224,17 @@ export default class Recipe_Information extends Component {
 
   getRating() {
     rating = this.state.recipe_rating == -1 ? 0 : parseInt(this.state.recipe_rating);
-    //console.log("rating:"+rating);
     return rating;
   }
 
   setRating(_rating) {
     this.setState({recipe_rating: _rating});
-    AsyncStorage.getItem('recipe_ratings')
+    AsyncStorage.getItem(ASYNC_STORAGE_KEYS_FOR_RECIPE_RATINGS)
     .then((ratings) => {
       const rat = ratings ? JSON.parse(ratings) : {};
       const newValue = this.state.recipe.id.toString();
       rat[newValue] = _rating.toString();
-      AsyncStorage.setItem('recipe_ratings', JSON.stringify(rat));
+      AsyncStorage.setItem(ASYNC_STORAGE_KEYS_FOR_RECIPE_RATINGS, JSON.stringify(rat));
     });
     this.updateInteraction('rating', {rating: _rating});
   }
@@ -268,18 +251,13 @@ export default class Recipe_Information extends Component {
     if (this.state.isLoading) {
       return(
         <Container style={styles.screen_container}>
-        <StatusBar
-            barStyle="light-content"
-        />
-        <Text>Loading...</Text>
-            <ActivityIndicator/>
+          <Text>Loading...</Text>
+          <ActivityIndicator/>
         </Container>
         )
       } else {
         const {navigate} = this.props.navigation;
-        const {goBack} = this.props.navigation;
         const recipe = this.state.recipe;
-        //console.log(recipe);
 
         rating = '';
         if('rating' in recipe){
@@ -291,7 +269,6 @@ export default class Recipe_Information extends Component {
               startingValue={recipe.rating}
               readonly
               imageSize={12}
-              //onFinishRating={this.ratingCompleted}
               style={{ }}
             />
             <Text style={{fontSize: 12}}> ({this.state.recipe.rating})</Text>
@@ -324,21 +301,8 @@ export default class Recipe_Information extends Component {
 
         return(
           <Container>
-            {/* <Header>
-              <Left>
-                  <Button transparent onPress={()=>goBack()}>
-                    <Icon name="arrow-back" />
-                    <Text>Back</Text>
-                  </Button>
-              </Left>
-              <Body>
-                <Title>Recipe</Title>
-              </Body>
-              <Right />
-            </Header> */}
             <Container style={styles.screen_container}>
               <ScrollView>
-              {/* <Content style={[{width: width,}, styles.content,]}> */}
               <View style={{margin: 20,}}>
                 <Grid>
                   <Row style={{
@@ -356,16 +320,13 @@ export default class Recipe_Information extends Component {
                       {totaltime}
                       {numofservings}
                       <Row>
-                        <Button transparent style={styles.button} onPress={()=>this.redirectRecipeURL(recipe.sourcerecipeurl)} >
+                        <Button transparent onPress={()=>this.redirectRecipeURL(recipe.sourcerecipeurl)} >
                           <Icon type='Ionicons' name='ios-link' style={{}}/>
                         </Button>
-                        <Button transparent style={styles.button}  onPress={()=>navigate({routeName: 'Recipe_Nutrition', params: {recipe: recipe}, key: 'Nut'+recipe.id})}>
+                        <Button transparent onPress={()=>navigate({routeName: 'Recipe_Nutrition', params: {recipe: recipe}, key: 'Nut'+recipe.id})}>
                           <Icon type='MaterialCommunityIcons' name='nutrition' style={{'color':'green'}}/>
                         </Button>
-                        <Button transparent style={styles.button}
-                        // onPress={() => {
-                        //   this.setModalVisible(true);
-                        // }}
+                        <Button transparent
                         onPress={() => {
                           this.setBookmark(this.state.bookmarked);
                         }}
@@ -394,7 +355,6 @@ export default class Recipe_Information extends Component {
                   </Row>
                 </Grid>
               </View>
-              {/* </Content> */}
               </ScrollView>
             </Container>
           </Container>
@@ -408,24 +368,14 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     justifyContent: 'center',
-    //backgroundColor: 'skyblue',
-    //paddingTop: 50,
-    //paddingBottom: 50,
   },
   content: {
-    //backgroundColor: "red",
     paddingTop: 20,
-    //margin: 20,
-  },
-  button: {
-
   },
   title: {
-    //textAlignVertical: 'center',
     textAlign: 'left',
     fontWeight: 'bold',
     fontSize: 15,
-    //paddingTop: 20,
     paddingBottom: 5,
   },
   recipe_image: {
@@ -445,8 +395,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: 'bold',
     fontSize: 18,
-    // marginTop: 20,
-    // marginBottom: 20,
   },
   related_recipe_container: {
     padding: 0,
