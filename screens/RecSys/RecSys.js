@@ -118,7 +118,7 @@ export default class RecSys extends Component {
         const {navigate} = this.props.navigation;
         if(this.state.isLoading){
             return(
-              <Container style={styles.screen_container}>
+              <Container style={styles.loading_container}>
                 <Text>Loading...</Text>
                 <ActivityIndicator/>
               </Container>
@@ -154,6 +154,11 @@ export default class RecSys extends Component {
   }
   
   const styles = StyleSheet.create({
+    loading_container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
     screen_container: {
       flex: 1,
     },

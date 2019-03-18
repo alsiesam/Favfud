@@ -32,7 +32,7 @@ export default class Recipe_Information extends Component {
   }
 
   componentDidMount(){
-    this.updateInteraction('tapview');
+    //this.updateInteraction('tapview');
     this.fetchSimilarRecipes(this.state.recipe);
     recipe_id = this.state.recipe.id.toString();
 
@@ -118,13 +118,21 @@ export default class Recipe_Information extends Component {
             </Row>
             <Divider style={{ marginBottom: 20, }} />
             { ingredients_arr.map((ingredients, i) => {
+              if(i%2 == 0){
                 return(
-                <Row key={i} style={{height:40, marginBottom:20,}}>
-                    <Text>{ingredients}</Text>
-                </Row>
+                  <Row key={i} style={styles.oddIngredientRow}>
+                      <Text style={styles.oddIngredientText}>{ingredients}</Text>
+                  </Row>
                 );
+              } else {
+                return(
+                  <Row key={i} style={styles.evenIngredientRow}>
+                      <Text style={styles.evenIngredientText}>{ingredients}</Text>
+                  </Row>
+                );
+              }
             }) }
-            <Divider style={{ marginBottom: 20, }} />
+            <Divider style={{ marginTop: 20, marginBottom: 20, }} />
         </Grid>
     );
   }
@@ -139,28 +147,29 @@ export default class Recipe_Information extends Component {
               </Text>
           </Row>
           <FlatList
-                  horizontal={true}
-                  data={this.state.similar_recipes}
-                  numColumns={1}
-                  renderItem={({ item: rowData }) => {
-                    return(
-                      <View style={{marginTop: 20, marginRight: 30,}}>
-                        <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
-                          <Image
-                            style={styles.recipe_image}
-                            source={{uri: rowData.imageurlsbysize_360}}
-                          />
-                          <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
-                            <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
-                              {rowData.recipe_name}
-                            </Text>
-                          </Row>
-                        </TouchableOpacity> 
-                      </View>
-                    );
-                  }}
-                  keyExtractor={(item, index) => index.toString()}
-                  showsHorizontalScrollIndicator={false}
+            horizontal={true}
+            data={this.state.similar_recipes}
+            numColumns={1}
+            renderItem={({ item: rowData, index }) => {
+              return(
+                <View style={{marginTop: 20, marginRight: 30,}}>
+                  <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
+                    <Image
+                      style={styles.recipe_image}
+                      source={{uri: rowData.imageurlsbysize_360}}
+                    />
+                    <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
+                      <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
+                        {rowData.recipe_name}
+                      </Text>
+                    </Row>
+                  </TouchableOpacity> 
+                </View>
+              );
+            }}
+            keyExtractor={(item, index) => index.toString()}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{marginLeft: 20, }}
           />
       </Grid>
     );
@@ -250,7 +259,7 @@ export default class Recipe_Information extends Component {
   render() {
     if (this.state.isLoading) {
       return(
-        <Container style={styles.screen_container}>
+        <Container style={styles.loading_container}>
           <Text>Loading...</Text>
           <ActivityIndicator/>
         </Container>
@@ -300,63 +309,61 @@ export default class Recipe_Information extends Component {
         }
 
         return(
-          <Container>
-            <Container style={styles.screen_container}>
-              <ScrollView>
-              <View style={{margin: 20,}}>
-                <Grid>
-                  <Row style={{
-                    flex:2, justifyContent:'space-between', alignSelf:'center',
-                    marginBottom:20, height:180, 
-                  }}>
-                    <Col style={{flex:1, marginRight:10}}>
-                      <Image source={{uri: recipe.imageurlsbysize_360}} style={styles.recipe_image} />
-                    </Col>
-                    <Col style={{flex:1, marginLeft:10}}>
-                      <Row style={{height:'auto'}}>
-                          <Text numberOfLines={3} style={styles.title}>{recipe.recipe_name}</Text>
-                      </Row>
-                      {rating}
-                      {totaltime}
-                      {numofservings}
-                      <Row>
-                        <Button transparent onPress={()=>this.redirectRecipeURL(recipe.sourcerecipeurl)} >
-                          <Icon type='Ionicons' name='ios-link' style={{}}/>
-                        </Button>
-                        <Button transparent onPress={()=>navigate({routeName: 'Recipe_Nutrition', params: {recipe: recipe}, key: 'Nut'+recipe.id})}>
-                          <Icon type='MaterialCommunityIcons' name='nutrition' style={{'color':'green'}}/>
-                        </Button>
-                        <Button transparent
-                        onPress={() => {
-                          this.setBookmark(this.state.bookmarked);
-                        }}
-                        >
-                          <Icon type='Ionicons' name='ios-bookmark' style={this.state.bookmarked ? this.setBookmarkStyle('brown') : this.setBookmarkStyle('gray')}/>
-                        </Button>
-                      </Row>
-                    </Col>
-                  </Row>
-                  <Row>
-                    {this.renderIngredients(func.getIngredients(recipe))}
-                  </Row>
-                  <Row style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginBottom: 20, }}>
-                    {this.renderRatingInfo()}
-                    <Rating
-                      showRating
-                      onFinishRating={(rating) => this.ratingCompleted(rating)}
-                      imageSize={30}
-                      startingValue={this.getRating()}
-                      showRating={false}
-                    />
-                  </Row>
-                  <Divider style={{ marginBottom: 20, }} />
-                  <Row>
-                    {this.renderCorrelatedRecipes()}
-                  </Row>
-                </Grid>
-              </View>
-              </ScrollView>
-            </Container>
+          <Container style={styles.screen_container}>
+            <ScrollView>
+            <View>
+              <Grid>
+                <Row style={{
+                  flex:2, justifyContent:'space-between', alignSelf:'center',
+                  margin:20, height:180,
+                }}>
+                  <Col style={{flex:1, marginRight:10}}>
+                    <Image source={{uri: recipe.imageurlsbysize_360}} style={styles.recipe_image} />
+                  </Col>
+                  <Col style={{flex:1, marginLeft:10}}>
+                    <Row style={{height:'auto'}}>
+                        <Text numberOfLines={3} style={styles.title}>{recipe.recipe_name}</Text>
+                    </Row>
+                    {rating}
+                    {totaltime}
+                    {numofservings}
+                    <Row>
+                      <Button transparent onPress={()=>this.redirectRecipeURL(recipe.sourcerecipeurl)} >
+                        <Icon type='Ionicons' name='ios-link' style={{}}/>
+                      </Button>
+                      <Button transparent onPress={()=>navigate({routeName: 'Recipe_Nutrition', params: {recipe: recipe}, key: 'Nut'+recipe.id})}>
+                        <Icon type='MaterialCommunityIcons' name='nutrition' style={{'color':'green'}}/>
+                      </Button>
+                      <Button transparent
+                      onPress={() => {
+                        this.setBookmark(this.state.bookmarked);
+                      }}
+                      >
+                        <Icon type='Ionicons' name='ios-bookmark' style={this.state.bookmarked ? this.setBookmarkStyle('brown') : this.setBookmarkStyle('gray')}/>
+                      </Button>
+                    </Row>
+                  </Col>
+                </Row>
+                <Row>
+                  {this.renderIngredients(func.getIngredients(recipe))}
+                </Row>
+                <Row style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginBottom: 20, }}>
+                  {this.renderRatingInfo()}
+                  <Rating
+                    showRating
+                    onFinishRating={(rating) => this.ratingCompleted(rating)}
+                    imageSize={30}
+                    startingValue={this.getRating()}
+                    showRating={false}
+                  />
+                </Row>
+                <Divider style={{ marginBottom: 20, }} />
+                <Row>
+                  {this.renderCorrelatedRecipes()}
+                </Row>
+              </Grid>
+            </View>
+            </ScrollView>
           </Container>
         );
       }
@@ -364,13 +371,15 @@ export default class Recipe_Information extends Component {
 }
 
 const styles = StyleSheet.create({
+  loading_container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   screen_container: {
     flex: 1,
     flexDirection: 'column',
     justifyContent: 'center',
-  },
-  content: {
-    paddingTop: 20,
   },
   title: {
     textAlign: 'left',
@@ -386,15 +395,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 25,
   },
-  rows: {
-    alignSelf:'center',
-    marginBottom: 20,
-  },
   subtitle: {
     textAlignVertical: "center",
     textAlign: "center",
     fontWeight: 'bold',
     fontSize: 18,
+    marginLeft: 20,
   },
   related_recipe_container: {
     padding: 0,
@@ -411,5 +417,24 @@ const styles = StyleSheet.create({
   },
   bookmark: {
     color: 'red',
+  },
+  oddIngredientRow: {
+    height: 60,
+    backgroundColor: 'rgb(245,245,245)',
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  evenIngredientRow: {
+    height: 60,
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  oddIngredientText: {
+    marginLeft: 20,
+    marginRight: 20,
+  },
+  evenIngredientText: {
+    marginLeft: 20,
+    marginRight: 20,
   },
 });
