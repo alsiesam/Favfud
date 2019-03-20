@@ -114,9 +114,7 @@ export default class Recipe_Information extends Component {
                 <Heading style={styles.subtitle}>
                     Ingredients
                 </Heading>
-                
             </Row>
-            <Divider style={{ marginBottom: 20, }} />
             { ingredients_arr.map((ingredients, i) => {
               if(i%2 == 0){
                 return(
@@ -139,6 +137,9 @@ export default class Recipe_Information extends Component {
 
   renderCorrelatedRecipes() {
     const {navigate} = this.props.navigation;
+    if(this.state.similar_recipes && Object.keys(this.state.similar_recipes[0]).length == 0){
+      return null;
+    }
     return(
       <Grid>
           <Row style={{height: 'auto',}}>
