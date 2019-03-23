@@ -24,7 +24,7 @@ export function secondsToHms(d) {
     var mDisplay = m > 0 ? m + (m == 1 ? " minute " : " minutes ") : "";
     var sDisplay = s > 0 ? s + (s == 1 ? " second " : " seconds ") : "";
     var final = hDisplay + mDisplay + sDisplay;
-    return final.trim(); 
+    return final.trim();
 }
 
 export function getIngredients(recipe) {
@@ -101,8 +101,8 @@ export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider
         tmp.map((index) => {
           return(
             <View key={index} style={{marginTop: 5, marginLeft: 5, marginRight: 5, marginBottom: 5,}}>
-              <TouchableOpacity 
-              key={rowData['recommend_recipes'][index].id} 
+              <TouchableOpacity
+              key={rowData['recommend_recipes'][index].id}
               onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData['recommend_recipes'][index], user_token: state.user_token}, key: 'Info'+rowData['recommend_recipes'][index].id})}
               >
                 <Image
@@ -111,7 +111,7 @@ export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider
                 />
               </TouchableOpacity>
             </View>
-          );        
+          );
         })
       }</Row>);
     }
@@ -170,7 +170,7 @@ export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider,
                     {rowData.recipe_name}
                   </Text>
                 </Row>
-              </TouchableOpacity> 
+              </TouchableOpacity>
             </View>
             );
           }}
@@ -180,6 +180,58 @@ export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider,
         {divider}
       </View>
   );
+}
+
+export function renderSearchResultsList(title, data, want_divider, navigate, state) {
+	if (!Array.isArray(data)) {
+		console.log('undefined data');
+		return;
+	}
+	if(data.length == 0){
+		console.log('data has no length');
+    return;
+  }
+	// console.log(data);
+  divider = null;
+  if(want_divider){
+    divider = <Divider style={{ marginBottom: 10, }} />
+  }
+	rows = [];
+	return (
+		<View>
+			<Title style={styles.subtitle}>{title}</Title>
+			{data.map((recipe, ) => {
+				// console.warn(recipe);
+				ingredients = getIngredients(recipe).slice(0, 3);
+				return (
+					<TouchableOpacity key={recipe.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: recipe, /*user_token: state.user_token*/}, key: 'Info'+recipe.id})}>
+					<Row style={styles.listView}>
+						<Image
+							style={[styles.small_recipe_image, {marginLeft: 10, marginRight: 10}]}
+							source={{uri: recipe.imageurlsbysize_90}}
+						/>
+						<Col>
+							<Text numberOfLines={2} style={{fontSize: 14, fontWeight: 'bold', marginBottom: 10,}}>
+								{recipe.recipe_name}
+							</Text>
+							{
+								ingredients.map((ing, key) => {
+									return (
+										<Text numberOfLines={1} key={key} >
+											{ing}
+										</Text>
+									);
+								})
+							}
+						</Col>
+					</Row>
+					{divider}
+					</TouchableOpacity>
+				);
+			})}
+		</View>
+	);
+
 }
 
 const styles = StyleSheet.create({
@@ -222,4 +274,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+	listView: {
+		marginTop: 10,
+		marginBottom: 10,
+		fontSize: 12,
+	},
 });
