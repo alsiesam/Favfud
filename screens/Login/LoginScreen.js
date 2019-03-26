@@ -91,14 +91,13 @@ export default class HomeScreen extends React.Component {
         password: this.state.password
       }, (response) => {
         console.log("Unsuccesful login");
-        console.log(response);
         this.showErrorMsg(response);
+        this.setState({isLoading: false});
       });
     }
   }
 
   login(credentials, callback) {
-      this.setState({isLoading: true});
       fetch(LOGIN_REQUEST_URL, {
         method: 'POST',
         headers: {
@@ -116,7 +115,6 @@ export default class HomeScreen extends React.Component {
           if (callback) { callback(response); }
         }
       }).done();
-      this.setState({isLoading: false});
     }
 
   async switchToApp(key, email, actionType) {
@@ -129,11 +127,14 @@ export default class HomeScreen extends React.Component {
         this.showAlert("Successful", "Account is registered.");
       } else {
         console.log("[switchToApp] Error");
+        this.setState({isLoading: false});
       }
       this.props.navigation.navigate('App')
+      this.setState({isLoading: false});
     } catch (err) {
       console.log("[switchToApp] Error");
       console.log(err);
+      this.setState({isLoading: false});
     }
   }
 
@@ -222,11 +223,11 @@ export default class HomeScreen extends React.Component {
   render() {
     if (this.state.isLoading) {
       return(
-        <Container style={styles.loading_container}>
+        <View style={styles.loading_container}>
           <Text>Loading...</Text>
           <ActivityIndicator/>
-        </Container>
-        )
+        </View>
+      );
     } else {
       return (
         <View style={styles.container}>
@@ -341,6 +342,7 @@ export default class HomeScreen extends React.Component {
   };
 
   _handleLogin = () => {
+    this.setState({isLoading: true});
     this.submitCredentialsLogin();
   };
 }
