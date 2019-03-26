@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import {
   Heading,
@@ -16,6 +17,7 @@ import {
   TextInput,
   Divider,
 } from '@shoutem/ui';
+import Container from 'native-base';
 
 const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
@@ -36,8 +38,12 @@ export default class HomeScreen extends React.Component {
       token:'',
       stored_email:'',
       error:'',
-      isLoginMode: true
+      isLoginMode: true,
+      isLoading: false,
     };
+  }
+
+  componentDidMount(){
     this.getToken();
     this.getEmail();
   }
@@ -57,6 +63,7 @@ export default class HomeScreen extends React.Component {
   }
 
   register(credentials, callback) {
+      this.setState({isLoading: true});
       fetch(REGISTER_REQUEST_URL, {
         method: 'POST',
         headers: {
@@ -74,6 +81,7 @@ export default class HomeScreen extends React.Component {
           if (callback) { callback(response); }
         }
       }).done();
+      this.setState({isLoading: false});
     }
 
   submitCredentialsLogin() {
@@ -90,6 +98,7 @@ export default class HomeScreen extends React.Component {
   }
 
   login(credentials, callback) {
+      this.setState({isLoading: true});
       fetch(LOGIN_REQUEST_URL, {
         method: 'POST',
         headers: {
@@ -107,6 +116,7 @@ export default class HomeScreen extends React.Component {
           if (callback) { callback(response); }
         }
       }).done();
+      this.setState({isLoading: false});
     }
 
   async switchToApp(key, email, actionType) {
@@ -166,9 +176,9 @@ export default class HomeScreen extends React.Component {
     try{
       let token = await AsyncStorage.getItem(ACCESS_TOKEN);
       this.setState({token});
-      console.log('Token is:' + token);
+      console.log('[getToken] Token is:' + token);
     } catch (err) {
-      console.log('[updateToken] Error')
+      console.log('[getToken] Error')
     }
   }
 
@@ -210,96 +220,105 @@ export default class HomeScreen extends React.Component {
   }
 
   render() {
-    return (
-      <View style={styles.container}>
+    if (this.state.isLoading) {
+      return(
+        <Container style={styles.loading_container}>
+          <Text>Loading...</Text>
+          <ActivityIndicator/>
+        </Container>
+        )
+    } else {
+      return (
+        <View style={styles.container}>
 
-        <View style={{flex: 1}} />
+          <View style={{flex: 1}} />
 
-        {/* Welcome Text */}
-        <View style={styles.welcomeContainer}>
-          <Heading style={styles.welcomeText}>Welcome to Favfud!</Heading>
-        </View>
+          {/* Welcome Text */}
+          <View style={styles.welcomeContainer}>
+            <Heading style={styles.welcomeText}>Welcome to Favfud!</Heading>
+          </View>
 
-        <View style={{flex: 1}} />
+          <View style={{flex: 1}} />
 
-        {/* Login*/}
-        <View style={styles.loginContainer} >
+          {/* Login*/}
+          <View style={styles.loginContainer} >
 
 
-            <TextInput
-              style={styles.textInput}
-              placeholder={'Enter your email address'}
-              onChangeText={(email) => this.setState({email})}
-              value={this.state.email}
-            />
-
-            <TextInput
-              style={styles.textInput}
-              placeholder={'Enter your password'}
-              secureTextEntry={true}
-              onChangeText={(password) => this.setState({password})}
-              value={this.state.password}
-            />
-
-          {
-            !this.state.isLoginMode
-            ? (
               <TextInput
                 style={styles.textInput}
-                placeholder={'Re-enter your password'}
-                secureTextEntry={true}
-                onChangeText={(password2) => this.setState({password2})}
-                value={this.state.password2}
+                placeholder={'Enter your email address'}
+                onChangeText={(email) => this.setState({email})}
+                value={this.state.email}
               />
-            )
-            : (
-              <View />
-            )
-          }
 
-          <View style={styles.buttonContainer}>
+              <TextInput
+                style={styles.textInput}
+                placeholder={'Enter your password'}
+                secureTextEntry={true}
+                onChangeText={(password) => this.setState({password})}
+                value={this.state.password}
+              />
+
+            {
+              !this.state.isLoginMode
+              ? (
+                <TextInput
+                  style={styles.textInput}
+                  placeholder={'Re-enter your password'}
+                  secureTextEntry={true}
+                  onChangeText={(password2) => this.setState({password2})}
+                  value={this.state.password2}
+                />
+              )
+              : (
+                <View />
+              )
+            }
+
+            <View style={styles.buttonContainer}>
+              {
+                this.state.isLoginMode
+                ? (
+                  <Button
+                    onPress= {this._handleLogin}
+                    styleName="secondary full-width">
+                    <Text>Login</Text>
+                  </Button>
+                )
+                : (
+                  <Button
+                    onPress= {this._handleRegister}
+                    styleName="secondary full-width">
+                    <Text>Register</Text>
+                  </Button>
+                )
+              }
+            </View>
+
+          </View>
+
+          {/* Help */}
+
+          <View style={styles.helpContainer}>
             {
               this.state.isLoginMode
               ? (
-                <Button
-                  onPress= {this._handleLogin}
-                  styleName="secondary full-width">
-                  <Text>Login</Text>
-                </Button>
+                <TouchableOpacity onPress={this._handleSwitchToRegister} style={styles.helpLink}>
+                  <Text style={styles.helpLinkText}>Don't have an account yet?{"\n"}Click here to register!</Text>
+                </TouchableOpacity>
               )
               : (
-                <Button
-                  onPress= {this._handleRegister}
-                  styleName="secondary full-width">
-                  <Text>Register</Text>
-                </Button>
+                <TouchableOpacity onPress={this._handleSwitchToLogin} style={styles.helpLink}>
+                  <Text style={styles.helpLinkText}>Have an account already?{"\n"}Click here to login!</Text>
+                </TouchableOpacity>
               )
             }
           </View>
 
+          <View style={{flex: 4}} />
         </View>
-
-        {/* Help */}
-
-        <View style={styles.helpContainer}>
-          {
-            this.state.isLoginMode
-            ? (
-              <TouchableOpacity onPress={this._handleSwitchToRegister} style={styles.helpLink}>
-                <Text style={styles.helpLinkText}>Don't have an account yet?{"\n"}Click here to register!</Text>
-              </TouchableOpacity>
-            )
-            : (
-              <TouchableOpacity onPress={this._handleSwitchToLogin} style={styles.helpLink}>
-                <Text style={styles.helpLinkText}>Have an account already?{"\n"}Click here to login!</Text>
-              </TouchableOpacity>
-            )
-          }
-        </View>
-
-        <View style={{flex: 4}} />
-      </View>
-    );
+      );
+    }
   }
 
   _handleHelpPress = () => {
@@ -347,13 +366,17 @@ const styles = StyleSheet.create({
   textInput:{
     borderColor: 'gray',
     borderWidth: 1,
-    height: 55,
-    marginTop:5,
+    paddingTop: 5,
+    paddingBottom: 5,
+    height: 40,
+    marginTop:10,
     marginBottom:5,
   },
   buttonContainer: {
     // flex:1,
-    height:40,
+    height: 40,
+    paddingTop: 0,
+    paddingBottom: 0,
     marginTop:10,
     marginBottom:10,
     borderRadius:5,
@@ -381,5 +404,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#2e78b7',
     textAlign: 'center',
+  },
+  loading_container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

@@ -23,6 +23,9 @@ export default class ProfileScreen extends React.Component {
       email:'',
       token:'',
     };
+  }
+
+  componentDidMount(){
     this.getTokenAndEmail()
   }
 
