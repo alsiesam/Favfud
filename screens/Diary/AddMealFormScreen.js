@@ -16,7 +16,8 @@ import { Col, Row, Grid } from "react-native-easy-grid";
 import Calendar from '../../library/react-native-calendar-select';
 import DatePicker from 'react-native-datepicker';
 
-const MEAL_REQUEST_URL = 'http://127.0.0.1:8000/api/diary/meals/';
+const ACCESS_TOKEN = 'user_token';
+const MEAL_REQUEST_URL = 'https://favfud-app.herokuapp.com/api/diary/meals/';
 
 export default class AddMealFormScreen extends React.Component {
   static navigationOptions = {
@@ -29,7 +30,22 @@ export default class AddMealFormScreen extends React.Component {
       servings: '',
       dishId: '',
       date: moment(),
+      token:'',
     };
+  }
+
+  componentDidMount(){
+    this.getToken();
+  }
+
+  async getToken() {
+    try{
+      let token = await AsyncStorage.getItem(ACCESS_TOKEN);
+      this.setState({token});
+      console.log('[getToken] Token is:' + token);
+    } catch (err) {
+      console.log('[getToken] Error')
+    }
   }
 
   renderDatepicker() {
@@ -50,17 +66,32 @@ export default class AddMealFormScreen extends React.Component {
       );
   }
 
+  showAlert(title, message) {
+    Alert.alert(
+      title,
+      message,
+      [
+        {text: 'OK'},
+      ],
+      {cancelable: false},
+    );
+  }
+
   submitAddRequest() {
-    if (this.state.userToken !== undefined && this.state.servings !== undefined && this.state.dishId !== undefined && this.state.date !== undefined) {
+    if (this.state.token !== undefined && this.state.servings !== undefined && this.state.dishId !== undefined && this.state.date !== undefined) {
       this.addMeal({
-        user_token: this.state.userToken,
+        user_token: this.state.token,
         servings: this.state.servings,
         dish_id: this.state.dishId,
-        date: this.state.date,
+        date: moment(this.state.date).format("YYYY-MM-DD"),
       }, (response) => {
         console.log("Cannot Add Meal");
         console.log(response);
+        this.showAlert("Error", response);
       });
+    } else {
+      console.log("Error");
+
     }
   }
 
@@ -132,14 +163,7 @@ export default class AddMealFormScreen extends React.Component {
   }
 
   _handleAdd = () => {
-    Alert.alert(
-      "Oops...",
-      "This function is under development, please try again later.",
-      [
-        {text: 'OK'},
-      ],
-      {cancelable: false},
-    );
+    this.submitAddRequest();
   };
 }
 

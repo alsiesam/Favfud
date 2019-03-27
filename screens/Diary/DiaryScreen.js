@@ -21,6 +21,8 @@ const EMAIL_ADDRESS = 'email_address';
 
 const API_HOST = 'http://django-fyp.herokuapp.com/';
 const RECIPES_URL = `${API_HOST}recsys/recommendation/popular/`;
+const RETRIEVE_MEAL_REQUEST_URL = 'https://favfud-app.herokuapp.com/api/diary/meal/?user=';
+
 
 export default class DiaryScreen extends React.Component {
   static navigationOptions = {
@@ -117,6 +119,9 @@ export default class DiaryScreen extends React.Component {
     this.props.navigation.navigate('AddMealForm');
   }
 
+  redirectToReport(){
+    this.props.navigation.navigate('DiaryReport');
+  }
   renderMeals(){
     return(
       <View style={styles.mealsContainer}>
@@ -188,15 +193,20 @@ export default class DiaryScreen extends React.Component {
               paddingVertical: 0,
               flex: 1,
             },
+            leftComponent:{
+              //backgroundColor: 'grey',
+              flex: 2,
+            },
             centerComponent:{
               width: 'auto',
               paddingHorizontal: 0,
               paddingVertical: 0,
               //backgroundColor: 'grey',
-              //flex: 4,
+              flex: 5,
             },
             rightComponent:{
-              width: 'auto',
+              flex: 2,
+              //width: 'auto',
               //paddingHorizontal: 0,
               //backgroundColor: 'grey',
             }
@@ -238,6 +248,7 @@ export default class DiaryScreen extends React.Component {
               </View>
               <View style={styles.buttonContainer}>
                 <Button
+                  onPress={this._handleReport}
                   styleName="secondary full-width">
                     <Text>View Full Report</Text>
                 </Button>
@@ -262,6 +273,10 @@ export default class DiaryScreen extends React.Component {
 
   _handleAdd = () => {
     this.redirectToAddMealForm();
+  };
+
+  _handleReport = () => {
+    this.redirectToReport();
   };
 
   _changeDatePeriod = () => {

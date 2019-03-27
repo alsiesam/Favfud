@@ -1,9 +1,22 @@
 import React from 'react';
+import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, Alert} from 'react-native';
+import {
+  Text,
+  Button,
+  View,
+  TextInput,
+  Divider,
+  NavigationBar,
+  Title,
+  Subtitle,
+  Icon,
+} from '@shoutem/ui';
+import moment from "moment";
 
 
 export default class DiaryReportScreen extends React.Component {
   static navigationOptions = {
-    title: 'Diary',
+    title: 'Diary - Report',
   };
 
   constructor(props) {
@@ -12,6 +25,12 @@ export default class DiaryReportScreen extends React.Component {
     /*this.state = {
 
     };*/
+  }
+
+  render() {
+    return(
+      <View></View>
+    );
   }
 
 }
