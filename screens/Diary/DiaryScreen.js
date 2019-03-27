@@ -79,16 +79,20 @@ export default class DiaryScreen extends React.Component {
       this.setState({
         meals: [
           {
-            date: moment("2019-03-19"),
+            date: moment("2019-03-26"),
             list: responseJson.slice(0,2),
           },
           {
-            date: moment("2019-03-17"),
+            date: moment("2019-03-23"),
             list: responseJson.slice(2,4),
           },
           {
-            date: moment("2019-03-10"),
-            list: responseJson.slice(4,7),
+            date: moment("2019-03-17"),
+            list: responseJson.slice(4,6),
+          },
+          {
+            date: moment("2019-03-13"),
+            list: responseJson.slice(6,7),
           }
         ]
       });
@@ -189,10 +193,10 @@ export default class DiaryScreen extends React.Component {
               paddingHorizontal: 0,
               paddingVertical: 0,
               //backgroundColor: 'grey',
-              flex: 4,
+              //flex: 4,
             },
             rightComponent:{
-              flex: 1,
+              width: 'auto',
               //paddingHorizontal: 0,
               //backgroundColor: 'grey',
             }
@@ -211,7 +215,7 @@ export default class DiaryScreen extends React.Component {
             }
           rightComponent={(
             <Button onPress={this._handleAdd}>
-              <Subtitle>Add</Subtitle>
+              <Subtitle>Add Meal</Subtitle>
             </Button>
           )}>
         </NavigationBar>
