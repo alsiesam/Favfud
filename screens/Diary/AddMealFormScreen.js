@@ -15,6 +15,8 @@ import moment from "moment";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import Calendar from '../../library/react-native-calendar-select';
 
+const MEAL_REQUEST_URL = 'http://127.0.0.1:8000/api/diary/meals/';
+
 export default class AddMealFormScreen extends React.Component {
   static navigationOptions = {
     title: 'Diary - Add Meal',
@@ -28,8 +30,43 @@ export default class AddMealFormScreen extends React.Component {
     };*/
   }
 
+  submitAddRequest() {
+    if (this.state.userToken !== undefined && this.state.servings !== undefined && this.state.dishId !== undefined && this.state.date !== undefined) {
+      this.addMeal({
+        user_token: this.state.userToken,
+        servings: this.state.servings,
+        dish_id: this.state.dishId,
+        date: this.state.date,
+      }, (response) => {
+        console.log("Cannot Add Meal");
+        console.log(response);
+      });
+    }
+  }
+
+  addMeal(meal, callback) {
+      fetch(MEAL_REQUEST_URL, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(meal)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        console.log(response);
+        if (response) {
+          console.log(response);
+          this.redirectToDiary();
+        } else {
+          if (callback) { callback(response); }
+        }
+      }).done();
+    }
+
   redirectToDiary(){
-    this.props.navigation.navigate('Diary')
+    this.props.navigation.navigate('Diary');
   }
 
   render() {
