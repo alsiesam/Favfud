@@ -5,6 +5,7 @@ import { createAppContainer, createSwitchNavigator} from 'react-navigation';
 import MainTabNavigator from './MainTabNavigator';
 import AppLoadingScreen from '../../screens/Login/AppLoadingScreen';
 import LoginScreen from '../../screens/Login/LoginScreen';
+import HealthFormScreen from '../../screens/HealthForm/HealthFormScreen';
 
 // const MainAppStack = createAppContainer(
 //   createSwitchNavigator({
@@ -19,6 +20,7 @@ const InitialAppStack = createAppContainer(createSwitchNavigator(
     AppLoading: AppLoadingScreen,
     App: MainTabNavigator,
     Auth: LoginScreen,
+    HealthForm: HealthFormScreen,
   },
   {
     initialRouteName: 'AppLoading',

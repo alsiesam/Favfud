@@ -5,7 +5,6 @@ import AppNavigator from './navigation/Login/LoginAppNavigator';
 
 const ignoredWarnings = [
   'Require cycles are allowed',
-  'Support for the old syntax will be removed in SDK 33.', 
 ];
 
 YellowBox.ignoreWarnings(ignoredWarnings);

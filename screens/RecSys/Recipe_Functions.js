@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, AsyncStorage, Dimensions} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, AsyncStorage, Dimensions, ImageBackground } from 'react-native';
 import { Divider } from "react-native-elements";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import Carousel from 'react-native-snap-carousel';
@@ -14,7 +14,6 @@ const EQUIRE_BOOKMARKED_URL = `${API_HOST}recsys/interaction/enquire/bookmark/`;
 const EQUIRE_RATED_URL = `${API_HOST}recsys/interaction/enquire/rating/`;
 
 export function secondsToHms(d) {
-    //console.log(d);
     d = Number(d);
     var h = Math.floor(d / 3600);
     var m = Math.floor(d % 3600 / 60);
@@ -65,7 +64,7 @@ export function fetchBookmarkedRecipes(user_token) {
     .catch((error) =>{
       console.error(error);
     });
-  }
+}
 
 export function fetchRatedRecipes(user_token) {
     fetch(EQUIRE_RATED_URL, {
@@ -82,8 +81,68 @@ export function fetchRatedRecipes(user_token) {
     });
 }
 
+export function renderHealthyChoice(title, want_divider, navigate, state) {
+  divider = null;
+  if(want_divider){
+    divider = <Divider style={{ marginBottom: 10, }} />
+  }
+  let layout = [
+    {
+      navigateScreen: 'Recipe_Healthy_Body_Selections',
+      sourceImg: require('../../assets/images/healthy.jpeg'),
+      bgColor: 'rgba(66, 244, 146, 0.2)',
+      textContent: ['Healthy Body', 'Selections'],
+      textColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    {
+      navigateScreen: 'Recipe_Diary_Selections',
+      sourceImg: require('../../assets/images/diary.jpg'),
+      bgColor: 'rgba(157, 65, 244, 0.4)',
+      textContent: ['Diary','Selections'],
+      textColor: 'rgba(255, 255, 255, 1)',
+    },
+  ];
+  return(
+      <View>
+      <Title style={styles.subtitle}>{title}</Title>
+      <Carousel
+        ref={(c) => { this._carousel = c; }}
+        data={layout}
+        renderItem={({ item: layoutObj }) => {
+          return(
+            <View>
+              <View style={[{flex:1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', margin: 20, }]}>
+                <TouchableOpacity 
+                    onPress={() => navigate({routeName: layoutObj.navigateScreen, params: {user_token: state.user_token}})}
+                >
+                  <ImageBackground
+                  source={layoutObj.sourceImg}
+                  style={[{width: SCREEN_WIDTH * 0.8, height: 200, marginBottom: 10, backgroundColor: layoutObj.bgColor, borderRadius: 15,}, styles.center]}
+                  imageStyle={[{opacity: 0.2, borderRadius: 15,}]}
+                  >
+                  { 
+                    layoutObj.textContent.map((text, index) => {
+                      return(
+                        <Title key={'bannerText'+index} style={{color: layoutObj.textColor, }}>{text}</Title>
+                      );
+                    })
+                  }
+                  </ImageBackground>
+                </TouchableOpacity>
+              </View>
+            </View>
+          );
+        }}
+        sliderWidth={SCREEN_WIDTH}
+        itemWidth={SCREEN_WIDTH}
+      />
+      {divider}
+  </View>
+  );
+}
+
 export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider, navigate, state){
-  if(Object.keys(data[0]).length == 0){
+  if(!data || Object.keys(data[0]).length == 0){
     return;
   }
   divider = null;
@@ -144,7 +203,7 @@ export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider
 }
 
 export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider, navigate, state) {
-  if(Object.keys(data[0]).length == 0){
+  if(!data || Object.keys(data[0]).length == 0){
     return;
   }
   divider = null;
