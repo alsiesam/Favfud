@@ -16,12 +16,14 @@ import moment from "moment";
 import Calendar from '../../library/react-native-calendar-select';
 import { Col, Row, Grid } from "react-native-easy-grid";
 
-const ACCESS_TOKEN = 'access_token';
+const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
+const ASYNC_STORAGE_KEYS = ['user_token', 'email_address'];
 
 const API_HOST = 'http://django-fyp.herokuapp.com/';
 const RECIPES_URL = `${API_HOST}recsys/recommendation/popular/`;
-const RETRIEVE_MEAL_REQUEST_URL = 'https://favfud-app.herokuapp.com/api/diary/meal/?user=';
+const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
+const GET_MEAL_URL = 'https://favfud-app.herokuapp.com/api/diary/meal?user=';
 
 
 export default class DiaryScreen extends React.Component {
@@ -38,23 +40,33 @@ export default class DiaryScreen extends React.Component {
       token:'',
       startDate: startDate,
       endDate: today,
-      meals:[{}],
-      /*mealList: [{}],*/
+      meals:[], //Key: YYYY-MM-DD; Value
+      mealList: [{}],
     };
   }
 
 
-  componentDidMount(){
-    this.getTokenAndEmail();
+  async componentDidMount(){
+    AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then((response) => {
+      var user_token = response[0][1];
+      var user_name = response[1][1];
+      if(user_token){
+        console.log("Token: "+user_token);
+        this.setState({user_token: user_token});
+        this.fetchMeal(user_token);
+      }
+    });
     this.confirmDate = this.confirmDate.bind(this);
     this.openCalendar = this.openCalendar.bind(this);
-    this.fetchRecipes();
+    /*this.fetchRecipes();*/
+    this.fetchRecipes_temp();
   }
 
   async getTokenAndEmail() {
     try{
       let token = await AsyncStorage.getItem(ACCESS_TOKEN);
       let email = await AsyncStorage.getItem(EMAIL_ADDRESS);
+      await console.log("Token: "+token);
       this.setState({token});
       this.setState({email});
     } catch (err) {
@@ -73,13 +85,13 @@ export default class DiaryScreen extends React.Component {
     this.calendar && this.calendar.open();
   }
 
-  fetchRecipes() {
+  fetchRecipes_temp() {
     return fetch(RECIPES_URL)
     .then((response) => response.json())
     .then((responseJson) => {
-      console.log(responseJson);
+      //console.log(responseJson);
       this.setState({
-        meals: [
+        mealList: [
           {
             date: moment("2019-03-26"),
             list: responseJson.slice(0,2),
@@ -98,7 +110,23 @@ export default class DiaryScreen extends React.Component {
           }
         ]
       });
+      //console.log(this.state.mealList);
+    })
+    .catch((error) =>{
+      console.error(error);
+    });
+  }
+
+  fetchMeal(token) {
+    console.log(`${GET_MEAL_URL}${token}`);
+    return fetch(`${GET_MEAL_URL}${token}`)
+    .then((response) => response.json())
+    .then((responseJson) => {
+      this.setState({
+        meals: responseJson
+      });
       console.log(this.state.meals);
+
     })
     .catch((error) =>{
       console.error(error);
@@ -114,7 +142,18 @@ export default class DiaryScreen extends React.Component {
         return true;
       }
     }
-
+/*
+  showAlert(title, message) {
+    Alert.alert(
+      title,
+      message,
+      [
+        {text: 'OK'},
+      ],
+      {cancelable: false},
+    );
+  }
+*/
   redirectToAddMealForm(){
     this.props.navigation.navigate('AddMealForm');
   }
@@ -122,14 +161,12 @@ export default class DiaryScreen extends React.Component {
   redirectToReport(){
     this.props.navigation.navigate('DiaryReport');
   }
+
   renderMeals(){
     return(
       <View style={styles.mealsContainer}>
         <Title>Meal List</Title>
-        {/*this.renderRecipeList(this.state.meals[0].date, this.state.meals[0].list)*/}
-        {/*this.renderRecipeList(this.state.meals[1].date, this.state.meals[1].list)*/}
-        {/*this.displayTest("hi1234")*/}
-        {this.state.meals.map(item => (
+        {this.state.mealList.map(item => (
           <Grid>
             {this.inRange(item.date) ? this.renderRecipeList(item.date, item.list): <View></View>}
           </Grid>
@@ -177,71 +214,82 @@ export default class DiaryScreen extends React.Component {
     );
   }
 
+  renderNavigationBar() {
+    return(
+      <NavigationBar
+        styleName="inline"
+        style={{
+          container: {
+            height: 40,
+            paddingVertical: 0,
+          },
+          componentsContainer:{
+            //backgroundColor: 'grey',
+            paddingHorizontal: 5,
+            paddingVertical: 0,
+            flex: 1,
+          },
+          leftComponent:{
+            //backgroundColor: 'grey',
+            flex: 2,
+          },
+          centerComponent:{
+            width: 'auto',
+            paddingHorizontal: 0,
+            paddingVertical: 0,
+            //backgroundColor: 'grey',
+            flex: 5,
+          },
+          rightComponent:{
+            flex: 2,
+            //width: 'auto',
+            //paddingHorizontal: 0,
+            //backgroundColor: 'grey',
+          }
+        }}
+        /*
+        leftComponent={(
+          <Button onPress={this.openCalendar}>
+            <Icon name="events" />
+          </Button>
+        )}
+        */
+        centerComponent={
+          <Button onPress={this.openCalendar}>
+            <Subtitle>{moment(this.state.startDate).format("D MMM")} to {moment(this.state.endDate).format("D MMM")}</Subtitle>
+          </Button>
+          }
+        rightComponent={(
+          <Button onPress={this._handleAdd}>
+            <Subtitle>Add Meal</Subtitle>
+          </Button>
+        )}>
+      </NavigationBar>
+    );
+  }
+
+  renderCalendar(){
+    return (
+      <Calendar
+        i18n="en"
+        ref={(calendar) => {this.calendar = calendar;}}
+        color={{mainColor: '#ffffff', subColor: '#404040', borderColor: '#d9d9d9'}}
+        format="YYYYMMDD"
+        minDate="20190101"
+        maxDate="20301231"
+        startDate={this.state.startDate}
+        endDate={this.state.endDate}
+        onConfirm={this.confirmDate}
+      />
+    );
+  }
+
   render() {
     return (
       <View style={styles.container}>
-        <NavigationBar
-          styleName="inline"
-          style={{
-            container: {
-              height: 40,
-              paddingVertical: 0,
-            },
-            componentsContainer:{
-              //backgroundColor: 'grey',
-              paddingHorizontal: 5,
-              paddingVertical: 0,
-              flex: 1,
-            },
-            leftComponent:{
-              //backgroundColor: 'grey',
-              flex: 2,
-            },
-            centerComponent:{
-              width: 'auto',
-              paddingHorizontal: 0,
-              paddingVertical: 0,
-              //backgroundColor: 'grey',
-              flex: 5,
-            },
-            rightComponent:{
-              flex: 2,
-              //width: 'auto',
-              //paddingHorizontal: 0,
-              //backgroundColor: 'grey',
-            }
-          }}
-          /*
-          leftComponent={(
-            <Button onPress={this.openCalendar}>
-              <Icon name="events" />
-            </Button>
-          )}
-          */
-          centerComponent={
-            <Button onPress={this.openCalendar}>
-              <Subtitle>{moment(this.state.startDate).format("D MMM")} to {moment(this.state.endDate).format("D MMM")}</Subtitle>
-            </Button>
-            }
-          rightComponent={(
-            <Button onPress={this._handleAdd}>
-              <Subtitle>Add Meal</Subtitle>
-            </Button>
-          )}>
-        </NavigationBar>
-
+        {this.renderNavigationBar()}
+        {this.renderCalendar()}
           <ScrollView style={styles.scrollContainer}>
-            <Calendar
-              i18n="en"
-              ref={(calendar) => {this.calendar = calendar;}}
-              color={{mainColor: '#ffffff', subColor: '#404040', borderColor: '#d9d9d9'}}
-              format="YYYYMMDD"
-              minDate="20190101"
-              maxDate="20301231"
-              startDate={this.state.startDate}
-              endDate={this.state.endDate}
-              onConfirm={this.confirmDate}
-            />
             <View style={styles.reportContainer}>
               <View style={styles.shortReportContainer}>
                 <Title>Report</Title>
@@ -257,16 +305,6 @@ export default class DiaryScreen extends React.Component {
             <Divider styleName="line" />
             {this.renderMeals()}
           </ScrollView>
-
-        {/*<View style={styles.refreshContainer}>
-          <View style={styles.buttonContainer}>
-            <Button
-              styleName="secondary full-width"
-              onPress={this._handleRefresh}>
-                <Text>Refresh</Text>
-            </Button>
-          </View>
-        </View>*/}
       </View>
     );
   }
