@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity} from 'react-native';
+import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, ActivityIndicator} from 'react-native';
 import {
   Text,
   Button,
@@ -40,38 +40,48 @@ export default class DiaryScreen extends React.Component {
       token:'',
       startDate: startDate,
       endDate: today,
-      meals:[], //Key: YYYY-MM-DD; Value
-      mealList: [{}],
+      mealRecords:[{}], //Key: YYYY-MM-DD; Value
+      /*mealList: [{}],*/
+      mealRecipes: [],
+      isLoading: false,
     };
   }
 
-
-  async componentDidMount(){
-    AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then((response) => {
-      var user_token = response[0][1];
-      var user_name = response[1][1];
-      if(user_token){
-        console.log("Token: "+user_token);
-        this.setState({user_token: user_token});
-        this.fetchMeal(user_token);
+  refresh(){
+    console.log("Loading: "+this.state.isLoading);
+    if(!this.state.isLoading) {
+      this.setState({
+        isLoading: true,
+        mealRecords: [{}],
+        mealRecipes: [],
+      });
+      console.log("Checking Token......");
+      console.log(this.state.token);
+      if(this.state.token && this.state.token != ''){
+        console.log("Fetch Meal");
+        this.fetchMeal(this.state.token);
+      } else {
+        console.log("No Token")
+        this.setState({isLoading: false,});
       }
-    });
-    this.confirmDate = this.confirmDate.bind(this);
-    this.openCalendar = this.openCalendar.bind(this);
-    /*this.fetchRecipes();*/
-    this.fetchRecipes_temp();
+    }
   }
 
-  async getTokenAndEmail() {
-    try{
-      let token = await AsyncStorage.getItem(ACCESS_TOKEN);
-      let email = await AsyncStorage.getItem(EMAIL_ADDRESS);
-      await console.log("Token: "+token);
-      this.setState({token});
-      this.setState({email});
-    } catch (err) {
-      console.log('[getToken] Error');
-    }
+  componentDidMount(){
+    this.getTokenAndEmail();
+    this.confirmDate = this.confirmDate.bind(this);
+    this.openCalendar = this.openCalendar.bind(this);
+  }
+
+  getTokenAndEmail() {
+    AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then((response) => {
+      var user_token = response[0][1];
+      console.log("My token is: "+user_token);
+      if(user_token){
+        this.setState({token: user_token});
+        this.refresh();
+      }
+    }).done();
   }
 
   confirmDate({startDate, endDate, startMoment, endMoment}) {
@@ -84,7 +94,7 @@ export default class DiaryScreen extends React.Component {
   openCalendar() {
     this.calendar && this.calendar.open();
   }
-
+/*
   fetchRecipes_temp() {
     return fetch(RECIPES_URL)
     .then((response) => response.json())
@@ -116,21 +126,72 @@ export default class DiaryScreen extends React.Component {
       console.error(error);
     });
   }
+*/
 
   fetchMeal(token) {
-    console.log(`${GET_MEAL_URL}${token}`);
     return fetch(`${GET_MEAL_URL}${token}`)
     .then((response) => response.json())
     .then((responseJson) => {
-      this.setState({
-        meals: responseJson
-      });
-      console.log(this.state.meals);
-
+      console.log(responseJson);
+      this.processMeal(responseJson);
     })
     .catch((error) =>{
       console.error(error);
-    });
+      this.setState({isLoading: false,});
+    }).done();
+  }
+
+  processMeal(meal){
+    for (var i=0; i<meal.length; i++) {
+      let item = meal[i];
+      let list = this.state.mealRecords[0];
+      if (list.hasOwnProperty(item.date)) {
+        list[item.date].push(item.dish_id);
+      } else {
+        list[item.date] = [item.dish_id];
+      }
+      this.setState({mealRecords: [list]});
+    }
+    let dates = Object.keys(this.state.mealRecords[0]);
+    dates.sort().reverse();
+    for (var j=0; j<dates.length; j++) {
+      let date = dates[j];
+      console.log("Fetching "+date);
+      this.fetchMealRecipes(date);
+    }
+  }
+
+  fetchMealRecipes(date) {
+    let ids_str ='';
+    if(this.state.mealRecords[0][date].length == 0) {
+      console.log("Empty Array!");
+      this.setState({isLoading: false,});
+      return true;
+    } else {
+      ids_str = this.state.mealRecords[0][date].join(',')
+    }
+    return fetch(GET_MULTIPLE_RECIPES_URL, {
+        headers: new Headers ({
+            ids: ids_str
+        }),
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      let mealRecipes_new = this.state.mealRecipes;
+      mealRecipes_new.push({
+        date: moment(date, "YYYY-MM-DD"),
+        list: responseJson,
+      });
+      this.setState({
+        mealRecipes: mealRecipes_new
+      });
+      console.log("Finished!");
+      this.setState({isLoading: false,});
+    })
+    .catch((error) =>{
+      console.error(error);
+      this.setState({isLoading: false,});
+    }).done();
   }
 
   inRange(date){
@@ -166,14 +227,16 @@ export default class DiaryScreen extends React.Component {
     return(
       <View style={styles.mealsContainer}>
         <Title>Meal List</Title>
-        {this.state.mealList.map(item => (
-          <Grid>
-            {this.inRange(item.date) ? this.renderRecipeList(item.date, item.list): <View></View>}
-          </Grid>
-        ))}
+        {this.state.isLoading?
+          this.renderLoading() :
+          this.state.mealRecipes.map(item => (
+            <Grid>
+              {this.inRange(item.date) ? this.renderRecipeList(item.date, item.list): <View></View>}
+            </Grid>
+          ))
+        }
       </View>
     );
-
   }
 
   renderRecipeList(date, recipeList) {
@@ -214,6 +277,20 @@ export default class DiaryScreen extends React.Component {
     );
   }
 
+  renderLoading(){
+    return(
+      <View style={{
+        flex: 1,
+        marginVertical: 60,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+        <Text>Loading...</Text>
+        <ActivityIndicator/>
+      </View>
+    );
+  }
+
   renderNavigationBar() {
     return(
       <NavigationBar
@@ -247,13 +324,11 @@ export default class DiaryScreen extends React.Component {
             //backgroundColor: 'grey',
           }
         }}
-        /*
-        leftComponent={(
-          <Button onPress={this.openCalendar}>
-            <Icon name="events" />
+        leftComponent={
+          <Button onPress={this._handleRefresh}>
+            <Subtitle>Refresh</Subtitle>
           </Button>
-        )}
-        */
+        }
         centerComponent={
           <Button onPress={this.openCalendar}>
             <Subtitle>{moment(this.state.startDate).format("D MMM")} to {moment(this.state.endDate).format("D MMM")}</Subtitle>
@@ -311,6 +386,10 @@ export default class DiaryScreen extends React.Component {
 
   _handleAdd = () => {
     this.redirectToAddMealForm();
+  };
+
+  _handleRefresh = () => {
+    this.refresh();
   };
 
   _handleReport = () => {

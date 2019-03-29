@@ -5,7 +5,7 @@ import {
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
-const ACCESS_TOKEN = 'access_token';
+const ACCESS_TOKEN = 'user_token';
 
 export default class AppLoadingScreen extends React.Component {
   constructor(props) {
@@ -22,10 +22,10 @@ export default class AppLoadingScreen extends React.Component {
   _bootstrapAsync = async () => {
     try {
       let userToken = await AsyncStorage.getItem(ACCESS_TOKEN);
-      console.log(userToken);
+      //console.log(userToken);
       // This will switch to the App screen or Auth screen and this loading
       // screen will be unmounted and thrown away.
-      console.log("Navigating to "+(userToken ? 'App' : 'Auth'));
+      //console.log("Navigating to "+(userToken ? 'App' : 'Auth'));
       this.props.navigation.navigate(userToken ? 'App' : 'Auth');
     } catch (err) {
       console.log(err);
