@@ -5,7 +5,7 @@ import {
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
-const ACCESS_TOKEN = 'access_token';
+const ACCESS_TOKEN = 'user_token';
 
 export default class AppLoadingScreen extends React.Component {
   constructor(props) {
