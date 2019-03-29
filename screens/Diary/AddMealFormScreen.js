@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, Alert} from 'react-native';
+import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, Alert, Keyboard, TouchableWithoutFeedback} from 'react-native';
 import {
   Text,
   Button,
@@ -83,7 +83,7 @@ export default class AddMealFormScreen extends React.Component {
         user_token: this.state.token,
         servings: this.state.servings,
         dish_id: this.state.dishId,
-        date: moment(this.state.date).format("YYYY-MM-DD"),
+        date: moment(this.state.date, "DD-MMM-YYYY").format("YYYY-MM-DD"),
       }, (response) => {
         console.log("Cannot Add Meal");
         console.log(response);
@@ -131,24 +131,24 @@ export default class AddMealFormScreen extends React.Component {
 
           <Row style={styles.rowInput}>
             <Subtitle>No. of Servings: </Subtitle>
-            <TextInput
-              style={styles.textInput}
-              placeholder={''}
-              keyboardType = {'numeric'}
-              onChangeText={(servings) => this.setState({servings})}
-              value={this.state.servings}
-            />
+              <TextInput
+                style={styles.textInput}
+                placeholder={''}
+                keyboardType = {'numeric'}
+                onChangeText={(servings) => this.setState({servings})}
+                value={this.state.servings}
+              />
           </Row>
 
           <Row style={styles.rowInput}>
             <Subtitle>Dish: </Subtitle>
-            <TextInput
-              style={styles.textInput}
-              placeholder={''}
-              keyboardType = {'numeric'}
-              onChangeText={(dishId) => this.setState({dishId})}
-              value={this.state.dishId}
-            />
+              <TextInput
+                style={styles.textInput}
+                placeholder={''}
+                keyboardType = {'numeric'}
+                onChangeText={(dishId) => this.setState({dishId})}
+                value={this.state.dishId}
+              />
           </Row>
 
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, ActivityIndicator} from 'react-native';
+import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, ActivityIndicator, RefreshControl} from 'react-native';
 import {
   Text,
   Button,
@@ -42,26 +42,29 @@ export default class DiaryScreen extends React.Component {
       endDate: today,
       mealRecords:[{}], //Key: YYYY-MM-DD; Value
       /*mealList: [{}],*/
-      mealRecipes: [],
+      mealRecipes: [{}],
       isLoading: false,
+      refreshing: false,
     };
   }
 
   refresh(){
-    console.log("Loading: "+this.state.isLoading);
+    //console.log("Loading: "+this.state.isLoading);
+    console.log("Refresh");
+    //console.log(this.state.mealRecipes[0]);
     if(!this.state.isLoading) {
       this.setState({
         isLoading: true,
         mealRecords: [{}],
-        mealRecipes: [],
+        mealRecipes: [{}],
       });
-      console.log("Checking Token......");
-      console.log(this.state.token);
+      //console.log("Checking Token......");
+      //console.log(this.state.token);
       if(this.state.token && this.state.token != ''){
-        console.log("Fetch Meal");
+        //console.log("Fetch Meal");
         this.fetchMeal(this.state.token);
       } else {
-        console.log("No Token")
+        //console.log("No Token")
         this.setState({isLoading: false,});
       }
     }
@@ -76,11 +79,14 @@ export default class DiaryScreen extends React.Component {
   getTokenAndEmail() {
     AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then((response) => {
       var user_token = response[0][1];
-      console.log("My token is: "+user_token);
+      //console.log("My token is: "+user_token);
       if(user_token){
         this.setState({token: user_token});
         this.refresh();
       }
+    })
+    .catch((error) =>{
+      console.error(error);
     }).done();
   }
 
@@ -132,7 +138,7 @@ export default class DiaryScreen extends React.Component {
     return fetch(`${GET_MEAL_URL}${token}`)
     .then((response) => response.json())
     .then((responseJson) => {
-      console.log(responseJson);
+      //console.log(responseJson);
       this.processMeal(responseJson);
     })
     .catch((error) =>{
@@ -156,7 +162,7 @@ export default class DiaryScreen extends React.Component {
     dates.sort().reverse();
     for (var j=0; j<dates.length; j++) {
       let date = dates[j];
-      console.log("Fetching "+date);
+      //console.log("Fetching "+date);
       this.fetchMealRecipes(date);
     }
   }
@@ -170,6 +176,7 @@ export default class DiaryScreen extends React.Component {
     } else {
       ids_str = this.state.mealRecords[0][date].join(',')
     }
+    //console.log("Fetching "+ids_str);
     return fetch(GET_MULTIPLE_RECIPES_URL, {
         headers: new Headers ({
             ids: ids_str
@@ -177,15 +184,16 @@ export default class DiaryScreen extends React.Component {
     })
     .then((response) => response.json())
     .then((responseJson) => {
-      let mealRecipes_new = this.state.mealRecipes;
-      mealRecipes_new.push({
-        date: moment(date, "YYYY-MM-DD"),
-        list: responseJson,
-      });
+      this.setState({isLoading: true,});
+      let mealRecipes_new = this.state.mealRecipes[0];
+      if (mealRecipes_new.hasOwnProperty(date)) {
+        console.log("Error");
+      } else {
+        mealRecipes_new[date] = responseJson;
+      }
       this.setState({
-        mealRecipes: mealRecipes_new
+        mealRecipes: [mealRecipes_new]
       });
-      console.log("Finished!");
       this.setState({isLoading: false,});
     })
     .catch((error) =>{
@@ -223,22 +231,45 @@ export default class DiaryScreen extends React.Component {
     this.props.navigation.navigate('DiaryReport');
   }
 
-  renderMeals(){
+  renderMealListContainer(){
     return(
       <View style={styles.mealsContainer}>
         <Title>Meal List</Title>
         {this.state.isLoading?
           this.renderLoading() :
-          this.state.mealRecipes.map(item => (
+          /*this.state.mealRecipes.map((key, item) => (
             <Grid>
-              {this.inRange(item.date) ? this.renderRecipeList(item.date, item.list): <View></View>}
+              {this.inRange(key) ? this.renderRecipeList(key, item): <View></View>}
+            </Grid>
+          ))*/
+          Object.keys(this.state.mealRecipes[0]).sort().reverse().map((date, i) => (
+            <Grid>
+              {this.inRange(date) ? this.renderRecipeList(date, this.state.mealRecipes[0][date]): <View></View>}
             </Grid>
           ))
         }
       </View>
     );
   }
+/*
+  renderMealList(){
+    this.state.mealRecipes[0].map((key, item) => (
+      <Grid>
+        {this.inRange(key) ? this.renderRecipeList(key, item): <View></View>}
+      </Grid>
+    ))
 
+
+    let dates = Object.keys(this.state.mealRecipes[0]);
+    dates.sort().reverse();
+    for (var i=0; i<dates.length; i++) {
+      let date = dates[i];
+      if(this.inRange(date)) {
+        this.renderRecipeList(date, this.state.mealRecords[0][date]);
+      }
+    }
+  }
+*/
   renderRecipeList(date, recipeList) {
     const {navigate} = this.props.navigation;
     return(
@@ -324,11 +355,13 @@ export default class DiaryScreen extends React.Component {
             //backgroundColor: 'grey',
           }
         }}
+        /*
         leftComponent={
           <Button onPress={this._handleRefresh}>
             <Subtitle>Refresh</Subtitle>
           </Button>
         }
+        */
         centerComponent={
           <Button onPress={this.openCalendar}>
             <Subtitle>{moment(this.state.startDate).format("D MMM")} to {moment(this.state.endDate).format("D MMM")}</Subtitle>
@@ -364,7 +397,11 @@ export default class DiaryScreen extends React.Component {
       <View style={styles.container}>
         {this.renderNavigationBar()}
         {this.renderCalendar()}
-          <ScrollView style={styles.scrollContainer}>
+          <ScrollView style={styles.scrollContainer}
+          refreshControl={<RefreshControl
+            refreshing={this.state.refreshing}
+            onRefresh={this._handleRefresh}
+          />}>
             <View style={styles.reportContainer}>
               <View style={styles.shortReportContainer}>
                 <Title>Report</Title>
@@ -378,7 +415,7 @@ export default class DiaryScreen extends React.Component {
               </View>
             </View>
             <Divider styleName="line" />
-            {this.renderMeals()}
+            {this.renderMealListContainer()}
           </ScrollView>
       </View>
     );
