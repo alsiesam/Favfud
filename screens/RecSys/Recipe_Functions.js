@@ -187,10 +187,6 @@ export function renderSearchResultsList(title, data, want_divider, navigate, sta
 		console.log('undefined data');
 		return;
 	}
-	if(data.length == 0){
-		console.log('data has no length');
-    return;
-  }
 	// console.log(data);
   divider = null;
   if(want_divider){

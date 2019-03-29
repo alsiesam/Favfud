@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Platform, Dimensions, ScrollView, StatusBar, StyleSheet, View, Text, } from 'react-native';
 import { SearchBar, } from "react-native-elements";
-import { Container, Header, Content, CardItem, Body, Title, Left, Right, Subtitle, Button, Icon, } from "native-base";
+import { Container, } from "native-base";
 import * as func from './Recipe_Functions.js';
 
 const width = Dimensions.get('window').width; //full width
@@ -30,7 +30,7 @@ export default class Recipe_Search extends Component {
         keyword = keyword + '/';
       }
 			keyword = keyword.replace(/\s/g, '+');
-      return fetch('http://192.168.0.104:8000/recsys/search/'+keyword)
+      return fetch('https://fypbackend.herokuapp.com/recsys/search/'+keyword)
       .then((response) => response.json())
       .then((responseJson) => {
 				// console.warn(responseJson);
