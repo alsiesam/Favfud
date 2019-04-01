@@ -6,7 +6,7 @@ import { Text } from '@shoutem/ui';
 
 const SCREEN_WIDTH = Dimensions.get('window').width - 40;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-const ASYNC_STORAGE_KEYS = ['user_token', 'bookmarked_recipe'];
+const ASYNC_STORAGE_KEYS_FOR_USER_TOKEN = 'user_token';
 const ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE = 'bookmarked_recipe';
 const API_HOST = 'http://django-fyp.herokuapp.com/';
 const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
@@ -29,51 +29,30 @@ export default class Recipe_Bookmarked extends Component {
       }
     }
 
-    componentDidMount() {
-        AsyncStorage.getItem('user_token')
+    componentWillMount() {
+        AsyncStorage.getItem(ASYNC_STORAGE_KEYS_FOR_USER_TOKEN)
         .then((ut) => {
             if(ut){
                 this.setState({user_token: ut});
-                fetch(EQUIRE_BOOKMARKED_URL, {
-                    headers: new Headers ({
-                      usertoken: this.state.user_token,
-                    }),
-                })
-                .then((response) => response.json())
-                .then((responseJson) => {
-                    if('result' in responseJson){
-                        arr = responseJson['result']
-                        for(var i = 0; i < arr.length; i++){
-                            arr[i] = arr[i].toString()
-                        }
-                        AsyncStorage.setItem(ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE, JSON.stringify(arr));
+                AsyncStorage.getItem(ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE)
+                .then((recipes) => {
+                    const r = recipes ? JSON.parse(recipes) : [];
+                    if(r.length != 0 && r.join(',') != this.state.bookmarked_recipe_ids){
+                        ids_str = r.join(',');
+                        this.setState({bookmarked_recipe_ids: ids_str});
+                        this.fetchData(this.state.bookmarked_recipe_ids);
                     } else {
-                      AsyncStorage.setItem(ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE, JSON.stringify([]));
+                        this.setState({
+                            isLoading: false,
+                        });
                     }
-                    AsyncStorage.getItem(ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE)
-                    .then((recipes) => {
-                        const r = recipes ? JSON.parse(recipes) : [];
-                        if(r.length != 0 && r.join(',') != this.state.bookmarked_recipe_ids){
-                            ids_str = r.join(',');
-                            this.setState({bookmarked_recipe_ids: ids_str});
-                            this.fetchData(this.state.bookmarked_recipe_ids);
-                        } else {
-                            this.setState({
-                                isLoading: false,
-                            });
-                        }
-                    });
-                })
-                .catch((error) => {
-                    console.error(error);
                 });
             }
         });
     }
 
     getRefreshedData() {
-        func.fetchBookmarkedRecipes(this.state.user_token);
-        AsyncStorage.getItem('bookmarked_recipe')
+        AsyncStorage.getItem(ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE)
         .then((recipes) => {
             const r1 = recipes ? JSON.parse(recipes) : [];
             r2 = this.state.bookmarked_recipe_ids.split(',');
