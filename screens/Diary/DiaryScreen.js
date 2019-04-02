@@ -47,6 +47,7 @@ export default class DiaryScreen extends React.Component {
       refreshing: false,
       reportInfo: {
         numOfDays: 0,
+        numOfMeals: 0,
         energy: 0,
         fat: 0,
         carb: 0,
@@ -120,6 +121,7 @@ export default class DiaryScreen extends React.Component {
       }
     })
     .catch((error) =>{
+      console.log("getTokenAndEmail");
       console.error(error);
     }).done();
   }
@@ -177,6 +179,7 @@ export default class DiaryScreen extends React.Component {
       this.processMeal(responseJson);
     })
     .catch((error) =>{
+      console.log("fetchMeal");
       console.error(error);
       this.setState({isLoading: false,});
     }).done();
@@ -188,13 +191,9 @@ export default class DiaryScreen extends React.Component {
       let item = meal[i];
       //let servings = 1;
       if (list.hasOwnProperty(item.date)) {
-
-        //list[item.date].push(item.dish_id);
-
         list[item.date][item.dish_id] = item.servings;
 
       } else {
-        //list[item.date] = [item.dish_id];
         list[item.date] =  {
           [item.dish_id]: item.servings, //Servings
         };
@@ -212,13 +211,12 @@ export default class DiaryScreen extends React.Component {
 
   fetchMealRecipes(date) {
     let ids_str ='';
-    if(this.state.mealRecords[0][date].length == 0) {
+    if(this.state.mealRecords[0][date].length == 0 || this.state.mealRecords[0][date] == undefined) {
       console.log("Empty Array!");
       this.setState({isLoading: false,});
       return true;
     } else {
       //ids_str = this.state.mealRecords[0][date].join(',')
-
       let ids = Object.keys(this.state.mealRecords[0][date]);
       //console.log("Date: "+date+"; ids: "+ids);
       ids_str = ids.join(',')
@@ -235,7 +233,7 @@ export default class DiaryScreen extends React.Component {
       this.setState({isLoading: true,});
       let mealRecipes_new = this.state.mealRecipes[0];
       if (mealRecipes_new.hasOwnProperty(date)) {
-        console.log("Error");
+        console.log("[fetchMealRecipes] Error: Date set already!");
       } else {
         mealRecipes_new[date] = responseJson;
       }
@@ -243,6 +241,7 @@ export default class DiaryScreen extends React.Component {
       this.setState({
         mealRecipes: [mealRecipes_new]
       });
+      this.generateReportInfo();
       this.setState({isLoading: false,});
     })
     .catch((error) =>{
@@ -254,6 +253,7 @@ export default class DiaryScreen extends React.Component {
   generateReportInfo() {
     let new_reportInfo = {
       numOfDays: 0,
+      numOfMeals: 0,
       energy: 0.0,
       fat: 0.0,
       carb: 0.0,
@@ -275,6 +275,7 @@ export default class DiaryScreen extends React.Component {
         let ids = Object.keys(this.state.mealRecords[0][date]);
         //console.log(date);
         for (var j=0; j<this.state.mealRecipes[0][date].length; j++) {
+          new_reportInfo.numOfMeals += 1;
           let dish = this.state.mealRecipes[0][date][j];
           let servings = this.state.mealRecords[0][date][dish.id];
           this.storeNutritionInfo(dish, servings, new_reportInfo);
@@ -287,10 +288,10 @@ export default class DiaryScreen extends React.Component {
 
   storeNutritionInfo(dish, servings, new_reportInfo){
     //console.log("id: "+dish.id+"; Servings: "+servings);
-    new_reportInfo.carb += parseFloat(dish.chocdf.split("$")[0])/servings;
-    new_reportInfo.energy += parseFloat(dish.enerc_kcal.split("$")[0])/servings;
-    new_reportInfo.fat += parseFloat(dish.fat.split("$")[0])/servings;
-    new_reportInfo.protein += parseFloat(dish.procnt.split("$")[0])/servings;
+    new_reportInfo.carb += parseFloat(dish.chocdf.split("$")[0])*servings;
+    new_reportInfo.energy += parseFloat(dish.enerc_kcal.split("$")[0])*servings;
+    new_reportInfo.fat += parseFloat(dish.fat.split("$")[0])*servings;
+    new_reportInfo.protein += parseFloat(dish.procnt.split("$")[0])*servings;
   }
 
   inRange(date){

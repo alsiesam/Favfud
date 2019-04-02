@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, Alert} from 'react-native';
+import { AppRegistry, Platform } from "react-native";
 import {
   Text,
   Button,
@@ -12,9 +13,10 @@ import {
   Icon,
 } from '@shoutem/ui';
 import { Col, Row, Grid } from "react-native-easy-grid";
-import { BarChart, Grid as ChartGrid} from 'react-native-svg-charts'
+//import FusionCharts from "react-native-fusioncharts";
+//import ProgressBarClassic from 'react-native-progress-bar-classic';
+import AnimatedBar from "react-native-animated-bar";
 import moment from "moment";
-
 
 export default class DiaryReportScreen extends React.Component {
   static navigationOptions = {
@@ -24,27 +26,83 @@ export default class DiaryReportScreen extends React.Component {
   constructor(props) {
     super(props);
     var today = new Date;
+    var reportInfo = props.navigation.getParam('reportInfo');
     this.state = {
-      reportInfo: props.navigation.getParam('reportInfo'),
+      reportInfo: reportInfo,
+      energy_perMeal: reportInfo.energy/reportInfo.numOfMeals,
+      carb_perMeal: reportInfo.carb/reportInfo.numOfMeals,
+      fat_perMeal: reportInfo.fat/reportInfo.numOfMeals,
+      protein_perMeal: reportInfo.protein/reportInfo.numOfMeals,
+      limit: {
+        energy: 2000/3,
+        carb: 200/3,
+        fat: 76.6/3,
+        protein: 72/3,
+      }
     };
+
   }
 
-  renderBarChart() {
-    const fill = 'rgb(204, 224, 254)'
-    const data   = [ 50, 25, 10];
+  consumptionPercentageOf(nutrition) {
+    switch (nutrition) {
+      case "energy":
+        return(this.state.energy_perMeal/this.state.limit.energy);
+        break;
+      case "carb":
+        return(this.state.carb_perMeal/this.state.limit.carb);
+        break;;
+      case "fat":
+        return(this.state.fat_perMeal/this.state.limit.fat);
+        break;;
+      case "protein":
+        return(this.state.protein_perMeal/this.state.limit.protein);
+        break;
+      default:
+      return 0;
+    }
+  }
+
+  renderBarChart(nutrition) {
+    //<View style={{ flexDirection: 'row', height: 'auto', paddingVertical: 10 }}>
+    /*
+    <FusionCharts
+      type="angulargauge"
+      width='300'
+      height='150'
+      dataFormat="json"
+      dataSource={this.state.dataSource}
+      libraryPath={this.libraryPath} // set the libraryPath property
+    />
+
+      <ProgressBarClassic
+        progress={percentage}
+        valueStyle={'balloon'}
+      />
+
+    */
+
+    var percentage = this.consumptionPercentageOf(nutrition);
+    var color = "#05FF84";
+    if (percentage>=1.4 || percentage<=0.6){
+      color = "#FF2C07";
+    } else if (percentage>=1.2 || percentage<=0.8) {
+      color = "#FF8506";
+    }
     return(
-      <View style={{ flexDirection: 'row', height: 100, paddingVertical: 10 }}>
-        <BarChart
-            style={{ flex:1 }}
-            data={ data }
-            svg={{ fill }}
-            contentInset={{ top: 10, bottom: 10 }}
-            horizontal={true}
-            showGrid={false}
-            spacing={0.2}
-        >
-            <ChartGrid/>
-        </BarChart>
+      <View style={{ height: 100}}>
+        <AnimatedBar
+            progress={percentage}
+            height={50}
+            borderColor={"#DDD"}
+            barColor={color}
+            borderRadius={5}
+            borderWidth={5}
+            duration={3000}
+          >
+            <Text style={styles.barText}>
+              {Math.round(percentage*100).toString()}%
+            </Text>
+          </AnimatedBar>
       </View>
     );
   }
@@ -53,28 +111,32 @@ export default class DiaryReportScreen extends React.Component {
     return(
       <View style={styles.container}>
         <View style={{alignItems: 'center', marginBottom: 10}}>
-          {/*<Subtitle>Num. of days: {this.state.reportInfo.numOfDays} days</Subtitle>*/}
-          <Subtitle>Your average daily nutrition consumption: </Subtitle>
+          <Subtitle>Num. of meals: {this.state.reportInfo.numOfMeals} meals</Subtitle>
+          <Subtitle>Your average nutrition consumption (per meal): </Subtitle>
         </View>
         <Grid style={styles.grid}>
           <Row style={{flexDirection: 'column'}}>
-            <Text>Energy: {Math.round(this.state.reportInfo.energy/this.state.reportInfo.numOfDays)} kcal</Text>
-            <Text>{Math.round(this.state.reportInfo.energy/this.state.reportInfo.numOfDays/23)}% of normal intake</Text>
+            <Text>Energy: {Math.round(this.state.energy_perMeal)} kcal</Text>
+            <Text>{Math.round(this.consumptionPercentageOf("energy")*100)}% of normal intake</Text>
+            {this.renderBarChart("energy")}
           </Row>
           <Row style={{flexDirection: 'column'}}>
-            <Text>Carbohydrate: {Math.round(this.state.reportInfo.carb/this.state.reportInfo.numOfDays)} grams</Text>
-            <Text>{Math.round(this.state.reportInfo.carb/this.state.reportInfo.numOfDays/3.8)}% of normal intake</Text>
+            <Text>Carbohydrate: {Math.round(this.state.carb_perMeal)} grams</Text>
+            <Text>{Math.round(this.consumptionPercentageOf("carb")*100)}% of normal intake</Text>
+            {this.renderBarChart("carb")}
           </Row>
           <Row style={{flexDirection: 'column'}}>
-            <Text>Fat: {Math.round(this.state.reportInfo.fat/this.state.reportInfo.numOfDays)} grams</Text>
-            <Text>{Math.round(this.state.reportInfo.fat/this.state.reportInfo.numOfDays/0.766)}% of normal intake</Text>
+            <Text>Fat: {Math.round(this.state.fat_perMeal)} grams</Text>
+            <Text>{Math.round(this.consumptionPercentageOf("fat")*100)}% of normal intake</Text>
+            {this.renderBarChart("fat")}
           </Row>
           <Row style={{flexDirection: 'column'}}>
-            <Text>Protein: {Math.round(this.state.reportInfo.protein/this.state.reportInfo.numOfDays)} grams</Text>
-            <Text>{Math.round(this.state.reportInfo.protein/this.state.reportInfo.numOfDays/0.72)}% of normal intake</Text>
+            <Text>Protein: {Math.round(this.state.protein_perMeal)} grams</Text>
+            <Text>{Math.round(this.consumptionPercentageOf("protein")*100)}% of normal intake</Text>
+            {this.renderBarChart("protein")}
           </Row>
         </Grid>
-        {/*this.renderBarChart()*/}
+
       </View>
     );
   }
@@ -93,5 +155,10 @@ const styles = StyleSheet.create({
   grid: {
     margin: 5,
     height: 'auto',
+  },
+  barText: {
+    backgroundColor: "transparent",
+    color: "#FFF",
+    fontSize: 25,
   },
 });
