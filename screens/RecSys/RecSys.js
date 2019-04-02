@@ -37,7 +37,7 @@ export default class RecSys extends Component {
       }
     }
 
-    componentDidMount(){
+    componentWillMount(){
       AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then((response) => {
         var user_token = response[0][1];
         var user_name = response[1][1];
@@ -47,6 +47,8 @@ export default class RecSys extends Component {
           recipe_categories.forEach(function(cat){
             this.fetchRecipes(cat, this.state.user_token);
           }, this);
+          func.fetchBookmarkedRecipes(this.state.user_token);
+          func.fetchRatedRecipes(this.state.user_token);
         }
         if(user_name){
           this.setState({user_name: user_name});

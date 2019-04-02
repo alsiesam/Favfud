@@ -32,7 +32,7 @@ export default class Recipe_Healthy_Body_Selections extends Component {
       }
     }
 
-    componentDidMount(){
+    componentWillMount(){
         this.fetchRecipes(this.state.user_token);
         this.setState({isLoading: false});
     }

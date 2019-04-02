@@ -31,7 +31,7 @@ export default class Recipe_Information extends Component {
     }
   }
 
-  componentDidMount(){
+  componentWillMount(){
     //this.updateInteraction('tapview');
     this.fetchSimilarRecipes(this.state.recipe);
     recipe_id = this.state.recipe.id.toString();
