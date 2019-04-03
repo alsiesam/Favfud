@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Dimensions, StatusBar, StyleSheet, ActivityIndicator, ScrollView, AsyncStorage} from 'react-native';
+import { Platform, Dimensions, StatusBar, StyleSheet, ActivityIndicator, ScrollView, AsyncStorage} from 'react-native';
 import { Avatar } from "react-native-elements";
-import { Container} from "native-base";
+import { Container } from "native-base";
 import { Col, Row } from "react-native-easy-grid";
 import * as func from './Recipe_Functions.js';
+import StatusBarBackground from '../../components/StatusBarBackground';
 import { Heading, Text } from '@shoutem/ui';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -12,12 +13,13 @@ const ASYNC_STORAGE_KEYS = ['user_token', 'email_address'];
 const API_HOST = 'http://django-fyp.herokuapp.com/';
 const YOUR_FAVORITES_URL = `${API_HOST}recsys/recommendation/yrfav/`;
 const POPULAR_RECIPES_URL = `${API_HOST}recsys/recommendation/popular/`;
-const RANDOM_PICKS_URL = `${API_HOST}recsys/recommendation/random/8`;
+const RANDOM_PICKS_URL = `${API_HOST}recsys/recommendation/random/8/`;
 
 export default class RecSys extends Component {
 
     static navigationOptions = {
-      title: 'RecSys',
+      //title: 'RecSys',
+      header: null,
     };
   
     constructor(props){
@@ -35,15 +37,16 @@ export default class RecSys extends Component {
       }
     }
 
-    componentDidMount(){
+    componentWillMount(){
       AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then((response) => {
         var user_token = response[0][1];
         var user_name = response[1][1];
         if(user_token){
           this.setState({user_token: user_token});
-          this.fetchFavoriteRecipes(this.state.user_token);
-          this.fetchPopularRecipes();
-          this.fetchRandomRecipes();
+          recipe_categories = ['favoriteRecipes', 'popularRecipes', 'randomRecipes'];
+          recipe_categories.forEach(function(cat){
+            this.fetchRecipes(cat, this.state.user_token);
+          }, this);
           func.fetchBookmarkedRecipes(this.state.user_token);
           func.fetchRatedRecipes(this.state.user_token);
         }
@@ -65,47 +68,37 @@ export default class RecSys extends Component {
       });
     }
 
-    fetchFavoriteRecipes(user_token) {
+    fetchRecipes(state_recipe, user_token) {
       if(!user_token){
         return;
       }
-      return fetch(YOUR_FAVORITES_URL, {
+      let url = '';
+      switch(String(state_recipe)){
+        case 'favoriteRecipes':
+          url = YOUR_FAVORITES_URL;
+          break;
+
+        case 'popularRecipes':
+          url = POPULAR_RECIPES_URL;
+          break;
+
+        case 'randomRecipes':
+          url = RANDOM_PICKS_URL;
+          break;
+
+        default:
+          return;
+      }
+      let header = {
         headers: new Headers ({
           usertoken: user_token,
         }),
-      })
+      };
+      return fetch(url, header)
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
-          favoriteRecipes: responseJson,
-        });
-
-      })
-      .catch((error) =>{
-        console.error(error);
-      });
-    }
-
-    fetchPopularRecipes() {
-      return fetch(POPULAR_RECIPES_URL)
-      .then((response) => response.json())
-      .then((responseJson) => {
-        this.setState({
-          popularRecipes: responseJson,
-        });
-
-      })
-      .catch((error) =>{
-        console.error(error);
-      });
-    }
-
-    fetchRandomRecipes() {
-      return fetch(RANDOM_PICKS_URL)
-      .then((response) => response.json())
-      .then((responseJson) => {
-        this.setState({
-          randomRecipes: responseJson,
+          [state_recipe]: responseJson,
         });
 
       })
@@ -126,9 +119,10 @@ export default class RecSys extends Component {
         }
         return(
           <Container>
+            <StatusBarBackground />
             <Container style={styles.screen_container}>
                 <ScrollView>
-                  <Row>
+                  <Row style={{marginTop: Platform.OS === 'ios' ? 0: 40}}>
                     <Col style={{width: SCREEN_WIDTH*0.8}}>
                       <Heading style={styles.title}>{this.state.greeting}</Heading>
                     </Col>
@@ -142,6 +136,7 @@ export default class RecSys extends Component {
                       />
                     </Col>
                   </Row>
+                  {func.renderHealthyChoice('Healthy Choice', want_divider=true, navigate, this.state)}
                   {func.renderMainMenuRecipesInComplexCarousel('Your Favorites', this.state.favoriteRecipes, want_divider=true, navigate, this.state)}
                   {func.renderMainMenuRecipesInSimpleCarousel('Popular Cuisines', this.state.popularRecipes, want_divider=true, navigate, this.state)}
                   {func.renderMainMenuRecipesInSimpleCarousel('Random Picks', this.state.randomRecipes, want_divider=false, navigate, this.state)}

@@ -42,17 +42,56 @@ export default class HomeScreen extends React.Component {
     this.getEmail();
   }
 
+  promptError(message) {
+    Alert.alert(
+      `Error`,
+      `${message}`,
+      [{text: 'OK'},],
+    );
+  }
+
+  // Stop sending POST request first,
+  // it should be sent after Health Form is completed
   submitCredentialsRegister() {
     if (this.state.email !== undefined && this.state.password !== undefined) {
-      this.register({
-        email: this.state.email,
-        password1: this.state.password,
-        password2: this.state.password2
-      }, (response) => {
-        console.log("Unsuccesful registration");
-        console.log(response);
-        this.showErrorMsg(response);
-      });
+      // this.register({
+      //   email: this.state.email,
+      //   password1: this.state.password,
+      //   password2: this.state.password2
+      // }, (response) => {
+      //   console.log("Unsuccesful registration");
+      //   console.log(response);
+      //   this.showErrorMsg(response);
+      // });
+      case1 = !this.state.email;
+      case2 = !this.state.password;
+      case3 = !this.state.password2;
+      case4 = this.state.password != this.state.password2;
+      if(case1) {
+        this.promptError('You have not filled in email');
+      } else if(case2) {
+        this.promptError('You have not filled in password');
+      } else if(case3) {
+        this.promptError('Please re-enter the password');
+      } else if(case4) {
+        this.promptError('Password does not match when you re-enter');
+      } else {
+        Alert.alert(
+          `Confirm your registration with this email?`,
+          `${this.state.email}`,
+          [
+            {
+              text: 'Yes', 
+              onPress: () => this.props.navigation.navigate({routeName: 'HealthForm', params: {email: this.state.email, password: this.state.password}})
+            },
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+          ],
+          {cancelable: false},
+        );
+      }
     }
   }
 
@@ -74,7 +113,7 @@ export default class HomeScreen extends React.Component {
           if (callback) { callback(response); }
         }
       }).done();
-    }
+  }
 
   submitCredentialsLogin() {
     if (this.state.email !== undefined && this.state.password !== undefined) {

@@ -13,6 +13,8 @@ import Recipe_Nutrition from '../../screens/RecSys/Recipe_Nutrition';
 import Recipe_Rated from '../../screens/RecSys/Recipe_Rated';
 import Recipe_Bookmarked from '../../screens/RecSys/Recipe_Bookmarked';
 import Recipe_Search from '../../screens/RecSys/Recipe_Search';
+import Recipe_Healthy_Body_Selections from '../../screens/RecSys/Recipe_Healthy_Body_Selections';
+import Recipe_Diary_Selections from '../../screens/RecSys/Recipe_Diary_Selections';
 
 const HomeStack = createStackNavigator({
   Home: HomeScreen,
@@ -61,6 +63,8 @@ const RecSysStack = createStackNavigator({
   Recipe_Information: {screen: Recipe_Information},
   Recipe_Nutrition: {screen: Recipe_Nutrition},
   Profile: {screen: ProfileScreen},
+  Recipe_Healthy_Body_Selections: {screen: Recipe_Healthy_Body_Selections},
+  Recipe_Diary_Selections: {screen: Recipe_Diary_Selections},
 },{
   initialRouteName: 'RecSys',
 });
