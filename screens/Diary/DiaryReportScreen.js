@@ -36,7 +36,6 @@ export default class DiaryReportScreen extends React.Component {
       consumptionPerMeal: consumptionPerMeal,
       summary: summary,
     };
-    console.log(this.state);
   }
 
   consumptionPercentageOf(nutrition, consumptionPerMeal=this.state.consumptionPerMeal, limit=this.state.limit) {

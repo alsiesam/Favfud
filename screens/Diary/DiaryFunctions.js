@@ -164,7 +164,6 @@ export function generateSummary(consumptionPerMeal, limit=nutritionLimit) {
     text: "",
   };
   nutritionList.forEach(nutrition => {
-    console.log(nutrition);
     var consumptionPercentage = getConsumptionPercentage(nutrition, consumptionPerMeal, limit);
     if (consumptionPercentage<=minConsumptionPercentage) {
       summary.more.push(nutrition);

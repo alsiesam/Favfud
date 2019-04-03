@@ -60,7 +60,6 @@ export default class DiaryScreen extends React.Component {
   }
 
   refresh(){
-    console.log("Refresh");;
     if(!this.state.isLoading) {
       this.setState({
         isLoading: true,
@@ -84,7 +83,6 @@ export default class DiaryScreen extends React.Component {
   getTokenAndEmail() {
     AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then((response) => {
       var user_token = response[0][1];
-      //console.log("My token is: "+user_token);
       if(user_token){
         this.setState({token: user_token});
         this.setup(user_token);
@@ -114,18 +112,14 @@ export default class DiaryScreen extends React.Component {
       let mealRecords = updateMealRecords(responseJson, this.state.mealRecords);
       this.setState({mealRecords: mealRecords});
 
-      console.log("Processing Meal");
       let mealRecipes = await generateMealRecipes(this.state.mealRecords);
       this.setState({mealRecipes: mealRecipes});
-      console.log("Process Meal Finished");
 
       let reportInfo = generateReportInfo(this.state.mealRecords, this.state.mealRecipes, this.state.startDate, this.state.endDate);
       this.setState({reportInfo: reportInfo});
-      console.log(this.state.reportInfo);
 
       let summary = getDiarySummaryWithReportInfo(this.state.reportInfo);
       this.setState({summary: summary});
-      console.log(this.state.summary);
 
       this.setState({isLoading: false});
     } catch(err) {
@@ -259,7 +253,6 @@ export default class DiaryScreen extends React.Component {
 
   renderShortReport(){
     var statusText = "Healthy";
-    console.log(this.state.summary.text);
     if(this.state.summary != {}){
       var score_1 = (this.state.summary.more.length + this.state.summary.less.length)*0.6;
       var score_2 = (this.state.summary.slightlyMore.length + this.state.summary.slightlyLess.length)*0.8;
