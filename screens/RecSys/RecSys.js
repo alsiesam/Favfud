@@ -6,6 +6,8 @@ import { Col, Row } from "react-native-easy-grid";
 import * as func from './Recipe_Functions.js';
 import { Heading, Text } from '@shoutem/ui';
 
+import {getDiarySummary} from '../Diary/DiaryFunctions'
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const ASYNC_STORAGE_KEYS = ['user_token', 'email_address'];
@@ -19,10 +21,10 @@ export default class RecSys extends Component {
     static navigationOptions = {
       title: 'RecSys',
     };
-  
+
     constructor(props){
       super(props);
-      this.state = { 
+      this.state = {
         isLoading: true,
         isFetching: false,
         dataSource: [],
@@ -32,11 +34,12 @@ export default class RecSys extends Component {
         user_token: '',
         user_name: 'Guest',
         greeting: 'Hi, Guest.',
+        diarySummary: {},
       }
     }
 
     componentDidMount(){
-      AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then((response) => {
+      AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then(async (response) => {
         var user_token = response[0][1];
         var user_name = response[1][1];
         if(user_token){
@@ -46,6 +49,8 @@ export default class RecSys extends Component {
           this.fetchRandomRecipes();
           func.fetchBookmarkedRecipes(this.state.user_token);
           func.fetchRatedRecipes(this.state.user_token);
+          let diarySummary = await getDiarySummary(this.state.user_token);
+          this.setState({diarySummary: diarySummary});
         }
         if(user_name){
           this.setState({user_name: user_name});
@@ -61,6 +66,7 @@ export default class RecSys extends Component {
           }
           this.setState({greeting: `${greet}, ${this.state.user_name}.`})
         }
+        console.log(this.state.diarySummary);
         this.setState({isLoading: false,})
       });
     }
@@ -113,7 +119,7 @@ export default class RecSys extends Component {
         console.error(error);
       });
     }
-  
+
     render() {
         const {navigate} = this.props.navigation;
         if(this.state.isLoading){
@@ -131,13 +137,14 @@ export default class RecSys extends Component {
                   <Row>
                     <Col style={{width: SCREEN_WIDTH*0.8}}>
                       <Heading style={styles.title}>{this.state.greeting}</Heading>
+                      <Text style={{marginHorizontal:20}}>{this.state.diarySummary.text}</Text>
                     </Col>
                     <Col style={{width: SCREEN_WIDTH*0.2, flex:1, flexDirection: 'row', justifyContent: 'flex-end'}}>
                       <Avatar
                         medium
                         rounded
                         title={this.state.user_name[0].toUpperCase()}
-                        containerStyle={styles.avatar} 
+                        containerStyle={styles.avatar}
                         onPress={() => navigate('Profile')}
                       />
                     </Col>
@@ -150,9 +157,9 @@ export default class RecSys extends Component {
             </Container>
         );
     }
-  
+
   }
-  
+
   const styles = StyleSheet.create({
     loading_container: {
       flex: 1,
@@ -177,4 +184,3 @@ export default class RecSys extends Component {
       alignItems: 'center',
     },
   });
-  
