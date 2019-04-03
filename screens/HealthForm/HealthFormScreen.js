@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatusBar, ScrollView, ActivityIndicator, StyleSheet, Alert, AsyncStorage,  } from 'react-native';
+import { StatusBar, ScrollView, Modal, ActivityIndicator, StyleSheet, Alert, AsyncStorage,  } from 'react-native';
 import { Divider } from "react-native-elements";
 import { Container, Icon, Picker, CheckBox, } from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
@@ -15,7 +15,7 @@ import {
 
 const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
-const POST_URL = 'https://fypbackend.herokuapp.com/healthform/insert/';
+const POST_URL = 'https://fypbackend.herokuapp.com/healthform';
 
 export default class HealthFormScreen extends React.Component {
 
@@ -26,7 +26,7 @@ export default class HealthFormScreen extends React.Component {
   constructor(props) {
       super(props);
       this.state = {
-          user_token: 'abc1234',
+					modalVisible: false,
 					loading: true,
 
 					sex: 'M',
@@ -38,6 +38,8 @@ export default class HealthFormScreen extends React.Component {
 					calories: '',
 					smoking: false,
 					drinking: false,
+					illness: [],
+					illnessList: [],
 
 					tastes_piquant: false,
 					tastes_bitter: false,
@@ -49,6 +51,7 @@ export default class HealthFormScreen extends React.Component {
 					taboos: [],
       };
 			this.getEmail();
+			this.getIllnessList();
   }
 
 	componentDidMount() {
@@ -57,6 +60,53 @@ export default class HealthFormScreen extends React.Component {
 				loading: false,
 			});
 		}
+
+	/* async functions: fetch related */
+
+	async getIllnessList() {
+		fetch(POST_URL+'/illness/', {
+			method: 'GET',
+			headers: {
+			},
+		}).then((response) => response.json())
+		.then((responsejson) => {
+			// console.warn(responsejson);
+
+			var result = [];
+			responsejson.forEach((obj, ind) => {
+				let illnessName = obj['disease_name'];
+				result.push(illnessName);
+			});
+			result.sort();
+
+			this.setState({illnessList: [...this.state.illnessList, ...result]});
+		}).catch((error) => {
+				// Alert.alert('An error occured in submitting form data', error);
+				console.error(error);
+				return [];
+			}
+		).done();
+	}
+
+	async getEmail() {
+    try{
+      let email = await AsyncStorage.getItem(EMAIL_ADDRESS);
+      console.log('[getEmail] Email is:' + email);
+      this.setState({email});
+    } catch (err) {
+      // console.log('[getEmail] Error')
+			console.error(err);
+    }
+  }
+
+	async storeToken(accessToken) {
+    try{
+      await AsyncStorage.setItem(ACCESS_TOKEN, accessToken);
+      this.getToken();
+    } catch (err) {
+      console.log('[storeToken] Error')
+    }
+  }
 
 	async submit() {
 		this.setState({loading: true});
@@ -73,6 +123,14 @@ export default class HealthFormScreen extends React.Component {
 				}
 			});
 			// console.warn(tastes_array);
+
+			let illness_array = [];
+			tabillness = this.state.illness;
+			illness_array = tabillness.slice(0);
+			while (illness_array.lastIndexOf('') > 0) {
+				illness_array = illness_array.splice(illness_array.lastIndexOf(''), 1);
+			}
+			// console.warn(taboos_array);
 
 			let taboos_array = [];
 			taboos = this.state.taboos;
@@ -112,26 +170,32 @@ export default class HealthFormScreen extends React.Component {
 				calories: this.state.calories,
 				smoking: this.state.smoking,
 				drinking: this.state.drinking,
+				illness: illness_array,
 
 				tastes: tastes_array,
 				taboos: taboos_array
 			});
 
-			fetch(POST_URL, {
+			fetch(POST_URL+'/insert/', {
         method: 'POST',
 				headers: {
-
+					"Content-Type" : "text/plain",
 				},
         body: form,
       }).then((response) => {
 				console.warn(response);
 				const statusCode = response.status;
-				console.warn(response.text());
 				if (statusCode == 200) {
+					let responsetext = response.text();
+					this.storeToken(responsetext);
 					this.switchToApp();
 				}
+				else if(statusCode == 400) {
+					let responseText = response.text();
+					Alert.alert('An error occured in submitting form data', responseText);
+				}
 				else {
-	        Alert.alert('An error occured in submitting form data', 'Please try again');
+	        Alert.alert('An error occured in the server', 'Please try again or contact us.');
 				}
       }).catch((error) => {
 			    // Alert.alert('An error occured in submitting form data', error);
@@ -151,16 +215,7 @@ export default class HealthFormScreen extends React.Component {
     }
   }
 
-	async getEmail() {
-    try{
-      let email = await AsyncStorage.getItem(EMAIL_ADDRESS);
-      console.log('[getEmail] Email is:' + email);
-      this.setState({email});
-    } catch (err) {
-      // console.log('[getEmail] Error')
-			console.error(err);
-    }
-  }
+	/* validation related */
 
 	isInt(n){
 		return n.search(/,/g) === -1 && parseInt(n) !== NaN && parseFloat(n) % 1 === 0;
@@ -210,11 +265,13 @@ export default class HealthFormScreen extends React.Component {
 		}
 	}
 
+	/* dynamic input fields related */
+
 	createTextInput(field) {
-		if (field !== 'taboos') return false;
+		if (!['taboos'].includes(field)) return false;
 
 		// textboxes = this.state[field + '_textboxes'];
-		texts = this.state[field];
+		let texts = this.state[field];
 
 		// const textbox = <TextInput
 		// 	style = {styles.textInput}
@@ -232,10 +289,10 @@ export default class HealthFormScreen extends React.Component {
 	}
 
 	changeTextInput(field, pos, text) {
-		if (field !== 'taboos') return false;
+		if (!['taboos'].includes(field) ) return false;
 
-		texts = this.state[field];
-		key = texts.length;
+		let texts = this.state[field];
+		let key = texts.length;
 
 		texts[pos] = text;
 
@@ -245,11 +302,11 @@ export default class HealthFormScreen extends React.Component {
 	}
 
 	removeTextInput(field, pos) {
-		if (field !== 'taboos') return false;
+		if (!['taboos'].includes(field)) return false;
 
 		// textboxes = this.state[field + '_textboxes'];
-		texts = this.state[field];
-		key = texts.length;
+		let texts = this.state[field];
+		let key = texts.length;
 
 		if (texts.length <= 1) {
 			return;
@@ -260,6 +317,28 @@ export default class HealthFormScreen extends React.Component {
 
 		this.setState({
 			/* [field+'_textboxes']: textboxes, */
+			[field]: texts,
+		});
+	}
+
+	/* dynamic checkboxes related */
+
+	toggleCheckboxInput(field, value) {
+		if (!['illness'].includes(field)) return false;
+
+		let texts = this.state[field];
+
+		let pos = texts.indexOf(value);
+
+		if (pos < 0) {
+			texts.push(value);
+			texts.sort();
+		}
+		else {
+			texts.splice(pos, 1);
+		}
+
+		this.setState({
 			[field]: texts,
 		});
 	}
@@ -399,7 +478,15 @@ export default class HealthFormScreen extends React.Component {
 										}}/>
 									</Row>
 							</Row>
-						</Col>
+
+							<Text style={styles.question}>Any illness:</Text>
+								<Button styleName='clear' style={styles.submitButton} onPress = {() => this.setState({modalVisible: true})}><Text>Choose illness</Text></Button>
+								{
+									this.state.illness.map((text, key) => {
+										return <Text key={key}>{text}</Text>;
+									})
+								}
+							</Col>
 					{divider}
 
 					<Title style={styles.header}>Eating Habits</Title>
@@ -506,10 +593,45 @@ export default class HealthFormScreen extends React.Component {
 
 					<Button styleName='clear' style={styles.submitButton} onPress = {() => this.submit()}><Text>SUBMIT</Text></Button>
 				</ScrollView>
+				<Modal
+					animationType="slide"
+					transparent={true}
+					visible={this.state.modalVisible}
+					onRequestClose={() => {
+						this.setState({modalVisible: false})
+					}}
+					style={styles.container}>
+					<Row size={90}>
+						<ScrollView style={{...styles.container, ...{margin: 0, fontSize: 13,}}}>
+							<Col>
+								{
+									this.state.illnessList.map((text, key) => {
+										// console.warn(text);
+										return (<Row key={key}
+												style={{marginTop: 2, marginBottom: 2}}
+												onPress={() => {
+													this.toggleCheckboxInput('illness', text);
+												}}>
+											<CheckBox
+												checked={this.state.illness.indexOf(text) >= 0}
+												style = {{marginRight: 15}}/>
+											<Text>{text}</Text>
+											</Row>);
+									})
+								}
+							</Col>
+						</ScrollView>
+					</Row>
+					<Row size={10}>
+						<View style={{...styles.container, ...{margin: 0, height: 30,}}}>
+							<Button styleName='clear' style={styles.submitButton} onPress = {() => this.setState({modalVisible: false})}><Text>CLOSE</Text></Button>
+						</View>
+					</Row>
+				</Modal>
 				{
 					this.state.loading
 					? (
-						<Overlay styleName='fill-parent' style={{}}>
+						<Overlay styleName='fill-parent' style={{'backgroundColor': '#cccccc',}}>
 							<ActivityIndicator size="large" color="#ffffff" />
 						</Overlay>
 					)
