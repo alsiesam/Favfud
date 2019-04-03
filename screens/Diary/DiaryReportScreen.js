@@ -13,10 +13,10 @@ import {
   Icon,
 } from '@shoutem/ui';
 import { Col, Row, Grid } from "react-native-easy-grid";
-//import FusionCharts from "react-native-fusioncharts";
-//import ProgressBarClassic from 'react-native-progress-bar-classic';
 import AnimatedBar from "react-native-animated-bar";
 import moment from "moment";
+
+import {getConsumptionPerMeal, getNutritionLimit, getConsumptionPercentage, generateSummary} from './DiaryFunctions'
 
 export default class DiaryReportScreen extends React.Component {
   static navigationOptions = {
@@ -25,62 +25,25 @@ export default class DiaryReportScreen extends React.Component {
 
   constructor(props) {
     super(props);
-    var today = new Date;
+    //var today = new Date;
     var reportInfo = props.navigation.getParam('reportInfo');
+    var consumptionPerMeal = getConsumptionPerMeal(reportInfo);
+    var limit = getNutritionLimit();
+    var summary = generateSummary(consumptionPerMeal);
     this.state = {
+      limit: limit,
       reportInfo: reportInfo,
-      energy_perMeal: reportInfo.energy/reportInfo.numOfMeals,
-      carb_perMeal: reportInfo.carb/reportInfo.numOfMeals,
-      fat_perMeal: reportInfo.fat/reportInfo.numOfMeals,
-      protein_perMeal: reportInfo.protein/reportInfo.numOfMeals,
-      limit: {
-        energy: 2000/3,
-        carb: 200/3,
-        fat: 76.6/3,
-        protein: 72/3,
-      }
+      consumptionPerMeal: consumptionPerMeal,
+      summary: summary,
     };
-
+    console.log(this.state);
   }
 
-  consumptionPercentageOf(nutrition) {
-    switch (nutrition) {
-      case "energy":
-        return(this.state.energy_perMeal/this.state.limit.energy);
-        break;
-      case "carb":
-        return(this.state.carb_perMeal/this.state.limit.carb);
-        break;;
-      case "fat":
-        return(this.state.fat_perMeal/this.state.limit.fat);
-        break;;
-      case "protein":
-        return(this.state.protein_perMeal/this.state.limit.protein);
-        break;
-      default:
-      return 0;
-    }
+  consumptionPercentageOf(nutrition, consumptionPerMeal=this.state.consumptionPerMeal, limit=this.state.limit) {
+    return getConsumptionPercentage(nutrition, consumptionPerMeal, limit);
   }
 
   renderBarChart(nutrition) {
-    //<View style={{ flexDirection: 'row', height: 'auto', paddingVertical: 10 }}>
-    /*
-    <FusionCharts
-      type="angulargauge"
-      width='300'
-      height='150'
-      dataFormat="json"
-      dataSource={this.state.dataSource}
-      libraryPath={this.libraryPath} // set the libraryPath property
-    />
-
-      <ProgressBarClassic
-        progress={percentage}
-        valueStyle={'balloon'}
-      />
-
-    */
-
     var percentage = this.consumptionPercentageOf(nutrition);
     var color = "#05FF84";
     if (percentage>=1.4 || percentage<=0.6){
@@ -89,11 +52,12 @@ export default class DiaryReportScreen extends React.Component {
       color = "#FF8506";
     }
     return(
-      <View style={{ height: 100}}>
+      <View style={{ height: 50, marginTop: 5,}}>
         <AnimatedBar
             progress={percentage}
-            height={50}
+            height={40}
             borderColor={"#DDD"}
+            fillColor={"#EEE"}
             barColor={color}
             borderRadius={5}
             borderWidth={5}
@@ -109,35 +73,39 @@ export default class DiaryReportScreen extends React.Component {
 
   render() {
     return(
-      <View style={styles.container}>
-        <View style={{alignItems: 'center', marginBottom: 10}}>
-          <Subtitle>Num. of meals: {this.state.reportInfo.numOfMeals} meals</Subtitle>
-          <Subtitle>Your average nutrition consumption (per meal): </Subtitle>
+      <ScrollView style={styles.container}>
+        <View style={{alignItems: 'flex-start', marginBottom: 0}}>
+          <Text>You have taken {this.state.reportInfo.numOfMeals} meals.</Text>
+          <Subtitle>Nutrition consumption (average per meal):</Subtitle>
         </View>
         <Grid style={styles.grid}>
-          <Row style={{flexDirection: 'column'}}>
-            <Text>Energy: {Math.round(this.state.energy_perMeal)} kcal</Text>
+          <Divider styleName="line"/>
+          <Row style={styles.row}>
+            <Text>Energy: {Math.round(this.state.consumptionPerMeal.energy)} kcal</Text>
             <Text>{Math.round(this.consumptionPercentageOf("energy")*100)}% of normal intake</Text>
             {this.renderBarChart("energy")}
           </Row>
-          <Row style={{flexDirection: 'column'}}>
-            <Text>Carbohydrate: {Math.round(this.state.carb_perMeal)} grams</Text>
+          <Divider styleName="line"/>
+          <Row style={styles.row}>
+            <Text>Carbohydrate: {Math.round(this.state.consumptionPerMeal.carb)} grams</Text>
             <Text>{Math.round(this.consumptionPercentageOf("carb")*100)}% of normal intake</Text>
             {this.renderBarChart("carb")}
           </Row>
-          <Row style={{flexDirection: 'column'}}>
-            <Text>Fat: {Math.round(this.state.fat_perMeal)} grams</Text>
+          <Divider styleName="line"/>
+          <Row style={styles.row}>
+            <Text>Fat: {Math.round(this.state.consumptionPerMeal.fat)} grams</Text>
             <Text>{Math.round(this.consumptionPercentageOf("fat")*100)}% of normal intake</Text>
             {this.renderBarChart("fat")}
           </Row>
-          <Row style={{flexDirection: 'column'}}>
-            <Text>Protein: {Math.round(this.state.protein_perMeal)} grams</Text>
+          <Divider styleName="line"/>
+          <Row style={styles.row}>
+            <Text>Protein: {Math.round(this.state.consumptionPerMeal.protein)} grams</Text>
             <Text>{Math.round(this.consumptionPercentageOf("protein")*100)}% of normal intake</Text>
             {this.renderBarChart("protein")}
           </Row>
         </Grid>
-
-      </View>
+        {/*this.renderReminderText()*/}
+      </ScrollView>
     );
   }
 }
@@ -145,7 +113,8 @@ export default class DiaryReportScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    margin: 30,
+    marginHorizontal: 30,
+    marginVertical: 15
     //backgroundColor: "grey",
   },
   subtitleContainer: {
@@ -155,6 +124,12 @@ const styles = StyleSheet.create({
   grid: {
     margin: 5,
     height: 'auto',
+  },
+  row: {
+    flexDirection: 'column',
+    height: 'auto',
+    marginTop: 10,
+    //marginBottom: 5,
   },
   barText: {
     backgroundColor: "transparent",
