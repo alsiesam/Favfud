@@ -50,8 +50,9 @@ export default class ProfileScreen extends React.Component {
 
   async logout(){
     try {
-      await this.removeEmail();
-      await this.removeToken();
+      // await this.removeEmail();
+      // await this.removeToken();
+      await this.removeAllRecords();
       this.showAlert("Successful", "You have successfully logged out.");
       this.redirectToAuth();
     } catch (err) {
@@ -85,6 +86,14 @@ export default class ProfileScreen extends React.Component {
       this.setState({email: ''});
     } catch (err) {
       console.log('[removeEmail] Error')
+    }
+  }
+  async removeAllRecords() {
+    try{
+      await AsyncStorage.clear();
+      this.setState({token: '', email: ''});
+    } catch (err) {
+      console.log('[removeAllRecords] Error')
     }
   }
 
@@ -149,6 +158,7 @@ export default class ProfileScreen extends React.Component {
 
   _handleRefresh = () => {
     this.getTokenAndEmail();
+    console.log(this.state.token);
   };
 
 }
