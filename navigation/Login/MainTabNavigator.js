@@ -5,6 +5,8 @@ import { createStackNavigator, createBottomTabNavigator } from 'react-navigation
 import TabBarIcon from '../../components/TabBarIcon';
 import HomeScreen from '../../screens/Login/HomeScreen';
 import DiaryScreen from '../../screens/Diary/DiaryScreen';
+import AddMealFormScreen from '../../screens/Diary/AddMealFormScreen';
+import DiaryReportScreen from '../../screens/Diary/DiaryReportScreen';
 import ProfileScreen from '../../screens/Login/ProfileScreen';
 
 import RecSys from '../../screens/RecSys/RecSys';
@@ -31,7 +33,11 @@ HomeStack.navigationOptions = {
 };
 
 const DiaryStack = createStackNavigator({
-  Diary: DiaryScreen,
+  Diary: {screen: DiaryScreen},
+  AddMealForm: {screen: AddMealFormScreen},
+  DiaryReport: {screen: DiaryReportScreen},
+},{
+  initialRouteName: 'Diary',
 });
 
 DiaryStack.navigationOptions = {
@@ -130,4 +136,3 @@ export default createBottomTabNavigator({
   DiaryStack,
   SearchStack,
 });
-
