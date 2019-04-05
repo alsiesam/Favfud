@@ -15,7 +15,7 @@ import {
 
 const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
-const POST_URL = 'https://fypbackend.herokuapp.com/healthform';
+const POST_URL = 'https://django-fyp.herokuapp.com/healthform';
 
 export default class HealthFormScreen extends React.Component {
 
@@ -460,24 +460,29 @@ export default class HealthFormScreen extends React.Component {
 										: <View />
 									)
 								}
-							<Row style={styles.question}>
-								<Row>
-									<Text>Smoking</Text>
-									<CheckBox
-										checked={this.state.smoking}
-										onPress={() => {
-											this.setState({smoking: !this.state.smoking});
-										}}/>
-									</Row>
-								<Row>
-									<Text>Drinking</Text>
-									<CheckBox
-										checked={this.state.drinking}
-										onPress={() => {
-											this.setState({drinking: !this.state.drinking});
-										}}/>
-									</Row>
-							</Row>
+							{
+								/*
+								<Row style={styles.question}>
+									<Row>
+										<Text>Smoking</Text>
+										<CheckBox
+											checked={this.state.smoking}
+											onPress={() => {
+												this.setState({smoking: !this.state.smoking});
+											}}/>
+										</Row>
+									<Row>
+										<Text>Drinking</Text>
+										<CheckBox
+											checked={this.state.drinking}
+											onPress={() => {
+												this.setState({drinking: !this.state.drinking});
+											}}/>
+										</Row>
+								</Row>
+								*/
+							}
+
 
 							<Text style={styles.question}>Any illness:</Text>
 								<Button styleName='clear' style={styles.submitButton} onPress = {() => this.setState({modalVisible: true})}><Text>Choose illness</Text></Button>
@@ -491,59 +496,64 @@ export default class HealthFormScreen extends React.Component {
 
 					<Title style={styles.header}>Eating Habits</Title>
 						<Col>
-							<Text style={styles.question}>Your favourite tastes:</Text>
-								<Row style={styles.question}>
-									<Row>
-										<Text>Spicy</Text>
-										<CheckBox
-											checked={this.state.tastes_piquant}
-											onPress={() => {
-												this.setState({tastes_piquant: !this.state.tastes_piquant});
-											}}/>
-										</Row>
-									<Row>
-										<Text>Bitter</Text>
-										<CheckBox
-											checked={this.state.tastes_bitter}
-											onPress={() => {
-												this.setState({tastes_bitter: !this.state.tastes_bitter});
-											}}/>
-										</Row>
-									<Row>
-										<Text>Sweet</Text>
-										<CheckBox
-											checked={this.state.tastes_sweet}
-											onPress={() => {
-												this.setState({tastes_sweet: !this.state.tastes_sweet});
-											}}/>
-										</Row>
-								</Row>
-								<Row style={styles.question}>
-									<Row>
-										<Text>Savoury</Text>
-										<CheckBox
-											checked={this.state.tastes_meaty}
-											onPress={() => {
-												this.setState({tastes_meaty: !this.state.tastes_meaty});
-											}}/>
-										</Row>
-									<Row>
-										<Text>Salty</Text>
-										<CheckBox
-											checked={this.state.tastes_salty}
-											onPress={() => {
-												this.setState({tastes_salty: !this.state.tastes_salty});
-											}}/>
-										</Row>
-									<Row>
-										<Text>Sour</Text>
-										<CheckBox
-											checked={this.state.tastes_sour}
-											onPress={() => {
-												this.setState({tastes_sour: !this.state.tastes_sour});
-											}}/>
-										</Row>
-								</Row>
+							{
+								/*
+								<Text style={styles.question}>Your favourite tastes:</Text>
+									<Row style={styles.question}>
+										<Row>
+											<Text>Spicy</Text>
+											<CheckBox
+												checked={this.state.tastes_piquant}
+												onPress={() => {
+													this.setState({tastes_piquant: !this.state.tastes_piquant});
+												}}/>
+											</Row>
+										<Row>
+											<Text>Bitter</Text>
+											<CheckBox
+												checked={this.state.tastes_bitter}
+												onPress={() => {
+													this.setState({tastes_bitter: !this.state.tastes_bitter});
+												}}/>
+											</Row>
+										<Row>
+											<Text>Sweet</Text>
+											<CheckBox
+												checked={this.state.tastes_sweet}
+												onPress={() => {
+													this.setState({tastes_sweet: !this.state.tastes_sweet});
+												}}/>
+											</Row>
+									</Row>
+									<Row style={styles.question}>
+										<Row>
+											<Text>Savoury</Text>
+											<CheckBox
+												checked={this.state.tastes_meaty}
+												onPress={() => {
+													this.setState({tastes_meaty: !this.state.tastes_meaty});
+												}}/>
+											</Row>
+										<Row>
+											<Text>Salty</Text>
+											<CheckBox
+												checked={this.state.tastes_salty}
+												onPress={() => {
+													this.setState({tastes_salty: !this.state.tastes_salty});
+												}}/>
+											</Row>
+										<Row>
+											<Text>Sour</Text>
+											<CheckBox
+												checked={this.state.tastes_sour}
+												onPress={() => {
+													this.setState({tastes_sour: !this.state.tastes_sour});
+												}}/>
+											</Row>
+									</Row>
+								*/
+							}
+
 
 							<Text style={styles.question}>Your taboos:</Text>
 								<Grid>
