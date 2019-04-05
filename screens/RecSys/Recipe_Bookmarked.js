@@ -26,6 +26,7 @@ export default class Recipe_Bookmarked extends Component {
         dataSource: [],
         bookmarked_recipe_ids: '',
         hasScrolled: false,
+        user_token: '',
       }
     }
 

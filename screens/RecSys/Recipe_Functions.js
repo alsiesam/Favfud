@@ -259,7 +259,7 @@ export function renderSearchResultsList(title, data, want_divider, navigate, sta
 				// console.warn(recipe);
 				ingredients = getIngredients(recipe).slice(0, 3);
 				return (
-					<TouchableOpacity key={recipe.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: recipe, /*user_token: state.user_token*/}, key: 'Info'+recipe.id})}>
+					<TouchableOpacity key={recipe.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: recipe, user_token: state.user_token}, key: 'Info'+recipe.id})}>
 					<Row style={styles.listView}>
 						<Image
 							style={[styles.small_recipe_image, {marginLeft: 10, marginRight: 10}]}
