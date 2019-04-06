@@ -25,6 +25,7 @@ export default class Recipe_Rated extends Component {
         dataSource: [],
         rated_recipe_ids: '',
         hasScrolled: false,
+        user_token: '',
       }
     }
 
@@ -32,6 +33,7 @@ export default class Recipe_Rated extends Component {
         AsyncStorage.getItem(ASYNC_STORAGE_KEYS_FOR_USER_TOKEN)
         .then((ut) => {
             if(ut){
+                this.setState({user_token: ut});
                 AsyncStorage.getItem(ASYNC_STORAGE_KEYS_FOR_RECIPE_RATINGS)
                 .then((recipes) => {
                     const r = recipes ? Object.keys(JSON.parse(recipes)) : [];
