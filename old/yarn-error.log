@@ -1,0 +1,69 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Users\hengk\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js install
+
+PATH: 
+  C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\iCLS\;C:\Program Files\Intel\Intel(R) Management Engine Components\iCLS\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files (x86)\Python37-32\Lib\;C:\Users\hengk\.atom\packages;C:\Program Files\php;C:\Program Files\MySQL\MySQL Server 8.0\bin\;;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\PuTTY\;C:\Users\hengk\Miniconda3;C:\Users\hengk\Miniconda3\Library\mingw-w64\bin;C:\Users\hengk\Miniconda3\Library\usr\bin;C:\Users\hengk\Miniconda3\Library\bin;C:\Users\hengk\Miniconda3\Scripts;C:\Users\hengk\AppData\Local\Microsoft\WindowsApps;C:\Users\hengk\AppData\Local\GitHubDesktop\bin;C:\Users\hengk\AppData\Local\atom\bin;C:\Program Files\heroku\bin;C:\Users\hengk\AppData\Roaming\npm;C:\Users\hengk\Miniconda3\envs\comp4332;
+
+Yarn version: 
+  1.15.2
+
+Node version: 
+  11.6.0
+
+Platform: 
+  win32 x64
+
+Trace: 
+  SyntaxError: C:\Users\hengk\fyp\Favfud\package.json: Unexpected token } in JSON at position 249
+      at JSON.parse (<anonymous>)
+      at C:\Users\hengk\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (C:\Users\hengk\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:304:30)
+      at C:\Users\hengk\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:315:13
+
+npm manifest: 
+  {
+    "main": "node_modules/expo/AppEntry.js",
+    "scripts": {
+      "start": "expo start",
+      "android": "expo start --android",
+      "ios": "expo start --ios",
+      "eject": "expo eject",
+      "test": "node ./node_modules/jest/bin/jest.js --watchAll",
+    },
+    "jest": {
+      "preset": "jest-expo"
+    },
+    "dependencies": {
+      "@expo/samples": "2.1.1",
+      "@expo/vector-icons": "^8.1.0",
+      "@shoutem/theme": "^0.11.1",
+      "@shoutem/ui": "^0.23.12",
+      "expo": "^32.0.0",
+      "moment": "^2.24.0",
+      "native-base": "^2.12.1",
+      "react": "16.5.0",
+      "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
+      "react-native-animated-bar": "^0.2.0",
+      "react-native-calendar-select": "^0.1.2",
+      "react-native-datepicker": "^1.7.2",
+      "react-native-easy-grid": "^0.2.0",
+      "react-native-elements": "^0.19.1",
+      "react-native-snap-carousel": "^3.7.5",
+      "react-native-vector-icons": "^6.1.0",
+      "react-navigation": "^3.0.9",
+      "react-redux": "^6.0.0",
+      "redux": "^4.0.1"
+    },
+    "devDependencies": {
+      "babel-preset-expo": "^5.0.0",
+      "jest-expo": "^32.0.0"
+    },
+    "private": true
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

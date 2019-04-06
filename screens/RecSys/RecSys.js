@@ -36,7 +36,6 @@ export default class RecSys extends Component {
         user_token: '',
         user_name: 'Guest',
         greeting: 'Hi, Guest.',
-        diarySummary: {},
       }
     }
 
@@ -52,8 +51,6 @@ export default class RecSys extends Component {
           }, this);
           func.fetchBookmarkedRecipes(this.state.user_token);
           func.fetchRatedRecipes(this.state.user_token);
-          let diarySummary = await getDiarySummary(this.state.user_token);
-          this.setState({diarySummary: diarySummary});
         }
         if(user_name){
           this.setState({user_name: user_name});
@@ -130,7 +127,6 @@ export default class RecSys extends Component {
                   <Row style={{marginTop: Platform.OS === 'ios' ? 0: 40}}>
                     <Col style={{width: SCREEN_WIDTH*0.8}}>
                       <Heading style={styles.title}>{this.state.greeting}</Heading>
-                      <Text style={{marginHorizontal:20}}>{this.state.diarySummary.text}</Text>
                     </Col>
                     <Col style={{width: SCREEN_WIDTH*0.2, flex:1, flexDirection: 'row', justifyContent: 'flex-end'}}>
                       <Avatar
