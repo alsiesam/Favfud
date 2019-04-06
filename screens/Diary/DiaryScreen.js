@@ -17,7 +17,7 @@ import Calendar from '../../library/react-native-calendar-select';
 import { Col, Row, Grid } from "react-native-easy-grid";
 import AnimatedBar from "react-native-animated-bar";
 
-import {fetchMealRecordByToken, updateMealRecords, generateMealRecipes, generateReportInfo, getDiarySummaryWithReportInfo} from './DiaryFunctions'
+import {fetchMealRecordByToken, updateMealRecords, generateMealRecipes, generateReportInfo, getDiarySummaryWithReportInfo, getDiaryReport} from './DiaryFunctions'
 
 const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
@@ -37,16 +37,18 @@ export default class DiaryScreen extends React.Component {
   constructor(props) {
     super(props);
     var today = new Date;
-    var startDate = moment(today).subtract(6, 'days');
+    var endDate = moment(today).subtract(1, 'days');
+    var startDate = moment(today).subtract(7, 'days');
     this.state = {
       email:'',
       token:'',
       startDate: startDate,
-      endDate: moment(today),
+      endDate: endDate,
       mealRecords:{}, //Key: YYYY-MM-DD; Value
       /*mealList: [{}],*/
       mealRecipes: {},
       isLoading: false,
+      isReportLoading: false,
       refreshing: false,
       reportInfo: {
         numOfDays: 0,
@@ -59,15 +61,19 @@ export default class DiaryScreen extends React.Component {
     };
   }
 
-  refresh(){
+  refresh(token=this.state.token, startDate=this.state.startDate, endDate=this.state.endDate){
     if(!this.state.isLoading) {
       this.setState({
         isLoading: true,
+        isReportLoading: true,
         mealRecords: {},
         mealRecipes: {},
+        summary:{},
+        nutritionPercentage:{},
+        nutritionValue:{},
       });
       if(this.state.token && this.state.token != ''){
-        this.setup(this.state.token);
+        this.setup(this.state.token, startDate, endDate);
       } else {
         this.setState({isLoading: false,});
       }
@@ -95,32 +101,49 @@ export default class DiaryScreen extends React.Component {
   }
 
   confirmDate({startDate, endDate, startMoment, endMoment}) {
+    startDate=moment(startDate);
+    endDate=moment(endDate);
     this.setState({
-      startDate: moment(startDate),
-      endDate: moment(endDate),
+      startDate: startDate,
+      endDate: endDate,
     });
-    this.refresh();
+    this.refresh(this.state.token, startDate, endDate);
   }
 
   openCalendar() {
     this.calendar && this.calendar.open();
   }
 
-  async setup(token){
+  async setup(token, startDate=this.state.startDate, endDate=this.state.endDate){
+    this.setState({isReportLoading: true, isLoading: true});
     try {
-      let responseJson = await fetchMealRecordByToken(token);
+      let responseJson = await fetchMealRecordByToken(token, startDate, endDate);
       let mealRecords = updateMealRecords(responseJson, this.state.mealRecords);
       this.setState({mealRecords: mealRecords});
 
+
+      let reportData = await getDiaryReport(token, startDate, endDate);
+      //console.log(reportData);
+      this.setState({
+        summary: reportData.summary,
+        nutritionPercentage: reportData.nutrition_percentage,
+        nutritionValue: reportData.nutrition
+      });
+      this.setState({isReportLoading: false});
+    } catch(err) {
+      console.log(err);
+      this.setState({isReportLoading: false});
+      this.setState({isLoading: false});
+    } try {
       let mealRecipes = await generateMealRecipes(this.state.mealRecords);
       this.setState({mealRecipes: mealRecipes});
-
+      /*
       let reportInfo = generateReportInfo(this.state.mealRecords, this.state.mealRecipes, this.state.startDate, this.state.endDate);
       this.setState({reportInfo: reportInfo});
 
       let summary = getDiarySummaryWithReportInfo(this.state.reportInfo);
       this.setState({summary: summary});
-
+      */
       this.setState({isLoading: false});
     } catch(err) {
       console.log(err);
@@ -156,6 +179,9 @@ export default class DiaryScreen extends React.Component {
   redirectToReport(){
     this.props.navigation.navigate('DiaryReport', {
       reportInfo: this.state.reportInfo,
+      summary: this.state.summary,
+      nutritionPercentage: this.state.nutritionPercentage,
+      nutritionValue: this.state.nutritionValue
     });
   }
 
@@ -172,7 +198,7 @@ export default class DiaryScreen extends React.Component {
           ))*/
           Object.keys(this.state.mealRecipes).sort().reverse().map((date, i) => (
             <Grid key={i}>
-              {this.inRange(date) ? this.renderRecipeList(date, this.state.mealRecipes[date]): <View></View>}
+              {this.renderRecipeList(date, this.state.mealRecipes[date])}
             </Grid>
           ))
         }
@@ -253,7 +279,7 @@ export default class DiaryScreen extends React.Component {
 
   renderShortReport(){
     var statusText = "Healthy";
-    if(this.state.summary != {}){
+    if((this.state.summary != {}) && (this.state.isReportLoading == false)){
       var score_1 = (this.state.summary.more.length + this.state.summary.less.length)*0.6;
       var score_2 = (this.state.summary.slightlyMore.length + this.state.summary.slightlyLess.length)*0.8;
       var score_3 = (this.state.summary.noChange.length);

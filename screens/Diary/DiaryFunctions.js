@@ -3,7 +3,8 @@ import moment from "moment";
 
 const API_HOST = 'http://django-fyp.herokuapp.com/';
 const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
-const GET_MEAL_URL = 'https://favfud-app.herokuapp.com/api/diary/meal?user=';
+const GET_MEAL_URL = 'https://favfud-app.herokuapp.com/api/diary/meal/';
+const GET_REPORT_URL = 'https://favfud-app.herokuapp.com/api/diary/report/';
 
 const nutritionLimit = {
   energy: 2200/3,
@@ -17,9 +18,15 @@ const minConsumptionPercentage=0.6;
 const maxConsumptionPercentage_l2=1.2;
 const minConsumptionPercentage_l2=0.8;
 
-export async function fetchMealRecordByToken(token) {
+export async function fetchMealRecordByToken(token, startDate=false, endDate=false) {
   try {
-    let response = await fetch(`${GET_MEAL_URL}${token}`);
+    console.log(endDate);
+    var url = `${GET_MEAL_URL}?user_token=${token}`
+    if (startDate && endDate) {
+      url += ("&start_date=" + moment(startDate).format("YYYY-MM-DD"));
+      url += ("&end_date=" + moment(endDate).format("YYYY-MM-DD"));
+    }
+    let response = await fetch(url);
     let responseJson = await response.json();
     return responseJson;
   } catch(err) {
@@ -28,15 +35,38 @@ export async function fetchMealRecordByToken(token) {
   }
 }
 
+export async function fetchReportByToken(token, startDate=false, endDate=false) {
+  try {
+    var url = `${GET_REPORT_URL}?user_token=${token}`
+    if (startDate && endDate) {
+      url += ("&start_date=" + moment(startDate).format("YYYY-MM-DD"));
+      url += ("&end_date=" + moment(endDate).format("YYYY-MM-DD"));
+    }
+    let response = await fetch(url);
+    let responseJson = await response.json();
+    return responseJson;
+  } catch(err) {
+    console.log("fetchReportByToken");
+    console.log(err);
+  }
+}
+
 export function updateMealRecords(meal, mealRecords={}) {
   for (var i=0; i<meal.length; i++) {
     let item = meal[i];
-    if (mealRecords.hasOwnProperty(item.date)) {
-      mealRecords[item.date][item.dish_id] = item.servings;
-    } else {
-      mealRecords[item.date] =  {
-        [item.dish_id]: item.servings,
-      };
+    let ids = item.dish_ids.split(",");
+    let servings = item.servings.split(",");
+    let date = item.date;
+    for (var j=0; j<ids.length; j++) {
+      id = ids[j];
+      serving = servings[j];
+      if (mealRecords.hasOwnProperty(date)) {
+        mealRecords[date][id] = serving;
+      } else {
+        mealRecords[date] =  {
+          [id]: serving,
+        };
+      }
     }
   }
   return mealRecords;
@@ -78,7 +108,7 @@ export async function generateMealRecipes(mealRecords){
   return mealRecipes;
 }
 
-export function generateReportInfo(mealRecords, mealRecipes, startDate=moment(today).subtract(6, 'days'), endDate=moment(today)){
+export function generateReportInfo(mealRecords, mealRecipes, startDate=moment(today).subtract(7, 'days'), endDate=moment(today).subtract(1, 'days')){
   let new_reportInfo = {
     numOfDays: 0,
     numOfMeals: 0,
@@ -223,7 +253,7 @@ function changeNutritionToText(nutritionList) {
     return text;
   }
 }
-
+/*
 export async function getDiarySummary(token, startDate=moment(new Date).subtract(6, 'days'), endDate=moment(new Date)) {
   let responseJson = await fetchMealRecordByToken(token);
   let mealRecords = updateMealRecords(responseJson);
@@ -232,6 +262,12 @@ export async function getDiarySummary(token, startDate=moment(new Date).subtract
   let consumptionPerMeal = getConsumptionPerMeal(reportInfo)
   let summary = generateSummary(consumptionPerMeal);
   return summary;
+}
+*/
+export async function getDiaryReport(token, startDate=moment(new Date).subtract(7, 'days'), endDate=moment(new Date).subtract(1, 'days')) {
+  let reportData = await fetchReportByToken(token, startDate, endDate);
+  reportData.summary["text"] = generateSummaryText(reportData.summary);
+  return reportData;
 }
 
 export function getDiarySummaryWithReportInfo(reportInfo) {

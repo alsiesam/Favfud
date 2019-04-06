@@ -17,7 +17,7 @@ import Calendar from '../../library/react-native-calendar-select';
 import DatePicker from 'react-native-datepicker';
 
 const ACCESS_TOKEN = 'user_token';
-const MEAL_REQUEST_URL = 'https://favfud-app.herokuapp.com/api/diary/meals/';
+const ADD_MEAL_URL  = 'https://favfud-app.herokuapp.com/api/diary/meal/create/';
 
 export default class AddMealFormScreen extends React.Component {
   static navigationOptions = {
@@ -79,12 +79,15 @@ export default class AddMealFormScreen extends React.Component {
 
   submitAddRequest() {
     if (this.state.token !== undefined && this.state.servings !== undefined && this.state.dishId !== undefined && this.state.date !== undefined) {
-      this.addMeal({
+      var payload = {
         user_token: this.state.token,
         servings: this.state.servings,
-        dish_id: this.state.dishId,
+        dish_ids: this.state.dishId,
         date: moment(this.state.date, "DD-MMM-YYYY").format("YYYY-MM-DD"),
-      }, (response) => {
+        meal_type: "Others",
+      };
+      console.log(payload);
+      this.addMeal(payload, (response) => {
         console.log("Cannot Add Meal");
         console.log(response);
         this.showAlert("Error", response);
@@ -95,25 +98,23 @@ export default class AddMealFormScreen extends React.Component {
     }
   }
 
-  addMeal(meal, callback) {
-      fetch(MEAL_REQUEST_URL, {
+  async addMeal(mealData, callback) {
+      let response = await fetch(ADD_MEAL_URL, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(meal)
-      }).then((response) => {
-        return response.json();
-      }).then((response) => {
-        console.log(response);
-        if (response) {
-          console.log(response);
-          this.redirectToDiary();
-        } else {
-          if (callback) { callback(response); }
-        }
-      }).done();
+        body: JSON.stringify(mealData)
+      })
+      let responseIsOk = await response.ok;
+      if(responseIsOk) {
+        let responseJson = await response.json();
+        responseJson.nutrition = JSON.parse(responseJson.nutrition);
+        this.redirectToDiary();
+      } else {
+        if (callback) { callback(response); }
+      }
     }
 
   redirectToDiary(){
