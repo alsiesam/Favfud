@@ -7,8 +7,6 @@ import * as func from './Recipe_Functions.js';
 import StatusBarBackground from '../../components/StatusBarBackground';
 import { Heading, Text } from '@shoutem/ui';
 
-import {getDiarySummary} from '../Diary/DiaryFunctions'
-
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const ASYNC_STORAGE_KEYS = ['user_token', 'email_address'];
@@ -23,10 +21,10 @@ export default class RecSys extends Component {
       //title: 'RecSys',
       header: null,
     };
-
+  
     constructor(props){
       super(props);
-      this.state = {
+      this.state = { 
         isLoading: true,
         isFetching: false,
         dataSource: [],
@@ -40,7 +38,7 @@ export default class RecSys extends Component {
     }
 
     componentWillMount(){
-      AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then(async (response) => {
+      AsyncStorage.multiGet(ASYNC_STORAGE_KEYS).then((response) => {
         var user_token = response[0][1];
         var user_name = response[1][1];
         if(user_token){
@@ -108,7 +106,7 @@ export default class RecSys extends Component {
         console.error(error);
       });
     }
-
+  
     render() {
         const {navigate} = this.props.navigation;
         if(this.state.isLoading){
@@ -133,7 +131,7 @@ export default class RecSys extends Component {
                         medium
                         rounded
                         title={this.state.user_name[0].toUpperCase()}
-                        containerStyle={styles.avatar}
+                        containerStyle={styles.avatar} 
                         onPress={() => navigate('Profile')}
                       />
                     </Col>
@@ -147,9 +145,9 @@ export default class RecSys extends Component {
             </Container>
         );
     }
-
+  
   }
-
+  
   const styles = StyleSheet.create({
     loading_container: {
       flex: 1,
@@ -174,3 +172,4 @@ export default class RecSys extends Component {
       alignItems: 'center',
     },
   });
+  
