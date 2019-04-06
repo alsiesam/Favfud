@@ -42,7 +42,6 @@ export default class AddMealFormScreen extends React.Component {
     try{
       let token = await AsyncStorage.getItem(ACCESS_TOKEN);
       this.setState({token});
-      console.log('[getToken] Token is:' + token);
     } catch (err) {
       console.log('[getToken] Error')
     }
@@ -86,7 +85,6 @@ export default class AddMealFormScreen extends React.Component {
         date: moment(this.state.date, "DD-MMM-YYYY").format("YYYY-MM-DD"),
         meal_type: "Others",
       };
-      console.log(payload);
       this.addMeal(payload, (response) => {
         console.log("Cannot Add Meal");
         console.log(response);

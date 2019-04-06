@@ -17,7 +17,7 @@ import Calendar from '../../library/react-native-calendar-select';
 import { Col, Row, Grid } from "react-native-easy-grid";
 import AnimatedBar from "react-native-animated-bar";
 
-import {fetchMealRecordByToken, updateMealRecords, generateMealRecipes, generateReportInfo, getDiarySummaryWithReportInfo, getDiaryReport} from './DiaryFunctions'
+import {fetchMealRecordByToken, updateMealRecords, generateMealRecipes, getDiaryReport} from './DiaryFunctions'
 
 const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
@@ -130,7 +130,6 @@ export default class DiaryScreen extends React.Component {
 
 
       let reportData = await getDiaryReport(token, startDate, endDate);
-      //console.log(reportData);
       this.setState({
         summary: reportData.summary,
         nutritionPercentage: reportData.nutrition_percentage,
@@ -144,13 +143,6 @@ export default class DiaryScreen extends React.Component {
     } try {
       let mealRecipes = await generateMealRecipes(this.state.mealRecords);
       this.setState({mealRecipes: mealRecipes});
-      /*
-      let reportInfo = generateReportInfo(this.state.mealRecords, this.state.mealRecipes, this.state.startDate, this.state.endDate);
-      this.setState({reportInfo: reportInfo});
-
-      let summary = getDiarySummaryWithReportInfo(this.state.reportInfo);
-      this.setState({summary: summary});
-      */
       this.setState({isLoading: false});
     } catch(err) {
       console.log(err);
@@ -185,7 +177,6 @@ export default class DiaryScreen extends React.Component {
 
   redirectToReport(){
     this.props.navigation.navigate('DiaryReport', {
-      reportInfo: this.state.reportInfo,
       summary: this.state.summary,
       nutritionPercentage: this.state.nutritionPercentage,
       nutritionValue: this.state.nutritionValue
@@ -286,7 +277,6 @@ export default class DiaryScreen extends React.Component {
 
   renderShortReport(){
     var statusText = "Healthy";
-    console.log(Object.keys(this.state.summary).length);
     if((this.state.summary) && (Object.keys(this.state.summary).length >3) && (this.state.isReportLoading == false)){
       var score_1 = (this.state.summary.more.length + this.state.summary.less.length)*0.6;
       var score_2 = (this.state.summary.slightlyMore.length + this.state.summary.slightlyLess.length)*0.8;
@@ -413,9 +403,6 @@ export default class DiaryScreen extends React.Component {
             <View style={styles.reportContainer}>
               <View style={styles.shortReportContainer}>
                 <Title>Report</Title>
-                {/*
-                  this.state.reportInfo.numOfDays==0 ? <View />: this.renderShortReport()
-                  */}
                 {this.state.summary==undefined ? this.renderLoading(): this.renderShortReport()}
               </View>
               <View style={styles.buttonContainer}>

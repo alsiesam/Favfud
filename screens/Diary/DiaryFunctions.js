@@ -20,7 +20,6 @@ const minConsumptionPercentage_l2=0.8;
 
 export async function fetchMealRecordByToken(token, startDate=false, endDate=false) {
   try {
-    console.log(endDate);
     var url = `${GET_MEAL_URL}?user_token=${token}`
     if (startDate && endDate) {
       url += ("&start_date=" + moment(startDate).format("YYYY-MM-DD"));
@@ -32,7 +31,6 @@ export async function fetchMealRecordByToken(token, startDate=false, endDate=fal
       return responseJson;
     } else {
       console.log("fetchMealRecordByToken");
-      //console.log(response);
       return false;
     }
   } catch(err) {
@@ -54,7 +52,6 @@ export async function fetchReportByToken(token, startDate=false, endDate=false) 
       return responseJson;
     } else {
       console.log("fetchReportByToken");
-      //console.log(response);
       return false;
     }
   } catch(err) {
