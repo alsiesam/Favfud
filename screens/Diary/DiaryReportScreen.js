@@ -27,23 +27,32 @@ export default class DiaryReportScreen extends React.Component {
     super(props);
     //var today = new Date;
     var reportInfo = props.navigation.getParam('reportInfo');
+    var summary = props.navigation.getParam('summary');
+    var nutritionPercentage = props.navigation.getParam('nutritionPercentage');
+    var nutritionValue = props.navigation.getParam('nutritionValue');
     var consumptionPerMeal = getConsumptionPerMeal(reportInfo);
     var limit = getNutritionLimit();
-    var summary = generateSummary(consumptionPerMeal);
+    //var summary = generateSummary(consumptionPerMeal);
     this.state = {
       limit: limit,
+      summary: summary,
+      nutritionPercentage: nutritionPercentage,
+      nutritionValue: nutritionValue,
+
       reportInfo: reportInfo,
       consumptionPerMeal: consumptionPerMeal,
-      summary: summary,
+      //summary: summary,
     };
   }
 
+  /*
   consumptionPercentageOf(nutrition, consumptionPerMeal=this.state.consumptionPerMeal, limit=this.state.limit) {
     return getConsumptionPercentage(nutrition, consumptionPerMeal, limit);
   }
+  */
 
   renderBarChart(nutrition) {
-    var percentage = this.consumptionPercentageOf(nutrition);
+    var percentage = this.state.nutritionPercentage[nutrition];
     var color = "#05FF84";
     if (percentage>=1.4 || percentage<=0.6){
       color = "#FF2C07";
@@ -70,15 +79,42 @@ export default class DiaryReportScreen extends React.Component {
     );
   }
 
+  renderNutritionRow(nutrition) {
+    var nutritionName = nutrition;
+    var nutritionUnit = "gram";
+    if (nutritionName == "carb") {nutritionName = "Carbohydrates";}
+    else if (nutritionName == "energy") {
+      nutritionName = "Energy";
+      nutritionUnit = "kcal";
+    }
+    else if (nutritionName == "fat") {nutritionName = "Fat";}
+    else if (nutritionName == "protein") {nutritionName = "Protein";}
+    return(
+      <Row style={styles.row}>
+        <Text>{nutritionName}: {Math.round(this.state.nutritionValue[nutrition])} {nutritionUnit}</Text>
+        <Text>{Math.round(this.state.nutritionPercentage[nutrition]*100)}% of normal intake</Text>
+        {this.renderBarChart(nutrition)}
+      </Row>
+    );
+  }
+
   render() {
     return(
       <ScrollView style={styles.container}>
         <View style={{alignItems: 'flex-start', marginBottom: 0}}>
-          <Text>You have taken {this.state.reportInfo.numOfMeals} meals.</Text>
+          {/*<Text>You have taken {this.state.reportInfo.numOfMeals} meals.</Text>*/}
           <Subtitle>Nutrition consumption (average per meal):</Subtitle>
         </View>
         <Grid style={styles.grid}>
           <Divider styleName="line"/>
+          {this.renderNutritionRow("energy")}
+          <Divider styleName="line"/>
+          {this.renderNutritionRow("carb")}
+          <Divider styleName="line"/>
+          {this.renderNutritionRow("fat")}
+          <Divider styleName="line"/>
+          {this.renderNutritionRow("protein")}
+          {/*
           <Row style={styles.row}>
             <Text>Energy: {Math.round(this.state.consumptionPerMeal.energy)} kcal</Text>
             <Text>{Math.round(this.consumptionPercentageOf("energy")*100)}% of normal intake</Text>
@@ -102,6 +138,7 @@ export default class DiaryReportScreen extends React.Component {
             <Text>{Math.round(this.consumptionPercentageOf("protein")*100)}% of normal intake</Text>
             {this.renderBarChart("protein")}
           </Row>
+        */}
         </Grid>
         {/*this.renderReminderText()*/}
       </ScrollView>
