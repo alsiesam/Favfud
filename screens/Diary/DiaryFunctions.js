@@ -27,8 +27,14 @@ export async function fetchMealRecordByToken(token, startDate=false, endDate=fal
       url += ("&end_date=" + moment(endDate).format("YYYY-MM-DD"));
     }
     let response = await fetch(url);
-    let responseJson = await response.json();
-    return responseJson;
+    if (response.ok) {
+      let responseJson = await response.json();
+      return responseJson;
+    } else {
+      console.log("fetchMealRecordByToken");
+      //console.log(response);
+      return false;
+    }
   } catch(err) {
     console.log("fetchMealRecordByToken");
     console.log(err);
@@ -43,8 +49,14 @@ export async function fetchReportByToken(token, startDate=false, endDate=false) 
       url += ("&end_date=" + moment(endDate).format("YYYY-MM-DD"));
     }
     let response = await fetch(url);
-    let responseJson = await response.json();
-    return responseJson;
+    if (response.ok) {
+      let responseJson = await response.json();
+      return responseJson;
+    } else {
+      console.log("fetchReportByToken");
+      //console.log(response);
+      return false;
+    }
   } catch(err) {
     console.log("fetchReportByToken");
     console.log(err);
@@ -82,8 +94,13 @@ export async function fetchMealRecipes(mealRecords, date) {
             ids: ids_str
         }),
     });
-    let responseJson = await response.json();
-    return responseJson;
+    if (response.ok) {
+      let responseJson = await response.json();
+      return responseJson;
+    } else {
+      console.log("fetchMealRecipes");
+      console.log(response);
+    }
   } catch(err) {
     console.log(err);
   }

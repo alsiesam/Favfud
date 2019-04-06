@@ -60,22 +60,25 @@ export default class DiaryScreen extends React.Component {
       },
     };
   }
-
+  clearState() {
+    this.setState({
+      isLoading: false,
+      isReportLoading: false,
+      mealRecords: {},
+      mealRecipes: {},
+      summary:{},
+      nutritionPercentage:{},
+      nutritionValue:{},
+    });
+  }
   refresh(token=this.state.token, startDate=this.state.startDate, endDate=this.state.endDate){
     if(!this.state.isLoading) {
-      this.setState({
-        isLoading: true,
-        isReportLoading: true,
-        mealRecords: {},
-        mealRecipes: {},
-        summary:{},
-        nutritionPercentage:{},
-        nutritionValue:{},
-      });
+      this.clearState();
+      this.setState({isReportLoading: true, isLoading: true});
       if(this.state.token && this.state.token != ''){
         this.setup(this.state.token, startDate, endDate);
       } else {
-        this.setState({isLoading: false,});
+        this.setState({isReportLoading: false, isLoading: false});
       }
     }
   }
@@ -118,6 +121,10 @@ export default class DiaryScreen extends React.Component {
     this.setState({isReportLoading: true, isLoading: true});
     try {
       let responseJson = await fetchMealRecordByToken(token, startDate, endDate);
+      if (!responseJson) {
+      this.clearState();
+      return false;
+      }
       let mealRecords = updateMealRecords(responseJson, this.state.mealRecords);
       this.setState({mealRecords: mealRecords});
 
@@ -279,7 +286,8 @@ export default class DiaryScreen extends React.Component {
 
   renderShortReport(){
     var statusText = "Healthy";
-    if((this.state.summary != {}) && (this.state.isReportLoading == false)){
+    console.log(Object.keys(this.state.summary).length);
+    if((this.state.summary) && (Object.keys(this.state.summary).length >3) && (this.state.isReportLoading == false)){
       var score_1 = (this.state.summary.more.length + this.state.summary.less.length)*0.6;
       var score_2 = (this.state.summary.slightlyMore.length + this.state.summary.slightlyLess.length)*0.8;
       var score_3 = (this.state.summary.noChange.length);
@@ -315,8 +323,10 @@ export default class DiaryScreen extends React.Component {
           <Text styleName="multiline" style={{height: 55, marginTop: 15}}>{this.state.summary.text}</Text>
         </View>
       );
-    } else {
+    } else if (this.state.isReportLoading == true) {
       return this.renderLoading();
+    } else {
+      return (<View></View>);
     }
   }
 
