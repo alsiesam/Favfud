@@ -9,7 +9,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const ASYNC_STORAGE_KEYS = ['user_token', 'recipe_ratings'];
 const API_HOST = 'http://django-fyp.herokuapp.com/';
-const HEALTHY_CHOICE_URL = `${API_HOST}recsys/recommendation/healthy/body/selections/`;
+const DIARY_CHOICE_URL = `${API_HOST}recsys/recommendation/diary/selections/`;
 const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 
 export default class Recipe_Diary_Selections extends Component {
@@ -25,7 +25,7 @@ export default class Recipe_Diary_Selections extends Component {
         isRefreshing: false,
         recommend_recipe: props.navigation.state.params.recommend_recipe,
         user_token: props.navigation.state.params.user_token,
-        recommend_recipe: [{}],
+        recommend_recipe: [],
         dataSource: [],
         rated_recipe_ids: '',
         hasScrolled: false,
@@ -46,11 +46,11 @@ export default class Recipe_Diary_Selections extends Component {
             usertoken: user_token,
           }),
         };
-        return fetch(HEALTHY_CHOICE_URL, header)
+        return fetch(DIARY_CHOICE_URL, header)
         .then((response) => response.json())
         .then((responseJson) => {
           this.setState({
-            recommend_recipe: responseJson,
+            recommend_recipe: [...this.state.recommend_recipe, ...responseJson],
           });
         })
         .catch((error) =>{
@@ -69,40 +69,6 @@ export default class Recipe_Diary_Selections extends Component {
         this.setState({ isRefreshing: false });
     }
 
-    parseSectionDesc(theme) {
-        if(!theme){
-            return;
-        }
-        theme_prototype = theme.split('_')[0];
-        theme_type = theme.split('_')[1].charAt(0).toUpperCase() + theme.split('_')[1].slice(1);
-        switch(theme_prototype){
-            case 'age':
-                desc = `Recipes for ${them_type}`;
-                break;
-
-            case 'illness':
-                desc = `Recipes for Controlling of ${theme_type}`;
-                break;
-            
-            case 'bmi':
-                desc = `Recipes for ${theme_type} Person`;
-                break;
-
-            case 'exercise':
-                desc = `Recipes for Fitness Lovers`;
-                break;
-
-            case 'low':
-                desc = `Recipes with Low Calories`;
-                break;
-            
-            default:
-                desc = ``;
-                break;
-        }
-        return desc;
-    }
-
     renderSections() {
         const {navigate} = this.props.navigation;
         let render = [];
@@ -110,7 +76,7 @@ export default class Recipe_Diary_Selections extends Component {
         for(var i = 0; i < this.state.recommend_recipe.length; i++){
             render.push(
                 <View key={i} style={{marginTop: 5, marginLeft: 5, marginRight: 5, marginBottom: 5,}}>
-                    {this.renderRecipesInList(this.parseSectionDesc(recipe[i].theme), recipe[i].recommend_recipes, recipe[i].theme, navigate, this.state)}
+                    {this.renderRecipesInList(recipe[i].recommend_recipes, recipe[i].theme, navigate, this.state)}
                 </View>
             );
         }
@@ -127,35 +93,25 @@ export default class Recipe_Diary_Selections extends Component {
         }
         type = theme.split('_')[0];
         spec = theme.split('_')[1];
-        desc = `These recipes contains ${recommend_reason}, `;
-        if(theme.match(/illness_.*/g)){
-            desc += `which can help control the condition of your ${spec}.`;
-        } else if (theme.match(/age_.*/g)){
-            desc += `which can satisfy the nutrition need of your age.`;
-        } else if (theme.match(/bmi_.*/g)){
-            desc += `they are recommended for you since you are an ${spec} person.`;
-        } else if (theme.match(/exercise_.*/g)){
-            desc += `they are recommended for you since you like to exercise and protein is necessary for muscle repair and growth.`;
-        } else if (theme.match(/low_cal/g)){
-            desc += `which are good for all type of people who want to maintain a healthy diet.`;
-        }
+        desc = `These recipes contain ${recommend_reason}, `;
+        desc += `which help you achieve a standard level of nutrient intake.`;
         return desc;
     }
 
-    renderRecipesInList(title, data, theme, navigate, state) {
+    renderRecipesInList(data, theme, navigate, state) {
         if(!data || Object.keys(data[0]).length == 0){
           return;
         }
 
         return(
             <View style={styles.section_container}>
-			    <Title style={styles.subtitle}>{title}</Title>
+			    <Title style={styles.subtitle}>Diary Recommendation This Week</Title>
                 <Text style={styles.sub_desc}>{this.getDesc(data, theme)}</Text>
                 <Divider style={{ marginBottom: 10, }} />
                 {data.map((rowData, index) => {
-                    recipe = rowData.recommend_recipe;
+                    recipe = rowData;
                     return (
-                        <TouchableOpacity key={recipe.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData.recommend_recipe, user_token: state.user_token}, key: 'Info'+recipe.id})}>
+                        <TouchableOpacity key={recipe.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: recipe, user_token: state.user_token}, key: 'Info'+recipe.id})}>
                             <Row style={styles.list_row}>
                                 <Text style={{marginLeft: 5,}}>{index + 1}</Text>
                                 <Image
@@ -196,27 +152,25 @@ export default class Recipe_Diary_Selections extends Component {
             )
         } else {
             return(
-                <View>
-                    <ScrollView>
-                        <View style={styles.screen_view}>
-                            <View style={styles.banner_view}>
-                                <ImageBackground
-                                source={require('../../assets/images/diary.jpg')}
-                                style={styles.banner_container}
-                                imageStyle={styles.banner_image}
-                                >
-                                <Text style={styles.banner_text}>Diary</Text>
-                                <Text style={{...styles.banner_text, ...{marginBottom: 10}}}>Selections</Text>
-                                </ImageBackground>
-                            </View>
-                            <Text style={styles.main_desc}>
-                                Recommended recipes based on your Diary records to help you maintain a balanced diet.
-                                Enjoy your meal!
-                            </Text>
-                            {this.renderSections()}
+                <ScrollView contentContainerStyle={styles.scroll_view}>
+                    <View style={styles.screen_view}>
+                        <View style={styles.banner_view}>
+                            <ImageBackground
+                            source={require('../../assets/images/diary.jpg')}
+                            style={styles.banner_container}
+                            imageStyle={styles.banner_image}
+                            >
+                            <Text style={styles.banner_text}>Diary</Text>
+                            <Text style={{...styles.banner_text, ...{marginBottom: 10}}}>Selections</Text>
+                            </ImageBackground>
                         </View>
-                    </ScrollView>
-                </View>
+                        <Text style={styles.main_desc}>
+                            Recommended recipes based on your Diary records to help you maintain a balanced diet.
+                            Enjoy your meal!
+                        </Text>
+                        {this.renderSections()}
+                    </View>
+                </ScrollView>
             );
         }
     }
@@ -224,12 +178,15 @@ export default class Recipe_Diary_Selections extends Component {
   }
   
   const styles = StyleSheet.create({
-    screen_view: {
-        flex: 1,
+    scroll_view: {
+        flexGrow: 1,
+        justifyContent: 'space-between',
         backgroundColor: 'aliceblue',
     },
-    banner_view: {
+    screen_view: {
         flex: 1,
+    },
+    banner_view: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',

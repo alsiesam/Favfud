@@ -1,6 +1,7 @@
 import React from 'react';
 import { Platform, StatusBar, StyleSheet, View, YellowBox } from 'react-native';
-import { AppLoading, Asset, Font, Icon } from 'expo';
+import { AppLoading, Asset, Icon } from 'expo';
+import * as Font from 'expo-font';
 import AppNavigator from './navigation/Login/LoginAppNavigator';
 
 const ignoredWarnings = [
