@@ -11,12 +11,11 @@ import {
   Title,
   Subtitle,
   Icon,
+  Caption,
 } from '@shoutem/ui';
 import { Col, Row, Grid } from "react-native-easy-grid";
 import AnimatedBar from "react-native-animated-bar";
 import moment from "moment";
-
-import {getConsumptionPerMeal, getNutritionLimit, getConsumptionPercentage, generateSummary} from './DiaryFunctions'
 
 export default class DiaryReportScreen extends React.Component {
   static navigationOptions = {
@@ -25,31 +24,20 @@ export default class DiaryReportScreen extends React.Component {
 
   constructor(props) {
     super(props);
-    //var today = new Date;
-    var reportInfo = props.navigation.getParam('reportInfo');
+    var token = props.navigation.getParam('token');
     var summary = props.navigation.getParam('summary');
     var nutritionPercentage = props.navigation.getParam('nutritionPercentage');
     var nutritionValue = props.navigation.getParam('nutritionValue');
-    var consumptionPerMeal = getConsumptionPerMeal(reportInfo);
-    var limit = getNutritionLimit();
-    //var summary = generateSummary(consumptionPerMeal);
+    var recommendations = props.navigation.getParam('recommendations');
     this.state = {
-      limit: limit,
+      token: token,
       summary: summary,
       nutritionPercentage: nutritionPercentage,
       nutritionValue: nutritionValue,
-
-      reportInfo: reportInfo,
-      consumptionPerMeal: consumptionPerMeal,
-      //summary: summary,
+      recommendations: recommendations,
     };
+    console.log(recommendations);
   }
-
-  /*
-  consumptionPercentageOf(nutrition, consumptionPerMeal=this.state.consumptionPerMeal, limit=this.state.limit) {
-    return getConsumptionPercentage(nutrition, consumptionPerMeal, limit);
-  }
-  */
 
   renderBarChart(nutrition) {
     var percentage = this.state.nutritionPercentage[nutrition];
@@ -98,15 +86,73 @@ export default class DiaryReportScreen extends React.Component {
     );
   }
 
+  renderRecommendations() {
+    return(
+      <View>
+        <Divider styleName="section-header" style={{justifyContent:"center", paddingTop:15, paddingBottom:5}}>
+          <Subtitle style={{fontSize: 20}}>Recommendations:</Subtitle>
+        </Divider>
+        <Text style={{fontSize: 14, marginTop:5, marginBottom:0}}>{this.state.summary.text}</Text>
+        <Text style={{fontSize: 14, marginTop:5, marginBottom:5}}>Here are some recommendations:</Text>
+        {this.renderRecipeList(this.state.recommendations)}
+      </View>
+    );
+  }
+
+  renderRecipeList(recipeList) {
+    const {navigate} = this.props.navigation;
+    return(
+      <Grid style={styles.mealGrid}>
+          {/*
+          <Row style={{height: 'auto', backgroundColor: '#e6e6e6',}}>
+              <Text>
+                  {moment(date).format("D MMM YYYY")}
+              </Text>
+          </Row>
+          */}
+          <FlatList
+            horizontal={true}
+            data={recipeList}
+            numColumns={1}
+            renderItem={({ item: rowData, index }) => {
+              return(
+                <View style={{marginTop: 10, marginRight: 30,}}>
+                  <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Diary_Recipe_Information', params: {recipe: rowData, user_token: this.state.token}, key: 'Info'+rowData.id})}>
+                    <Image
+                      style={styles.recipe_image}
+                      source={{uri: rowData.imageurlsbysize_360}}
+                    />
+                    <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
+                      <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
+                        {rowData.recipe_name}
+                      </Text>
+                    </Row>
+                  </TouchableOpacity>
+                </View>
+              );
+            }}
+            keyExtractor={(item, index) => index.toString()}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{marginLeft: 20, }}
+          />
+      </Grid>
+    );
+  }
+
   render() {
+    let haveRecommendations = Object.keys(this.state.recommendations).length>0
     return(
       <ScrollView style={styles.container}>
-        <View style={{alignItems: 'flex-start', marginBottom: 0}}>
-          {/*<Text>You have taken {this.state.reportInfo.numOfMeals} meals.</Text>*/}
-          <Subtitle>Nutrition consumption (average per meal):</Subtitle>
+        <View style={{alignItems: 'center', marginTop: 10}}>
+          <Divider styleName="section-header" style={{justifyContent:"center", paddingTop:15, paddingBottom:5}}>
+            <Title style={{fontSize: 20}}>Summary</Title>
+          </Divider>
+          <Text style={{fontSize: 14, marginTop:5, marginBottom:15}}>{this.state.summary.text}</Text>
+          <Divider styleName="section-header" style={{justifyContent:"center", paddingTop:15, paddingBottom:5}}>
+            <Subtitle style={{fontSize: 20}}>Nutrition Consumption:</Subtitle>
+          </Divider>
         </View>
         <Grid style={styles.grid}>
-          <Divider styleName="line"/>
           {this.renderNutritionRow("energy")}
           <Divider styleName="line"/>
           {this.renderNutritionRow("carb")}
@@ -114,33 +160,10 @@ export default class DiaryReportScreen extends React.Component {
           {this.renderNutritionRow("fat")}
           <Divider styleName="line"/>
           {this.renderNutritionRow("protein")}
-          {/*
-          <Row style={styles.row}>
-            <Text>Energy: {Math.round(this.state.consumptionPerMeal.energy)} kcal</Text>
-            <Text>{Math.round(this.consumptionPercentageOf("energy")*100)}% of normal intake</Text>
-            {this.renderBarChart("energy")}
-          </Row>
-          <Divider styleName="line"/>
-          <Row style={styles.row}>
-            <Text>Carbohydrate: {Math.round(this.state.consumptionPerMeal.carb)} grams</Text>
-            <Text>{Math.round(this.consumptionPercentageOf("carb")*100)}% of normal intake</Text>
-            {this.renderBarChart("carb")}
-          </Row>
-          <Divider styleName="line"/>
-          <Row style={styles.row}>
-            <Text>Fat: {Math.round(this.state.consumptionPerMeal.fat)} grams</Text>
-            <Text>{Math.round(this.consumptionPercentageOf("fat")*100)}% of normal intake</Text>
-            {this.renderBarChart("fat")}
-          </Row>
-          <Divider styleName="line"/>
-          <Row style={styles.row}>
-            <Text>Protein: {Math.round(this.state.consumptionPerMeal.protein)} grams</Text>
-            <Text>{Math.round(this.consumptionPercentageOf("protein")*100)}% of normal intake</Text>
-            {this.renderBarChart("protein")}
-          </Row>
-        */}
         </Grid>
         {/*this.renderReminderText()*/}
+        {haveRecommendations?
+          this.renderRecommendations(): <View />}
       </ScrollView>
     );
   }
@@ -149,8 +172,8 @@ export default class DiaryReportScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginHorizontal: 30,
-    marginVertical: 15
+    marginHorizontal: 15,
+    marginVertical: 0,
     //backgroundColor: "grey",
   },
   subtitleContainer: {
@@ -171,5 +194,17 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     color: "#FFF",
     fontSize: 25,
+  },
+  mealGrid: {
+    paddingHorizontal: 5,
+    paddingVertical: 5,
+  },
+  recipe_image: {
+    marginBottom: 5,
+    width: 180,
+    height: 180,
+    backgroundColor: 'transparent',
+    alignSelf: 'center',
+    borderRadius: 25,
   },
 });

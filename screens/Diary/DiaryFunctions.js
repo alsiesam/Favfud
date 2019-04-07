@@ -3,6 +3,7 @@ import moment from "moment";
 
 const API_HOST = 'http://django-fyp.herokuapp.com/';
 const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
+const GET_RECIPES_NUTRITION_URL = `${API_HOST}diary/query/recipe/dynamic`;
 const GET_MEAL_URL = 'https://favfud-app.herokuapp.com/api/diary/meal/';
 const GET_REPORT_URL = 'https://favfud-app.herokuapp.com/api/diary/report/';
 
@@ -26,15 +27,16 @@ export async function fetchMealRecordByToken(token, startDate=false, endDate=fal
       url += ("&end_date=" + moment(endDate).format("YYYY-MM-DD"));
     }
     let response = await fetch(url);
-    if (response.ok) {
-      let responseJson = await response.json();
+    let responseJson = await response.json();
+    //console.log(response);
+    if (response.ok && responseJson.length>0) {
       return responseJson;
     } else {
-      console.log("fetchMealRecordByToken");
+      console.log("fetchMealRecordByToken Error");
       return false;
     }
   } catch(err) {
-    console.log("fetchMealRecordByToken");
+    console.log("fetchMealRecordByToken Error");
     console.log(err);
   }
 }
@@ -46,7 +48,9 @@ export async function fetchReportByToken(token, startDate=false, endDate=false) 
       url += ("&start_date=" + moment(startDate).format("YYYY-MM-DD"));
       url += ("&end_date=" + moment(endDate).format("YYYY-MM-DD"));
     }
+    //console.log(url);
     let response = await fetch(url);
+    //console.log(response);
     if (response.ok) {
       let responseJson = await response.json();
       return responseJson;
@@ -95,8 +99,8 @@ export async function fetchMealRecipes(mealRecords, date) {
       let responseJson = await response.json();
       return responseJson;
     } else {
-      console.log("fetchMealRecipes");
-      console.log(response);
+      console.log("fetchMealRecipes Not ok");
+      //console.log(response);
     }
   } catch(err) {
     console.log(err);
@@ -115,11 +119,49 @@ export async function updateMealRecipes(date, mealRecords, mealRecipes={}){
 export async function generateMealRecipes(mealRecords){
   let mealRecipes={};
   let dates = Object.keys(mealRecords).sort().reverse();
+  let actions = [];
   for (let i = 0; i < dates.length; i++) {
-    let new_mealRecipes = await updateMealRecipes(dates[i], mealRecords);
-    mealRecipes = Object.assign(mealRecipes, new_mealRecipes);
+    actions.push(updateMealRecipes(dates[i], mealRecords));
+  }
+  let new_mealRecipes = await Promise.all(actions);
+  for (let i = 0; i < dates.length; i++) {
+    mealRecipes = Object.assign(mealRecipes, new_mealRecipes[i]);
   }
   return mealRecipes;
+}
+
+export async function fetchRecipesWithNutrition(summary) {
+  try {
+    var url = `${GET_RECIPES_NUTRITION_URL}`
+
+    if ((summary.more.length + summary.less.length) < 1) {
+      summary = {
+        more: summary.slightlyMore,
+        less: summary.slightlyLess
+      }
+    }
+    if ((summary.more.length + summary.less.length) < 1) {
+      return {};
+    }
+    let response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(summary)
+    });
+    let responseJson = await response.json();
+    if (response.ok && responseJson.length>0) {
+      return responseJson;
+    } else {
+      console.log("fetchRecipesWithNutrition Error");
+      return false;
+    }
+  } catch(err) {
+    console.log("fetchRecipesWithNutrition Error");
+    console.log(err);
+  }
 }
 
 export function generateReportInfo(mealRecords, mealRecipes, startDate=moment(today).subtract(7, 'days'), endDate=moment(today).subtract(1, 'days')){
@@ -229,11 +271,22 @@ function generateSummaryText(summary){
   var text="";
   var more_num = summary.more.length;
   var less_num = summary.less.length;
+  var more_num_2 = summary.slightlyMore.length;
+  var less_num_2 = summary.slightlyLess.length;
   for (var i=0; i<summary.more.length; i++) {
 
   }
   if((more_num+less_num)==0) {
-    text = "Your eating habbit is healthy. Keep it Up!";
+    //text = "Your eating habbit is healthy. Keep it Up!";
+    if((more_num_2+less_num_2)==0) {
+      text = "Your eating habbit is healthy. Keep it Up!";
+    } else if (less_num_2==0) {
+      text = "You should eat food with more "+changeNutritionToText(summary.slightlyMore)+".";
+    } else if (more_num_2==0) {
+      text = "You should eat food with less "+changeNutritionToText(summary.slightlyLess)+".";
+    } else {
+      text = "You should eat food with more "+changeNutritionToText(summary.slightlyMore)+" and with less "+changeNutritionToText(summary.slightlyLess)+".";
+    }
   } else if (less_num==0) {
     text = "You should eat food with more "+changeNutritionToText(summary.more)+".";
   } else if (more_num==0) {
@@ -280,8 +333,12 @@ export async function getDiarySummary(token, startDate=moment(new Date).subtract
 */
 export async function getDiaryReport(token, startDate=moment(new Date).subtract(7, 'days'), endDate=moment(new Date).subtract(1, 'days')) {
   let reportData = await fetchReportByToken(token, startDate, endDate);
-  reportData.summary["text"] = generateSummaryText(reportData.summary);
-  return reportData;
+  if (reportData) {
+    reportData.summary["text"] = generateSummaryText(reportData.summary);
+    return reportData;
+  } else {
+    return false;
+  }
 }
 
 export function getDiarySummaryWithReportInfo(reportInfo) {
