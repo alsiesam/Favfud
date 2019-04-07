@@ -5,6 +5,8 @@ import { createStackNavigator, createBottomTabNavigator } from 'react-navigation
 import TabBarIcon from '../../components/TabBarIcon';
 import HomeScreen from '../../screens/Login/HomeScreen';
 import DiaryScreen from '../../screens/Diary/DiaryScreen';
+import AddMealFormScreen from '../../screens/Diary/AddMealFormScreen';
+import DiaryReportScreen from '../../screens/Diary/DiaryReportScreen';
 import ProfileScreen from '../../screens/Login/ProfileScreen';
 
 import RecSys from '../../screens/RecSys/RecSys';
@@ -31,7 +33,12 @@ HomeStack.navigationOptions = {
 };
 
 const DiaryStack = createStackNavigator({
-  Diary: DiaryScreen,
+  Diary: {screen: DiaryScreen},
+  AddMealForm: {screen: AddMealFormScreen},
+  DiaryReport: {screen: DiaryReportScreen},
+  Diary_Recipe_Information: {screen: Recipe_Information},
+},{
+  initialRouteName: 'Diary',
 });
 
 DiaryStack.navigationOptions = {
@@ -81,6 +88,7 @@ RecSysStack.navigationOptions = {
 
 const RatedStack = createStackNavigator({
   Recipe_Rated: Recipe_Rated,
+  Recipe_Information: {screen: Recipe_Information},
 });
 
 RatedStack.navigationOptions = {
@@ -95,6 +103,7 @@ RatedStack.navigationOptions = {
 
 const BookmarkStack = createStackNavigator({
   Recipe_Bookmarked: Recipe_Bookmarked,
+  Recipe_Information: {screen: Recipe_Information},
 });
 
 BookmarkStack.navigationOptions = {
@@ -109,6 +118,7 @@ BookmarkStack.navigationOptions = {
 
 const SearchStack = createStackNavigator({
   Recipe_Search: Recipe_Search,
+  Recipe_Information: {screen: Recipe_Information},
 });
 
 SearchStack.navigationOptions = {
@@ -130,4 +140,3 @@ export default createBottomTabNavigator({
   DiaryStack,
   SearchStack,
 });
-

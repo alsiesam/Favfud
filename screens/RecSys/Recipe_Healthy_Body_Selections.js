@@ -50,7 +50,7 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         .then((response) => response.json())
         .then((responseJson) => {
           this.setState({
-            recommend_recipe: responseJson,
+            recommend_recipe: [...this.state.recommend_recipe, ...responseJson],
           });
         })
         .catch((error) =>{
@@ -196,27 +196,25 @@ export default class Recipe_Healthy_Body_Selections extends Component {
             )
         } else {
             return(
-                <View>
-                    <ScrollView>
-                        <View style={styles.screen_view}>
-                            <View style={styles.banner_view}>
-                                <ImageBackground
-                                source={require('../../assets/images/healthy.jpeg')}
-                                style={styles.banner_container}
-                                imageStyle={styles.banner_image}
-                                >
-                                <Text style={styles.banner_text}>Healthy Body</Text>
-                                <Text style={{...styles.banner_text, ...{marginBottom: 10}}}>Selections</Text>
-                                </ImageBackground>
-                            </View>
-                            <Text style={styles.main_desc}>
-                                Weekly recommended recipes for improving your health condition and helping you in nurturing a healthy eating habit.
-                                Enjoy your meal!
-                            </Text>
-                            {this.renderSections()}
+                <ScrollView contentContainerStyle={styles.scroll_view}>
+                    <View style={styles.screen_view}>
+                        <View style={styles.banner_view}>
+                            <ImageBackground
+                            source={require('../../assets/images/healthy.jpeg')}
+                            style={styles.banner_container}
+                            imageStyle={styles.banner_image}
+                            >
+                            <Text style={styles.banner_text}>Healthy Body</Text>
+                            <Text style={{...styles.banner_text, ...{marginBottom: 10}}}>Selections</Text>
+                            </ImageBackground>
                         </View>
-                    </ScrollView>
-                </View>
+                        <Text style={styles.main_desc}>
+                            Weekly recommended recipes for improving your health condition and helping you in nurturing a healthy eating habit.
+                            Enjoy your meal!
+                        </Text>
+                        {this.renderSections()}
+                    </View>
+                </ScrollView>
             );
         }
     }
@@ -224,12 +222,15 @@ export default class Recipe_Healthy_Body_Selections extends Component {
   }
   
   const styles = StyleSheet.create({
-    screen_view: {
-        flex: 1,
+    scroll_view: {
+        flexGrow: 1,
+        justifyContent: 'space-between',
         backgroundColor: 'aliceblue',
     },
-    banner_view: {
+    screen_view: {
         flex: 1,
+    },
+    banner_view: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',

@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, ScrollView, StatusBar, StyleSheet, View, Text, } from 'react-native';
+import { Platform, Dimensions, ScrollView, StatusBar, StyleSheet, View, Text, AsyncStorage, } from 'react-native';
 import { SearchBar, } from "react-native-elements";
 import { Container, } from "native-base";
 import * as func from './Recipe_Functions.js';
 
-const width = Dimensions.get('window').width; //full width
-const height = Dimensions.get('window').height; //full height
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const ASYNC_STORAGE_KEYS_FOR_USER_TOKEN = 'user_token';
 
 export default class Recipe_Search extends Component {
 
@@ -19,7 +20,17 @@ export default class Recipe_Search extends Component {
         dataSource: [],
         searchError: false,
         keyword: '',
+        user_token: '',
       }
+    }
+
+    componentWillMount() {
+      AsyncStorage.getItem(ASYNC_STORAGE_KEYS_FOR_USER_TOKEN)
+      .then((ut) => {
+          if(ut){
+              this.setState({user_token: ut});
+          }
+      });
     }
 
     fetchData(keyword) {
@@ -53,7 +64,7 @@ export default class Recipe_Search extends Component {
       });
     }
 
-    someMethod1 = (event) => {
+    submitEditing = (event) => {
 				if (event.nativeEvent.text == this.state.keyword) return;
 
         this.setState({
@@ -62,10 +73,6 @@ export default class Recipe_Search extends Component {
         });
 
         this.fetchData(event.nativeEvent.text);
-    }
-
-    someMethod2 = () => {
-        console.log('clear');
     }
 
     render() {
@@ -80,10 +87,8 @@ export default class Recipe_Search extends Component {
                     cancelButtonTitle="Cancel"
                     clearIcon={{ }}
                     placeholder='Search your recipe here...'
-                    onSubmitEditing={this.someMethod1}
-                    //onChangeText={this.someMethod1}
-                    onClearText={this.someMethod2}
-                    containerStyle = {{width: width, }}
+                    onSubmitEditing={this.submitEditing}
+                    containerStyle = {{width: SCREEN_WIDTH, }}
                 />
 								<ScrollView>
 									{
