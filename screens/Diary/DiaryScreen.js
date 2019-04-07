@@ -17,7 +17,7 @@ import Calendar from '../../library/react-native-calendar-select';
 import { Col, Row, Grid } from "react-native-easy-grid";
 import AnimatedBar from "react-native-animated-bar";
 
-import {fetchMealRecordByToken, updateMealRecords, generateMealRecipes, getDiaryReport} from './DiaryFunctions'
+import {fetchMealRecordByToken, updateMealRecords, generateMealRecipes, getDiaryReport, fetchRecipesWithNutrition} from './DiaryFunctions'
 
 const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
@@ -47,17 +47,11 @@ export default class DiaryScreen extends React.Component {
       mealRecords:{}, //Key: YYYY-MM-DD; Value
       /*mealList: [{}],*/
       mealRecipes: {},
+      reccomendations: {},
       isLoading: false,
       isReportLoading: false,
       refreshing: false,
-      reportInfo: {
-        numOfDays: 0,
-        numOfMeals: 0,
-        energy: 0,
-        fat: 0,
-        carb: 0,
-        protein: 0,
-      },
+      isEmpty: true,
     };
   }
   clearState() {
@@ -66,9 +60,11 @@ export default class DiaryScreen extends React.Component {
       isReportLoading: false,
       mealRecords: {},
       mealRecipes: {},
+      reccomendations: {},
       summary:{},
       nutritionPercentage:{},
       nutritionValue:{},
+      isEmpty: true,
     });
   }
   refresh(token=this.state.token, startDate=this.state.startDate, endDate=this.state.endDate){
@@ -120,14 +116,35 @@ export default class DiaryScreen extends React.Component {
   async setup(token, startDate=this.state.startDate, endDate=this.state.endDate){
     this.setState({isReportLoading: true, isLoading: true});
     try {
-      let responseJson = await fetchMealRecordByToken(token, startDate, endDate);
-      if (!responseJson) {
-      this.clearState();
-      return false;
+      //let results = await Promise.all([sleep(1), sleep(2)]);
+      actions = [];
+      actions.push(fetchMealRecordByToken(token, startDate, endDate));
+      actions.push(getDiaryReport(token, startDate, endDate));
+      let results = await Promise.all(actions);
+      if(results[0] && results [1]) {
+        let responseJson = results[0];
+        let reportData = results[1];
+        let mealRecords = updateMealRecords(responseJson, this.state.mealRecords);
+        this.setState({
+          mealRecords: mealRecords,
+          summary: reportData.summary,
+          nutritionPercentage: reportData.nutrition_percentage,
+          nutritionValue: reportData.nutrition,
+          isReportLoading: false,
+          isEmpty: false,
+        });
+      } else {
+        this.clearState();
+        return false;
+      }
+      /*
+      let let responseJson = await fetchMealRecordByToken(token, startDate, endDate);
+      if (!responseJson || responseJson.length<1) {
+        this.clearState();
+        return false;
       }
       let mealRecords = updateMealRecords(responseJson, this.state.mealRecords);
       this.setState({mealRecords: mealRecords});
-
 
       let reportData = await getDiaryReport(token, startDate, endDate);
       this.setState({
@@ -136,13 +153,32 @@ export default class DiaryScreen extends React.Component {
         nutritionValue: reportData.nutrition
       });
       this.setState({isReportLoading: false});
+      */
     } catch(err) {
       console.log(err);
       this.setState({isReportLoading: false});
       this.setState({isLoading: false});
     } try {
-      let mealRecipes = await generateMealRecipes(this.state.mealRecords);
-      this.setState({mealRecipes: mealRecipes});
+      actions = [];
+      actions.push(generateMealRecipes(this.state.mealRecords));
+      actions.push(fetchRecipesWithNutrition(this.state.summary));
+      //let mealRecipes = await generateMealRecipes(this.state.mealRecords);
+      let results = await Promise.all(actions);
+      if(results[0]) {
+        let mealRecipes = results[0];
+        this.setState({
+          mealRecipes: mealRecipes,
+        });
+      } else {
+        this.clearState();
+        return false;
+      }
+      if (results[1] && Object.keys(results[1]).length>0) {
+        let recommendations = results[1];
+        this.setState({
+          recommendations: recommendations,
+        });
+      }
       this.setState({isLoading: false});
     } catch(err) {
       console.log(err);
@@ -177,9 +213,11 @@ export default class DiaryScreen extends React.Component {
 
   redirectToReport(){
     this.props.navigation.navigate('DiaryReport', {
+      token: this.state.token,
       summary: this.state.summary,
       nutritionPercentage: this.state.nutritionPercentage,
-      nutritionValue: this.state.nutritionValue
+      nutritionValue: this.state.nutritionValue,
+      recommendations: this.state.recommendations,
     });
   }
 
@@ -188,7 +226,7 @@ export default class DiaryScreen extends React.Component {
       <View style={styles.mealsContainer}>
         <Title>Meal List</Title>
         {this.state.isLoading?
-          this.renderLoading() :
+          this.renderLoading(100) :
           /*this.state.mealRecipes.map((key, item) => (
             <Grid>
               {this.inRange(key) ? this.renderRecipeList(key, item): <View></View>}
@@ -238,7 +276,7 @@ export default class DiaryScreen extends React.Component {
             renderItem={({ item: rowData, index }) => {
               return(
                 <View style={{marginTop: 20, marginRight: 30,}}>
-                  <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: this.state.user_token}, key: 'Info'+rowData.id})}>
+                  <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Diary_Recipe_Information', params: {recipe: rowData, user_token: this.state.token}, key: 'Info'+rowData.id})}>
                     <Image
                       style={styles.recipe_image}
                       source={{uri: rowData.imageurlsbysize_360}}
@@ -260,11 +298,11 @@ export default class DiaryScreen extends React.Component {
     );
   }
 
-  renderLoading(){
+  renderLoading(marginTop=20){
     return(
       <View style={{
         flex: 1,
-        marginTop: 20,
+        marginTop: marginTop,
         justifyContent: 'center',
         alignItems: 'center',
         height: 20,
@@ -318,6 +356,16 @@ export default class DiaryScreen extends React.Component {
     } else {
       return (<View></View>);
     }
+  }
+
+  renderReportButton() {
+    return(
+      <Button
+        onPress={this._handleReport}
+        styleName="secondary full-width">
+          <Text>View Full Report</Text>
+      </Button>
+    );
   }
 
   renderNavigationBar() {
@@ -406,11 +454,7 @@ export default class DiaryScreen extends React.Component {
                 {this.state.summary==undefined ? this.renderLoading(): this.renderShortReport()}
               </View>
               <View style={styles.buttonContainer}>
-                <Button
-                  onPress={this._handleReport}
-                  styleName="secondary full-width">
-                    <Text>View Full Report</Text>
-                </Button>
+              {this.state.isEmpty? <View></View>: this.renderReportButton()}
               </View>
             </View>
             <Divider styleName="line" />
