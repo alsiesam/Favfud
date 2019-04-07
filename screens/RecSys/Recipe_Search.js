@@ -30,7 +30,7 @@ export default class Recipe_Search extends Component {
         keyword = keyword + '/';
       }
 			keyword = keyword.replace(/\s/g, '+');
-      return fetch('https://fypbackend.herokuapp.com/recsys/search/'+keyword)
+      return fetch('https://django-fyp.herokuapp.com/recsys/search_exact/'+keyword+'/')
       .then((response) => response.json())
       .then((responseJson) => {
 				// console.warn(responseJson);
