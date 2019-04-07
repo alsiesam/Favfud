@@ -36,6 +36,7 @@ const DiaryStack = createStackNavigator({
   Diary: {screen: DiaryScreen},
   AddMealForm: {screen: AddMealFormScreen},
   DiaryReport: {screen: DiaryReportScreen},
+  Diary_Recipe_Information: {screen: Recipe_Information},
 },{
   initialRouteName: 'Diary',
 });
