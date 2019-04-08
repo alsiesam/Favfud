@@ -1,4 +1,6 @@
 import React from 'react';
+import View from 'react-native';
+import {Text, ActivityIndicator} from '@shoutem/ui';
 import moment from "moment";
 
 const API_HOST = 'http://django-fyp.herokuapp.com/';
