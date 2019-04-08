@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, Alert, Keyboard, TouchableWithoutFeedback} from 'react-native';
+import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, Alert, Keyboard, TouchableWithoutFeedback, ActivityIndicator, StatusBar, Dimensions, Platform} from 'react-native';
 import {
   Text,
   Button,
@@ -15,9 +15,22 @@ import moment from "moment";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import Calendar from '../../library/react-native-calendar-select';
 import DatePicker from 'react-native-datepicker';
+import { SearchBar, } from "react-native-elements";
+import { Container, } from "native-base";
+import * as func from '../RecSys/Recipe_Functions.js';
 
-const ACCESS_TOKEN = 'user_token';
+const ACCESS_TOKEN = 'user_token'
 const ADD_MEAL_URL  = 'https://favfud-app.herokuapp.com/api/diary/meal/create/';
+const SEARCH_URL = 'https://django-fyp.herokuapp.com/recsys/search_similar/';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+
+const DismissKeyboard = ({ children }) => (
+  <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+    {children}
+  </TouchableWithoutFeedback>
+);
 
 export default class AddMealFormScreen extends React.Component {
   static navigationOptions = {
@@ -29,8 +42,14 @@ export default class AddMealFormScreen extends React.Component {
     this.state = {
       servings: '',
       dishId: '',
+      selectedRecipe:{},
       date: moment(),
       token:'',
+      isLoading: false,
+      dataSource: [],
+      searchError: false,
+      keyword: '',
+      isSearchMode:false,
     };
   }
 
@@ -77,7 +96,14 @@ export default class AddMealFormScreen extends React.Component {
   }
 
   submitAddRequest() {
-    if (this.state.token !== undefined && this.state.servings !== undefined && this.state.dishId !== undefined && this.state.date !== undefined) {
+    console.log(this.state);
+    if(this.state.servings==''){
+      this.showAlert("Error", "Please enter no. of servings.");
+    } else if (this.state.dishId=='') {
+      this.showAlert("Error", "Please select dish.");
+    } else if(this.state.token !== undefined && this.state.servings !== undefined && this.state.dishId !== undefined && this.state.date !== undefined) {
+      this.setState({isLoading: true});
+      dishIds = this.state.dishId.toString()
       var payload = {
         user_token: this.state.token,
         servings: this.state.servings,
@@ -87,16 +113,17 @@ export default class AddMealFormScreen extends React.Component {
       };
       this.addMeal(payload, (response) => {
         console.log("Cannot Add Meal");
-        console.log(response);
-        this.showAlert("Error", response);
+        //console.log(response);
+        //this.showAlert("Error", response);
+        this.setState({isLoading: false, keyword: ''});
       });
     } else {
       console.log("Error");
-
     }
   }
 
   async addMeal(mealData, callback) {
+      console.log(mealData);
       let response = await fetch(ADD_MEAL_URL, {
         method: 'POST',
         headers: {
@@ -109,6 +136,7 @@ export default class AddMealFormScreen extends React.Component {
       if(responseIsOk) {
         let responseJson = await response.json();
         responseJson.nutrition = JSON.parse(responseJson.nutrition);
+        this.setState({isLoading: false});
         this.redirectToDiary();
       } else {
         if (callback) { callback(response); }
@@ -119,64 +147,287 @@ export default class AddMealFormScreen extends React.Component {
     this.props.navigation.navigate('Diary');
   }
 
-  render() {
+  renderLoading(marginTop=20){
     return(
-      <View style={styles.container}>
-        <Grid style={styles.grid}>
-          <Row style={styles.rowInput}>
-            <Subtitle>Date: </Subtitle>
-            {this.renderDatepicker()}
-          </Row>
-
-          <Row style={styles.rowInput}>
-            <Subtitle>No. of Servings: </Subtitle>
-              <TextInput
-                style={styles.textInput}
-                placeholder={''}
-                keyboardType = {'numeric'}
-                onChangeText={(servings) => this.setState({servings})}
-                value={this.state.servings}
-              />
-          </Row>
-
-          <Row style={styles.rowInput}>
-            <Subtitle>Dish: </Subtitle>
-              <TextInput
-                style={styles.textInput}
-                placeholder={''}
-                keyboardType = {'numeric'}
-                onChangeText={(dishId) => this.setState({dishId})}
-                value={this.state.dishId}
-              />
-          </Row>
-
-
-        </Grid>
-        <View style={styles.buttonContainer}>
-          <Button styleName="secondary full-width" onPress={this._handleAdd}>
-            <Text>Add</Text>
-          </Button>
-        </View>
+      <View style={{
+        flex: 1,
+        marginTop: marginTop,
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 20,
+      }}>
+        <Text>Loading...</Text>
+        <ActivityIndicator/>
       </View>
     );
+  }
+
+
+  fetchData(keyword) {
+    if(keyword.match(/\//g)) {
+      keyword = keyword.replace(/\//g, '\/');
+    }
+		if(!keyword.match(/\/$/g)) {
+      keyword = keyword + '/';
+    }
+		keyword = keyword.replace(/\s/g, '+');
+    return fetch(SEARCH_URL+keyword)
+    .then((response) => response.json())
+    .then((responseJson) => {
+			//console.log(responseJson);
+			this.setState({
+        //isLoading: false,
+				searchError: false,
+        dataSource: [...this.state.dataSource, ...responseJson],
+        //displayData: responseJson.slice(0, span),
+        //pageNum: this.state.pageNum + 1
+      }, function(){
+        // console.log(responseJson);
+      });
+
+    })
+    .catch((error) =>{
+			this.setState({
+				searchError: true,
+      });
+      console.error(error);
+    });
+  }
+
+  submitEditing = (event) => {
+			if (event.nativeEvent.text == this.state.keyword) return;
+
+      this.setState({
+          keyword: event.nativeEvent.text,
+          dataSource: [],
+      });
+
+      this.fetchData(event.nativeEvent.text);
+  }
+
+  renderSearchEngine() {
+    const {navigate} = this.props.navigation;
+    return (
+      <View style={{height:450, marginVertical:10}}>
+          <SearchBar
+              lightTheme
+              //showLoading
+              ref={search => this.search = search}
+              cancelButtonTitle="Cancel"
+              clearIcon={{ }}
+              placeholder='Search your recipe here...'
+              onSubmitEditing={this.submitEditing}
+              containerStyle = {{width: 'auto', }}
+          />
+          <Divider />
+          <ScrollView>
+            {
+              (this.state.searchError == true)?
+                (<Text style={{marginTop: 20,marginLeft: 20,marginRight: 20,fontSize: 20,}}>There is an error, please try again.</Text>):
+                this.renderSearchResultsList('Search result of '+this.state.keyword, this.state.dataSource, want_divider=true, navigate, this.state)
+            }
+          </ScrollView>
+          {/*
+          <View style={{flex:1, flexDirection:'column'}}>
+            <View style={styles.smallButtonContainer}>
+              <Button styleName="secondary full-width" onPress={this._handleSearch}>
+                <Text>Search Dish</Text>
+              </Button>
+            </View>
+            <View style={styles.smallButtonContainer}>
+              <Button styleName="secondary full-width" onPress={this._handleSearch}>
+                <Text>Search Dish</Text>
+              </Button>
+            </View>
+          </View>
+          */}
+        </View>
+    );
+  }
+
+  renderSearchResultsList(title, data, want_divider, navigate, state) {
+  	if (!Array.isArray(data)) {
+  		console.log('undefined data');
+  		return;
+  	}
+  	// console.log(data);
+    divider = null;
+    if(want_divider){
+      divider = <Divider style={{ marginBottom: 10, }} />
+    }
+  	rows = [];
+  	return (
+  		<View>
+  			<Title>{this.state.keyword==""?"":title}</Title>
+  			{data.map((recipe, ) => {
+  				// console.warn(recipe);
+  				ingredients = func.getIngredients(recipe).slice(0, 3);
+  				return (
+  					<TouchableOpacity key={recipe.id} onPress={() => {
+              this.setState({
+                dishId:String(recipe.id),
+                isSearchMode:false,
+                selectedRecipe: recipe,
+              });
+              console.log(this.state);
+              console.log(this.state.selectedRecipe);
+          }}>
+  					<Row>
+  						<Image
+  							style={[styles.small_recipe_image, {marginLeft: 10, marginRight: 10}]}
+  							source={{uri: recipe.imageurlsbysize_90}}
+  						/>
+  							<Text numberOfLines={2} style={{fontSize: 20, fontWeight: 'bold', marginTop: 20, marginBottom: 10,}}>
+  								{recipe.recipe_name}
+  							</Text>
+  							{/*
+  								ingredients.map((ing, key) => {
+  									return (
+  										<Text numberOfLines={1} key={key} >
+  											{ing}
+  										</Text>
+  									);
+  								})
+  							*/}
+  					</Row>
+  					{divider}
+  					</TouchableOpacity>
+  				);
+  			})}
+  		</View>
+  	);
+  }
+
+  renderSelectedDish(recipe=this.state.selectedRecipe){
+    return(
+      <Row>
+        <Image
+          style={[styles.small_recipe_image, {marginLeft: 10, marginRight: 10}]}
+          source={{uri: recipe.imageurlsbysize_90}}
+        />
+        <Text numberOfLines={2} style={{fontSize: 20, fontWeight: 'bold', marginTop: 20, marginBottom: 10,}}>
+          {recipe.recipe_name}
+        </Text>
+      </Row>
+    );
+  }
+
+  renderSearchButton(){
+    return(
+      <View style={styles.smallButtonContainer}>
+        <Button styleName="secondary full-width" onPress={this._handleSearch}>
+          <Text>{this.state.dishId == ''?"Search Dish":"Change Dish"}</Text>
+        </Button>
+      </View>
+    );
+  }
+
+  renderSearchEngineButtons(){
+    return(
+        <View style={styles.buttonContainer}>
+          <Button styleName="secondary full-width" onPress={this._handleCancelSearch}>
+            <Text>Cancel</Text>
+          </Button>
+        </View>
+    );
+  }
+
+  render() {
+    if(this.state.isLoading) {
+      return(
+        <View>
+          {this.renderLoading(50)}
+        </View>
+      );
+    } else if(this.state.isSearchMode){
+      return(
+        <Container style={styles.screen_container}>
+          {this.renderSearchEngine()}
+          {this.renderSearchEngineButtons()}
+        </Container>
+      );
+    } else {
+      return(
+        <DismissKeyboard>
+          <View style={styles.container}>
+            <Grid style={styles.grid}>
+              <Row style={styles.rowInput}>
+                <Subtitle>Date: </Subtitle>
+                {this.renderDatepicker()}
+              </Row>
+
+              <Row style={styles.rowInput}>
+                <Subtitle>No. of Servings: </Subtitle>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder={''}
+                    keyboardType = {'numeric'}
+                    onChangeText={(servings) => this.setState({servings})}
+                    value={this.state.servings}
+                  />
+              </Row>
+
+              <Row style={styles.rowInput}>
+                <Subtitle>Dish: </Subtitle>
+                  {/*
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder={''}
+                    keyboardType = {'numeric'}
+                    onChangeText={(dishId) => this.setState({dishId})}
+                    value={this.state.dishId}
+                  />
+                  */}
+              </Row>
+              <Row>
+                {this.state.dishId?this.renderSelectedDish():<View />}
+              </Row>
+            </Grid>
+            {this.renderSearchButton()}
+            <View style={{height:40}}/>
+            <View style={styles.buttonContainer}>
+              <Button styleName="secondary full-width" onPress={this._handleAdd}>
+                <Text>Add</Text>
+              </Button>
+            </View>
+          </View>
+        </DismissKeyboard>
+      );
+    }
   }
 
   _handleAdd = () => {
     this.submitAddRequest();
   };
+
+  _handleSearch = () => {
+    this.setState({isSearchMode:true});
+  };
+
+  _handleCancelSearch = () => {
+    this.setState({isSearchMode:false});
+  };
+
+  _handleAddDish = () => {
+    this.setState({isSearchMode:false});
+  };
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    //justifyContent: 'flex-start',
+    justifyContent: 'flex-start',
   },
   grid: {
-    flex: 1,
+    //flex: 1,
     justifyContent: 'flex-start',
     marginTop: 30,
     marginHorizontal: 25,
     //backgroundColor:'grey',
+    marginBottom:20,
+    height:500,
   },
   rowInput: {
     height: 'auto',
@@ -208,5 +459,40 @@ const styles = StyleSheet.create({
     marginHorizontal: 25,
     justifyContent: 'center',
     alignItems: 'stretch',
+  },
+  smallButtonContainer: {
+    // flex:1,
+    height: 40,
+    paddingTop: 0,
+    paddingBottom: 0,
+    marginTop:20,
+    marginBottom:20,
+    borderRadius:5,
+    marginHorizontal: 100,
+    justifyContent: 'center',
+    alignItems: 'stretch',
+  },
+  searchEngineButtonContainer: {
+    // flex:1,
+    height: 40,
+    paddingTop: 0,
+    paddingBottom: 0,
+    marginTop:10,
+    marginBottom:20,
+    marginHorizontal:0,
+    borderRadius:5,
+    width:150,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  screen_container: {
+      flex: 1,
+      marginHorizontal: 25,
+    },
+  small_recipe_image: {
+    width: (SCREEN_WIDTH-50)/3-20,
+    height: (SCREEN_WIDTH-50)/3-20,
+    backgroundColor: 'transparent',
+    borderRadius: 25,
   },
 });
