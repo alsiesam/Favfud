@@ -96,7 +96,6 @@ export default class AddMealFormScreen extends React.Component {
   }
 
   submitAddRequest() {
-    console.log(this.state);
     if(this.state.servings==''){
       this.showAlert("Error", "Please enter no. of servings.");
     } else if (this.state.dishId=='') {
@@ -123,7 +122,6 @@ export default class AddMealFormScreen extends React.Component {
   }
 
   async addMeal(mealData, callback) {
-      console.log(mealData);
       let response = await fetch(ADD_MEAL_URL, {
         method: 'POST',
         headers: {
@@ -269,8 +267,6 @@ export default class AddMealFormScreen extends React.Component {
                 isSearchMode:false,
                 selectedRecipe: recipe,
               });
-              console.log(this.state);
-              console.log(this.state.selectedRecipe);
           }}>
   					<Row>
   						<Image
