@@ -88,6 +88,7 @@ RecSysStack.navigationOptions = {
 
 const RatedStack = createStackNavigator({
   Recipe_Rated: Recipe_Rated,
+  Recipe_Information: {screen: Recipe_Information},
 });
 
 RatedStack.navigationOptions = {
@@ -102,6 +103,7 @@ RatedStack.navigationOptions = {
 
 const BookmarkStack = createStackNavigator({
   Recipe_Bookmarked: Recipe_Bookmarked,
+  Recipe_Information: {screen: Recipe_Information},
 });
 
 BookmarkStack.navigationOptions = {
@@ -116,6 +118,7 @@ BookmarkStack.navigationOptions = {
 
 const SearchStack = createStackNavigator({
   Recipe_Search: Recipe_Search,
+  Recipe_Information: {screen: Recipe_Information},
 });
 
 SearchStack.navigationOptions = {

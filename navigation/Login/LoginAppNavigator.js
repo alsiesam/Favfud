@@ -20,9 +20,7 @@ const InitialAppStack = createAppContainer(createSwitchNavigator(
     AppLoading: AppLoadingScreen,
     App: MainTabNavigator,
     Auth: LoginScreen,
-    HealthForm: createStackNavigator({
-		  HealthForm: HealthFormScreen,
-		}),
+		HealthForm: HealthFormScreen,
   },
   {
     initialRouteName: 'AppLoading',

@@ -58,15 +58,21 @@ export default class HomeScreen extends React.Component {
 
   submitCredentialsRegister() {
     if (this.state.email !== undefined && this.state.password !== undefined) {
-      this.register({
-        email: this.state.email,
-        password1: this.state.password,
-        password2: this.state.password2
-      }, (response) => {
-        console.log("Unsuccesful registration");
-        console.log(response);
-        this.showErrorMsg(response);
-      });
+      // this.register({
+      //   email: this.state.email,
+      //   password1: this.state.password,
+      //   password2: this.state.password2
+      // }, (response) => {
+      //   console.log("Unsuccesful registration");
+      //   console.log(response);
+      //   this.showErrorMsg(response);
+      // });
+      this.props.navigation.navigate(
+        {
+          routeName: 'HealthForm',
+          params: {register_email: this.state.email, register_password: this.state.password},
+        }
+      );
     }
   }
 

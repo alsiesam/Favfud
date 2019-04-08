@@ -12,13 +12,10 @@ import {
   View,
 	Overlay,
 } from '@shoutem/ui';
-import StatusBarBackground from '../../components/StatusBarBackground';
 
 const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
-const API_HOST = 'https://django-fyp.herokuapp.com';
-const HEALTHFORM_POST_URL = `${API_HOST}/healthform/insert`;
-const ILLNESS_GET_URL = `${API_HOST}/healthform/illness/`;
+const POST_URL = 'https://django-fyp.herokuapp.com/healthform';
 
 export default class HealthFormScreen extends React.Component {
 
@@ -29,9 +26,6 @@ export default class HealthFormScreen extends React.Component {
   constructor(props) {
       super(props);
       this.state = {
-					register_email: props.navigation.state.params.register_email,
-					register_password: props.navigation.state.params.register_password,
-
 					modalVisible: false,
 					loading: true,
 
@@ -41,12 +35,22 @@ export default class HealthFormScreen extends React.Component {
 					height: '',
 
 					consume_level: 'high',
+					calories: '',
+					smoking: false,
+					drinking: false,
 					illness: [],
 					illnessList: [],
 
+					tastes_piquant: false,
+					tastes_bitter: false,
+					tastes_sweet: false,
+					tastes_meaty: false,
+					tastes_salty: false,
+					tastes_sour: false,
+
 					taboos: [],
-			};
-			console.log([this.state.register_email, this.state.register_password]);
+      };
+			this.getEmail();
 			this.getIllnessList();
   }
 
@@ -60,7 +64,7 @@ export default class HealthFormScreen extends React.Component {
 	/* async functions: fetch related */
 
 	async getIllnessList() {
-		fetch(ILLNESS_GET_URL, {
+		fetch(POST_URL+'/illness/', {
 			method: 'GET',
 			headers: {
 			},
@@ -77,12 +81,23 @@ export default class HealthFormScreen extends React.Component {
 
 			this.setState({illnessList: [...this.state.illnessList, ...result]});
 		}).catch((error) => {
-				Alert.alert('An error occured in submitting form data', error);
+				// Alert.alert('An error occured in submitting form data', error);
 				console.error(error);
 				return [];
 			}
 		).done();
 	}
+
+	async getEmail() {
+    try{
+      let email = await AsyncStorage.getItem(EMAIL_ADDRESS);
+      console.log('[getEmail] Email is:' + email);
+      this.setState({email});
+    } catch (err) {
+      // console.log('[getEmail] Error')
+			console.error(err);
+    }
+  }
 
 	async storeToken(accessToken) {
     try{
@@ -100,12 +115,22 @@ export default class HealthFormScreen extends React.Component {
 			}
 		else
 		{
+			let tastes_array = [];
+			['piquant', 'bitter', 'sweet', 'meaty', 'salty', 'sour'].forEach((taste) => {
+				// console.warn('tastes_'+taste);
+				if (this.state['tastes_'+taste] === true){
+					tastes_array.push(taste);
+				}
+			});
+			// console.warn(tastes_array);
+
 			let illness_array = [];
 			tabillness = this.state.illness;
 			illness_array = tabillness.slice(0);
 			while (illness_array.lastIndexOf('') > 0) {
 				illness_array = illness_array.splice(illness_array.lastIndexOf(''), 1);
 			}
+			// console.warn(taboos_array);
 
 			let taboos_array = [];
 			taboos = this.state.taboos;
@@ -113,74 +138,76 @@ export default class HealthFormScreen extends React.Component {
 			while (taboos_array.lastIndexOf('') > 0) {
 				taboos_array = taboos_array.splice(taboos_array.lastIndexOf(''), 1);
 			}
+			// console.warn(taboos_array);
+
+			let email = this.state.email;
+
+			// let form = new FormData();
+			// form.append("email", email);
+			// form.append("sex", "M");
+			// form.append("age", 21);
+			// form.append("height", 180);
+			// form.append("weight", 52);
+			//
+			// form.append("consume_level", "low");
+			// form.append("calories", 1500);
+			// form.append("smoking", false);
+			// form.append("drinking", false);
+			//
+			// form.append("tastes", tastes_array);
+			// form.append("taboos", taboos_array);
+
+			// console.warn(form);
 
 			let form = JSON.stringify({
+				email: email,
 				sex: this.state.sex,
 				age: this.state.age,
 				weight: this.state.weight,
 				height: this.state.height,
 
 				consume_level: this.state.consume_level,
+				calories: this.state.calories,
+				smoking: this.state.smoking,
+				drinking: this.state.drinking,
 				illness: illness_array,
 
+				tastes: tastes_array,
 				taboos: taboos_array
 			});
 
-			console.log(form);
-
-			// fetch(HEALTHFORM_POST_URL, {
-      //   method: 'POST',
-			// 	headers: {
-			// 		"Content-Type" : "text/plain",
-			// 	},
-      //   body: form,
-      // }).then((response) => {
-			// 	console.warn(response);
-			// 	const statusCode = response.status;
-			// 	if (statusCode == 200) {
-			// 		let responsetext = response.text();
-			// 		this.storeToken(responsetext);
-			// 		this.switchToApp();
-			// 	}
-			// 	else if(statusCode == 400) {
-			// 		let responseText = response.text();
-			// 		Alert.alert('An error occured in submitting form data', responseText);
-			// 	}
-			// 	else {
-	    //     Alert.alert('An error occured in the server', 'Please try again or contact us.');
-			// 	}
-      // }).catch((error) => {
-			// 		console.error(error);
-			//   }
-			// ).done();
-
-			let user_token = 'abc1234';
-			let email = this.state.register_email;
-			this.switchToApp(user_token, email);
+			fetch(POST_URL+'/insert/', {
+        method: 'POST',
+				headers: {
+					"Content-Type" : "text/plain",
+				},
+        body: form,
+      }).then((response) => {
+				console.warn(response);
+				const statusCode = response.status;
+				if (statusCode == 200) {
+					let responsetext = response.text();
+					this.storeToken(responsetext);
+					this.switchToApp();
+				}
+				else if(statusCode == 400) {
+					let responseText = response.text();
+					Alert.alert('An error occured in submitting form data', responseText);
+				}
+				else {
+	        Alert.alert('An error occured in the server', 'Please try again or contact us.');
+				}
+      }).catch((error) => {
+			    // Alert.alert('An error occured in submitting form data', error);
+					console.error(error);
+			  }
+			).done();
 		}
 		this.setState({'loading': false});
 	}
 
-	async storeToken(accessToken) {
-    try{
-      await AsyncStorage.setItem(ACCESS_TOKEN, accessToken);
-    } catch (err) {
-      console.log('[storeToken] Error')
-    }
-  }
-
-  async storeEmail(email) {
-    try{
-      await AsyncStorage.setItem(EMAIL_ADDRESS, email);
-    } catch (err) {
-      console.log('[storeEmail] Error')
-    }
-  }
-
-  async switchToApp(user_token, email) {
+  async switchToApp() {
     try {
-      await this.storeToken(user_token);
-      await this.storeEmail(email);
       this.props.navigation.navigate('App');
     } catch (err) {
       console.log("[switchToApp] Error");
@@ -220,10 +247,21 @@ export default class HealthFormScreen extends React.Component {
 			if (Number(height) <= 0) return false;
 			else return true;
 		}
+		else if (field === 'calories') {
+			calories = this.state.calories;
+			if (calories == '') return false;
+			if (!this.isInt(calories)) return false;
+			if (Number(calories) < 0 || Number(calories) > 3000) return false;
+			else return true;
+		}
 		else {
 			return this.validate('age')
 					&& this.validate('weight')
 					&& this.validate('height')
+					&& this.validate('calories');
+					// && this.validate('illness')
+					// && this.validate('tastes')
+					// && this.validate('taboos');
 		}
 	}
 
@@ -231,11 +269,21 @@ export default class HealthFormScreen extends React.Component {
 
 	createTextInput(field) {
 		if (!['taboos'].includes(field)) return false;
+
+		// textboxes = this.state[field + '_textboxes'];
 		let texts = this.state[field];
+
+		// const textbox = <TextInput
+		// 	style = {styles.textInput}
+		// 	onChangeText={(text) => {}} />;
+
+		// console.warn(texts[texts.length - 1]);
 		if (texts[texts.length - 1] === '') return false;
 
+		// textboxes.push(textbox);
 		texts.push('');
 		this.setState({
+			/* [field+'_textboxes']: textboxes, */
 			[field]: texts,
 		});
 	}
@@ -299,8 +347,11 @@ export default class HealthFormScreen extends React.Component {
 		const divider = <Divider style={{ marginTop: 10, marginBottom: 10, }} />;
     return (
 			<Container style={styles.container}>
-				<StatusBarBackground />
 	    	<ScrollView style={{flex: 1}} >
+					{ /*
+						<Title style={styles.header}>Build Your User Profile!</Title>
+						{divider}
+					*/ }
 					<Title style={styles.header}>Body Indices</Title>
 						<Col>
 							<Text style={styles.question}>Sex:</Text>
@@ -391,6 +442,46 @@ export default class HealthFormScreen extends React.Component {
 										<Picker.Item label="low" value="low" />
 									</Picker>
 								</Row>
+							<Text style={styles.question}>Daily calories consumption:</Text>
+								<TextInput
+									style={{...styles.textInput, ...this.validate('calories', this.state.calories) || this.state.calories == ''? styles.textInput_valid: styles.textInput_invalid, }}
+									placeholder={'Any integer between 0 and 3000'}
+									keyboardType = 'number-pad'
+									value = {this.state.calories}
+									onChangeText={(text) => {
+										this.setState({calories: text});
+									}}
+								/>
+								{
+									this.state.calories == ''
+									? <Text style={styles.invalidText}>This is a required field.</Text>
+									: (this.validate('calories', this.state.calories) === false
+										? <Text style={styles.invalidText}>Please input any integer between 0 and 3000.</Text>
+										: <View />
+									)
+								}
+							{
+								/*
+								<Row style={styles.question}>
+									<Row>
+										<Text>Smoking</Text>
+										<CheckBox
+											checked={this.state.smoking}
+											onPress={() => {
+												this.setState({smoking: !this.state.smoking});
+											}}/>
+										</Row>
+									<Row>
+										<Text>Drinking</Text>
+										<CheckBox
+											checked={this.state.drinking}
+											onPress={() => {
+												this.setState({drinking: !this.state.drinking});
+											}}/>
+										</Row>
+								</Row>
+								*/
+							}
 
 
 							<Text style={styles.question}>Any illness:</Text>
@@ -405,6 +496,65 @@ export default class HealthFormScreen extends React.Component {
 
 					<Title style={styles.header}>Eating Habits</Title>
 						<Col>
+							{
+								/*
+								<Text style={styles.question}>Your favourite tastes:</Text>
+									<Row style={styles.question}>
+										<Row>
+											<Text>Spicy</Text>
+											<CheckBox
+												checked={this.state.tastes_piquant}
+												onPress={() => {
+													this.setState({tastes_piquant: !this.state.tastes_piquant});
+												}}/>
+											</Row>
+										<Row>
+											<Text>Bitter</Text>
+											<CheckBox
+												checked={this.state.tastes_bitter}
+												onPress={() => {
+													this.setState({tastes_bitter: !this.state.tastes_bitter});
+												}}/>
+											</Row>
+										<Row>
+											<Text>Sweet</Text>
+											<CheckBox
+												checked={this.state.tastes_sweet}
+												onPress={() => {
+													this.setState({tastes_sweet: !this.state.tastes_sweet});
+												}}/>
+											</Row>
+									</Row>
+									<Row style={styles.question}>
+										<Row>
+											<Text>Savoury</Text>
+											<CheckBox
+												checked={this.state.tastes_meaty}
+												onPress={() => {
+													this.setState({tastes_meaty: !this.state.tastes_meaty});
+												}}/>
+											</Row>
+										<Row>
+											<Text>Salty</Text>
+											<CheckBox
+												checked={this.state.tastes_salty}
+												onPress={() => {
+													this.setState({tastes_salty: !this.state.tastes_salty});
+												}}/>
+											</Row>
+										<Row>
+											<Text>Sour</Text>
+											<CheckBox
+												checked={this.state.tastes_sour}
+												onPress={() => {
+													this.setState({tastes_sour: !this.state.tastes_sour});
+												}}/>
+											</Row>
+									</Row>
+								*/
+							}
+
+
 							<Text style={styles.question}>Your taboos:</Text>
 								<Grid>
 									{
@@ -461,7 +611,6 @@ export default class HealthFormScreen extends React.Component {
 						this.setState({modalVisible: false})
 					}}
 					style={styles.container}>
-					<StatusBarBackground />
 					<Row size={90}>
 						<ScrollView style={{...styles.container, ...{margin: 0, fontSize: 13,}}}>
 							<Col>
