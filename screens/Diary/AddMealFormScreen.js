@@ -17,7 +17,6 @@ import Calendar from '../../library/react-native-calendar-select';
 import DatePicker from 'react-native-datepicker';
 import { SearchBar, } from "react-native-elements";
 import { Container, } from "native-base";
-import * as func from '../RecSys/Recipe_Functions.js';
 
 const ACCESS_TOKEN = 'user_token'
 const ADD_MEAL_URL  = 'https://favfud-app.herokuapp.com/api/diary/meal/create/';
@@ -259,7 +258,7 @@ export default class AddMealFormScreen extends React.Component {
   			<Title>{this.state.keyword==""?"":title}</Title>
   			{data.map((recipe, ) => {
   				// console.warn(recipe);
-  				ingredients = func.getIngredients(recipe).slice(0, 3);
+  				//ingredients = getIngredients(recipe).slice(0, 3);
   				return (
   					<TouchableOpacity key={recipe.id} onPress={() => {
               this.setState({

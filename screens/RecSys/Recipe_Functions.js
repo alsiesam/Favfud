@@ -112,7 +112,7 @@ export function renderHealthyChoice(title, want_divider, navigate, state) {
           return(
             <View>
               <View style={[{flex:1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', margin: 20, }]}>
-                <TouchableOpacity
+                <TouchableOpacity 
                     onPress={() => navigate({routeName: layoutObj.navigateScreen, params: {user_token: state.user_token}})}
                 >
                   <ImageBackground
@@ -120,7 +120,7 @@ export function renderHealthyChoice(title, want_divider, navigate, state) {
                   style={[{width: SCREEN_WIDTH * 0.8, height: 200, marginBottom: 10, backgroundColor: layoutObj.bgColor, borderRadius: 15,}, styles.center]}
                   imageStyle={[{opacity: 0.2, borderRadius: 15,}]}
                   >
-                  {
+                  { 
                     layoutObj.textContent.map((text, index) => {
                       return(
                         <Title key={'bannerText'+index} style={{color: layoutObj.textColor, }}>{text}</Title>
@@ -241,7 +241,7 @@ export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider,
   );
 }
 
-export function renderSearchResultsList(title, data, want_divider, navigate, state, isDiary) {
+export function renderSearchResultsList(title, data, want_divider, navigate, state) {
 	if (!Array.isArray(data)) {
 		console.log('undefined data');
 		return;
@@ -252,11 +252,6 @@ export function renderSearchResultsList(title, data, want_divider, navigate, sta
     divider = <Divider style={{ marginBottom: 10, }} />
   }
 	rows = [];
-  if (isDiary){
-    let callback = function() {this.setState({dishId:recipe.id})};
-  } else {
-    let callback = function() {navigate({routeName: 'Recipe_Information', params: {recipe: recipe, user_token: state.token}, key: 'Info'+recipe.id})};
-  }
 	return (
 		<View>
 			<Title style={styles.subtitle}>{title}</Title>
@@ -264,8 +259,7 @@ export function renderSearchResultsList(title, data, want_divider, navigate, sta
 				// console.warn(recipe);
 				ingredients = getIngredients(recipe).slice(0, 3);
 				return (
-
-					<TouchableOpacity key={recipe.id} onPress={() => {this.setState({dishId:recipe.id});}}>
+					<TouchableOpacity key={recipe.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: recipe, user_token: state.user_token}, key: 'Info'+recipe.id})}>
 					<Row style={styles.listView}>
 						<Image
 							style={[styles.small_recipe_image, {marginLeft: 10, marginRight: 10}]}
