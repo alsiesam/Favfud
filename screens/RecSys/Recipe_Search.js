@@ -40,8 +40,8 @@ export default class Recipe_Search extends Component {
 			if(!keyword.match(/\/$/g)) {
         keyword = keyword + '/';
       }
-			keyword = keyword.replace(/\s/g, '+');
-      return fetch('https://django-fyp.herokuapp.com/recsys/search_exact/'+keyword+'/')
+      keyword = keyword.replace(/\s/g, '+');
+      return fetch('https://django-fyp.herokuapp.com/recsys/search_exact/'+keyword)
       .then((response) => response.json())
       .then((responseJson) => {
 				// console.warn(responseJson);
