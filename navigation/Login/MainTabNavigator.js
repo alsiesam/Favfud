@@ -5,6 +5,8 @@ import { createStackNavigator, createBottomTabNavigator } from 'react-navigation
 import TabBarIcon from '../../components/TabBarIcon';
 import HomeScreen from '../../screens/Login/HomeScreen';
 import DiaryScreen from '../../screens/Diary/DiaryScreen';
+import EditMealFormScreen from '../../screens/Diary/EditMealFormScreen';
+
 import AddMealFormScreen from '../../screens/Diary/AddMealFormScreen';
 import DiaryReportScreen from '../../screens/Diary/DiaryReportScreen';
 import ProfileScreen from '../../screens/Login/ProfileScreen';
@@ -37,6 +39,7 @@ const DiaryStack = createStackNavigator({
   AddMealForm: {screen: AddMealFormScreen},
   DiaryReport: {screen: DiaryReportScreen},
   Diary_Recipe_Information: {screen: Recipe_Information},
+  EditMealForm: {screen: EditMealFormScreen},
 },{
   initialRouteName: 'Diary',
 });

@@ -18,6 +18,8 @@ import DatePicker from 'react-native-datepicker';
 import { SearchBar, } from "react-native-elements";
 import { Container, } from "native-base";
 
+import {sendDeleteMealRequest} from './DiaryFunctions';
+
 const ACCESS_TOKEN = 'user_token'
 const ADD_MEAL_URL  = 'https://favfud-app.herokuapp.com/api/diary/meal/create/';
 const SEARCH_URL = 'https://django-fyp.herokuapp.com/recsys/search_similar/';
@@ -33,27 +35,30 @@ const DismissKeyboard = ({ children }) => (
 
 export default class AddMealFormScreen extends React.Component {
   static navigationOptions = {
-    title: 'Diary - Add Meal',
+    title: 'Diary - Edit Meal',
   };
 
   constructor(props) {
+    var token = props.navigation.getParam('token');
+    var servings = props.navigation.getParam('servings');
+    var dishId = props.navigation.getParam('dishId');
+    var mealId = props.navigation.getParam('mealId');
+    var selectedRecipe = props.navigation.getParam('selectedRecipe');
+    var date = props.navigation.getParam('date');
     super(props);
     this.state = {
-      servings: '',
-      dishId: '',
-      selectedRecipe:{},
-      date: moment(),
-      token:'',
+      token: token,
+      servings: servings,
+      dishId: dishId,
+      mealId: mealId,
+      selectedRecipe: selectedRecipe,
+      date: moment(date, "YYYY-MM-DD").format("DD-MMM-YYYY"),
       isLoading: false,
       dataSource: [],
       searchError: false,
       keyword: '',
       isSearchMode:false,
     };
-  }
-
-  componentDidMount(){
-    this.getToken();
   }
 
   async getToken() {
@@ -94,18 +99,49 @@ export default class AddMealFormScreen extends React.Component {
     );
   }
 
-  submitAddRequest() {
+  async submitDeleteRequest() {
+    if ((this.state.token != undefined) && (this.state.mealId != undefined)) {
+      this.setState({isLoading: true});
+      let response = await sendDeleteMealRequest(this.state.token, this.state.mealId);
+      if (response) {
+        this.setState({isLoading: false});
+        this.redirectToDiary();
+      } else {
+        this.showAlert("Error", "Cannot delete meal.");
+        this.setState({isLoading: false});
+      }
+    } else {
+      console.log("Error")
+      this.setState({isLoading: false});
+    }
+  }
+
+  async submitChangeRequest() {
     if(this.state.servings==''){
       this.showAlert("Error", "Please enter no. of servings.");
     } else if (this.state.dishId=='') {
       this.showAlert("Error", "Please select dish.");
-    } else if(this.state.token !== undefined && this.state.servings !== undefined && this.state.dishId !== undefined && this.state.date !== undefined) {
+    } else if (this.state.token !== undefined && this.state.mealId !== undefined) {
       this.setState({isLoading: true});
-      dishIds = this.state.dishId.toString()
+      let response = await sendDeleteMealRequest(this.state.token, this.state.mealId);
+      if (response) {
+        this.setState({isLoading: false});
+        this.submitAddRequest();
+      } else {
+        this.showAlert("Error", "Cannot delete meal.");
+      }
+    } else {
+      console.log("Error")
+    }
+  }
+
+  submitAddRequest() {
+     if((this.state.token != undefined) && (this.state.servings != undefined) && (this.state.dishId != undefined) && (this.state.date != undefined)) {
+      dishIds = this.state.dishId.toString();
       var payload = {
         user_token: this.state.token,
         servings: this.state.servings,
-        dish_ids: this.state.dishId,
+        dish_ids: dishIds,
         date: moment(this.state.date, "DD-MMM-YYYY").format("YYYY-MM-DD"),
         meal_type: "Others",
       };
@@ -171,7 +207,6 @@ export default class AddMealFormScreen extends React.Component {
     return fetch(SEARCH_URL+keyword)
     .then((response) => response.json())
     .then((responseJson) => {
-			//console.log(responseJson);
 			this.setState({
         //isLoading: false,
 				searchError: false,
@@ -375,14 +410,20 @@ export default class AddMealFormScreen extends React.Component {
                   */}
               </Row>
               <Row>
-                {this.state.dishId?this.renderSelectedDish():<View />}
+                {this.state.dishId != ''?this.renderSelectedDish():<View />}
               </Row>
             </Grid>
-            {this.renderSearchButton()}
-            <View style={{height:40}}/>
+            {
+              this.renderSearchButton()
+            }
             <View style={styles.buttonContainer}>
-              <Button styleName="secondary full-width" onPress={this._handleAdd}>
-                <Text>Add</Text>
+              <Button styleName="secondary full-width" onPress={this._handleDelete}>
+                <Text>Delete Meal</Text>
+              </Button>
+            </View>
+            <View style={styles.buttonContainer}>
+              <Button styleName="secondary full-width" onPress={this._handleChange}>
+                <Text>Change Meal</Text>
               </Button>
             </View>
           </View>
@@ -391,8 +432,12 @@ export default class AddMealFormScreen extends React.Component {
     }
   }
 
-  _handleAdd = () => {
-    this.submitAddRequest();
+  _handleDelete = () => {
+    this.submitDeleteRequest();
+  };
+
+  _handleChange = () => {
+    this.submitChangeRequest();
   };
 
   _handleSearch = () => {
@@ -449,7 +494,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 0,
     marginTop:10,
-    marginBottom:20,
+    marginBottom:10,
     borderRadius:5,
     marginHorizontal: 25,
     justifyContent: 'center',

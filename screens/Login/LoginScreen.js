@@ -8,6 +8,8 @@ import {
   Alert,
   TouchableOpacity,
   ActivityIndicator,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import {
   Heading,
@@ -23,6 +25,12 @@ const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
 const LOGIN_REQUEST_URL = 'https://favfud-app.herokuapp.com/api/rest-auth/login/';
 const REGISTER_REQUEST_URL = 'https://favfud-app.herokuapp.com/api/rest-auth/registration/';
+
+const DismissKeyboard = ({ children }) => (
+  <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+    {children}
+  </TouchableWithoutFeedback>
+);
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
@@ -80,7 +88,7 @@ export default class HomeScreen extends React.Component {
       }).then((response) => {
         return response.json();
       }).then((response) => {
-        console.log(response);
+        //console.log(response);
         if (response.key) {
           this.switchToApp(response.key, credentials.email, 'Register');
         } else {
@@ -114,7 +122,7 @@ export default class HomeScreen extends React.Component {
       }).then((response) => {
         return response.json();
       }).then((response) => {
-        console.log(response);
+        //console.log(response);
         if (response.key) {
           this.switchToApp(response.key, credentials.email, 'Login');
         } else {
@@ -236,94 +244,96 @@ export default class HomeScreen extends React.Component {
       );
     } else {
       return (
-        <View style={styles.container}>
+        <DismissKeyboard>
+          <View style={styles.container}>
 
-          <View style={{flex: 1}} />
+            <View style={{flex: 1}} />
 
-          {/* Welcome Text */}
-          <View style={styles.welcomeContainer}>
-            <Heading style={styles.welcomeText}>Welcome to Favfud!</Heading>
-          </View>
+            {/* Welcome Text */}
+            <View style={styles.welcomeContainer}>
+              <Heading style={styles.welcomeText}>Welcome to Favfud!</Heading>
+            </View>
 
-          <View style={{flex: 1}} />
+            <View style={{flex: 1}} />
 
-          {/* Login*/}
-          <View style={styles.loginContainer} >
+            {/* Login*/}
+            <View style={styles.loginContainer} >
 
 
-              <TextInput
-                style={styles.textInput}
-                placeholder={'Enter your email address'}
-                onChangeText={(email) => this.setState({email})}
-                value={this.state.email}
-              />
-
-              <TextInput
-                style={styles.textInput}
-                placeholder={'Enter your password'}
-                secureTextEntry={true}
-                onChangeText={(password) => this.setState({password})}
-                value={this.state.password}
-              />
-
-            {
-              !this.state.isLoginMode
-              ? (
                 <TextInput
                   style={styles.textInput}
-                  placeholder={'Re-enter your password'}
-                  secureTextEntry={true}
-                  onChangeText={(password2) => this.setState({password2})}
-                  value={this.state.password2}
+                  placeholder={'Enter your email address'}
+                  onChangeText={(email) => this.setState({email})}
+                  value={this.state.email}
                 />
-              )
-              : (
-                <View />
-              )
-            }
 
-            <View style={styles.buttonContainer}>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder={'Enter your password'}
+                  secureTextEntry={true}
+                  onChangeText={(password) => this.setState({password})}
+                  value={this.state.password}
+                />
+
+              {
+                !this.state.isLoginMode
+                ? (
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder={'Re-enter your password'}
+                    secureTextEntry={true}
+                    onChangeText={(password2) => this.setState({password2})}
+                    value={this.state.password2}
+                  />
+                )
+                : (
+                  <View />
+                )
+              }
+
+              <View style={styles.buttonContainer}>
+                {
+                  this.state.isLoginMode
+                  ? (
+                    <Button
+                      onPress= {this._handleLogin}
+                      styleName="secondary full-width">
+                      <Text>Login</Text>
+                    </Button>
+                  )
+                  : (
+                    <Button
+                      onPress= {this._handleRegister}
+                      styleName="secondary full-width">
+                      <Text>Register</Text>
+                    </Button>
+                  )
+                }
+              </View>
+
+            </View>
+
+            {/* Help */}
+
+            <View style={styles.helpContainer}>
               {
                 this.state.isLoginMode
                 ? (
-                  <Button
-                    onPress= {this._handleLogin}
-                    styleName="secondary full-width">
-                    <Text>Login</Text>
-                  </Button>
+                  <TouchableOpacity onPress={this._handleSwitchToRegister} style={styles.helpLink}>
+                    <Text style={styles.helpLinkText}>Don't have an account yet?{"\n"}Click here to register!</Text>
+                  </TouchableOpacity>
                 )
                 : (
-                  <Button
-                    onPress= {this._handleRegister}
-                    styleName="secondary full-width">
-                    <Text>Register</Text>
-                  </Button>
+                  <TouchableOpacity onPress={this._handleSwitchToLogin} style={styles.helpLink}>
+                    <Text style={styles.helpLinkText}>Have an account already?{"\n"}Click here to login!</Text>
+                  </TouchableOpacity>
                 )
               }
             </View>
 
+            <View style={{flex: 4}} />
           </View>
-
-          {/* Help */}
-
-          <View style={styles.helpContainer}>
-            {
-              this.state.isLoginMode
-              ? (
-                <TouchableOpacity onPress={this._handleSwitchToRegister} style={styles.helpLink}>
-                  <Text style={styles.helpLinkText}>Don't have an account yet?{"\n"}Click here to register!</Text>
-                </TouchableOpacity>
-              )
-              : (
-                <TouchableOpacity onPress={this._handleSwitchToLogin} style={styles.helpLink}>
-                  <Text style={styles.helpLinkText}>Have an account already?{"\n"}Click here to login!</Text>
-                </TouchableOpacity>
-              )
-            }
-          </View>
-
-          <View style={{flex: 4}} />
-        </View>
+        </DismissKeyboard>
       );
     }
   }

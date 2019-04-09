@@ -36,6 +36,7 @@ export default class DiaryScreen extends React.Component {
 
   constructor(props) {
     super(props);
+    var refresh = props.navigation.getParam('refresh');
     var today = new Date;
     var endDate = moment(today).subtract(1, 'days');
     var startDate = moment(today).subtract(7, 'days');
@@ -52,6 +53,7 @@ export default class DiaryScreen extends React.Component {
       isReportLoading: false,
       refreshing: false,
       isEmpty: true,
+      isEditMode: false,
     };
   }
   clearState() {
@@ -122,6 +124,8 @@ export default class DiaryScreen extends React.Component {
       actions.push(getDiaryReport(token, startDate, endDate));
       let results = await Promise.all(actions);
       if(results[0] && results [1]) {
+        //console.log(results[0]);
+
         let responseJson = results[0];
         let reportData = results[1];
         let mealRecords = updateMealRecords(responseJson, this.state.mealRecords);
@@ -137,23 +141,6 @@ export default class DiaryScreen extends React.Component {
         this.clearState();
         return false;
       }
-      /*
-      let let responseJson = await fetchMealRecordByToken(token, startDate, endDate);
-      if (!responseJson || responseJson.length<1) {
-        this.clearState();
-        return false;
-      }
-      let mealRecords = updateMealRecords(responseJson, this.state.mealRecords);
-      this.setState({mealRecords: mealRecords});
-
-      let reportData = await getDiaryReport(token, startDate, endDate);
-      this.setState({
-        summary: reportData.summary,
-        nutritionPercentage: reportData.nutrition_percentage,
-        nutritionValue: reportData.nutrition
-      });
-      this.setState({isReportLoading: false});
-      */
     } catch(err) {
       console.log(err);
       this.setState({isReportLoading: false});
@@ -211,6 +198,10 @@ export default class DiaryScreen extends React.Component {
     this.props.navigation.navigate('AddMealForm');
   }
 
+  redirectToEditMealForm(){
+    this.props.navigation.navigate('EditMealForm');
+  }
+
   redirectToReport(){
     this.props.navigation.navigate('DiaryReport', {
       token: this.state.token,
@@ -225,6 +216,7 @@ export default class DiaryScreen extends React.Component {
     return(
       <View style={styles.mealsContainer}>
         <Title>Meal List</Title>
+        <Text>{this.state.isEditMode?"Tap on the meal to edit":""}</Text>
         {this.state.isLoading?
           this.renderLoading(100) :
           /*this.state.mealRecipes.map((key, item) => (
@@ -274,9 +266,15 @@ export default class DiaryScreen extends React.Component {
             data={recipeList}
             numColumns={1}
             renderItem={({ item: rowData, index }) => {
+              let _handleNavigate = () => navigate({
+                routeName: 'Diary_Recipe_Information', params: {recipe: rowData, user_token: this.state.token}, key: 'Info'+rowData.id
+              });
+              let _handleEditMeal = () => navigate({
+                routeName: 'EditMealForm', params: {selectedRecipe: rowData, token: this.state.token, dishId: rowData.id, mealId: rowData.meal_id, servings: rowData.consume_servings, date: rowData.consume_date}
+              });
               return(
                 <View style={{marginTop: 20, marginRight: 30,}}>
-                  <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Diary_Recipe_Information', params: {recipe: rowData, user_token: this.state.token}, key: 'Info'+rowData.id})}>
+                  <TouchableOpacity key={rowData.id} onPress={this.state.isEditMode?_handleEditMeal:_handleNavigate}>
                     <Image
                       style={styles.recipe_image}
                       source={{uri: rowData.imageurlsbysize_360}}
@@ -401,19 +399,17 @@ export default class DiaryScreen extends React.Component {
             //backgroundColor: 'grey',
           }
         }}
-        /*
         leftComponent={
-          <Button onPress={this._handleRefresh}>
-            <Subtitle>Refresh</Subtitle>
+          <Button onPress={this.state.isEditMode?this._handleCancelEdit:this._handleEdit}>
+            <Subtitle>{this.state.isEditMode?"Cancel":"Edit Meal"}</Subtitle>
           </Button>
         }
-        */
         centerComponent={
           <Button onPress={this.openCalendar}>
             <Subtitle>{moment(this.state.startDate).format("D MMM")} to {moment(this.state.endDate).format("D MMM")}</Subtitle>
           </Button>
           }
-        rightComponent={(
+        rightComponent={this.state.isEditMode?<View />:(
           <Button onPress={this._handleAdd}>
             <Subtitle>Add Meal</Subtitle>
           </Button>
@@ -438,6 +434,20 @@ export default class DiaryScreen extends React.Component {
     );
   }
 
+  renderReportContainer(){
+    return(
+      <View style={styles.reportContainer}>
+        <View style={styles.shortReportContainer}>
+          <Title>Report</Title>
+          {this.state.summary==undefined ? this.renderLoading(): this.renderShortReport()}
+        </View>
+        <View style={styles.buttonContainer}>
+        {this.state.isEmpty? <View></View>: this.renderReportButton()}
+        </View>
+      </View>
+    );
+  }
+
   render() {
     return (
       <View style={styles.container}>
@@ -448,16 +458,8 @@ export default class DiaryScreen extends React.Component {
             refreshing={this.state.refreshing}
             onRefresh={this._handleRefresh}
           />}>
-            <View style={styles.reportContainer}>
-              <View style={styles.shortReportContainer}>
-                <Title>Report</Title>
-                {this.state.summary==undefined ? this.renderLoading(): this.renderShortReport()}
-              </View>
-              <View style={styles.buttonContainer}>
-              {this.state.isEmpty? <View></View>: this.renderReportButton()}
-              </View>
-            </View>
-            <Divider styleName="line" />
+            {this.state.isEditMode?<View />:this.renderReportContainer()}
+            {this.state.isEditMode?<View />:<Divider styleName="line" />}
             {this.renderMealListContainer()}
           </ScrollView>
       </View>
@@ -468,6 +470,14 @@ export default class DiaryScreen extends React.Component {
     this.redirectToAddMealForm();
   };
 
+  _handleEdit = () => {
+    this.setState({isEditMode: true});
+  };
+
+  _handleCancelEdit = () => {
+    this.setState({isEditMode: false});
+  };
+
   _handleRefresh = () => {
     this.refresh();
   };
@@ -476,10 +486,6 @@ export default class DiaryScreen extends React.Component {
     this.redirectToReport();
   };
 
-  _changeDatePeriod = () => {
-    this.setState({startDate: "18-Feb", endDate: "24-Feb"});
-    this.showAlert('Setting Date Period', 'Date period set.');
-  };
 }
 
 const styles = StyleSheet.create({

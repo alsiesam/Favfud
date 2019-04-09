@@ -1,11 +1,15 @@
 import React from 'react';
+import View from 'react-native';
+import {Text, ActivityIndicator} from '@shoutem/ui';
 import moment from "moment";
 
 const API_HOST = 'http://django-fyp.herokuapp.com/';
+const API_HOST_2 = 'https://favfud-app.herokuapp.com/';
 const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 const GET_RECIPES_NUTRITION_URL = `${API_HOST}diary/query/recipe/dynamic`;
-const GET_MEAL_URL = 'https://favfud-app.herokuapp.com/api/diary/meal/';
-const GET_REPORT_URL = 'https://favfud-app.herokuapp.com/api/diary/report/';
+const GET_MEAL_URL = `${API_HOST_2}api/diary/meal/`;
+const GET_REPORT_URL = `${API_HOST_2}api/diary/report/`;
+const DELETE_MEAL_URL = `${API_HOST_2}api/diary/meal/`;
 
 const nutritionLimit = {
   energy: 2200/3,
@@ -69,15 +73,16 @@ export function updateMealRecords(meal, mealRecords={}) {
     let item = meal[i];
     let ids = item.dish_ids.split(",");
     let servings = item.servings.split(",");
+    let meal_id = item.id;
     let date = item.date;
     for (var j=0; j<ids.length; j++) {
       id = ids[j];
       serving = servings[j];
       if (mealRecords.hasOwnProperty(date)) {
-        mealRecords[date][id] = serving;
+        mealRecords[date][id] = {servings:serving, meal_id: meal_id};
       } else {
         mealRecords[date] =  {
-          [id]: serving,
+          [id]: {servings:serving, meal_id: meal_id},
         };
       }
     }
@@ -97,7 +102,12 @@ export async function fetchMealRecipes(mealRecords, date) {
     });
     if (response.ok) {
       let responseJson = await response.json();
-      return responseJson;
+      let idOfRecipe = responseJson[0].id;
+      let mealIdOfRecipe = mealRecords[date][idOfRecipe].meal_id;
+      let consumedServingsOfRecipe = mealRecords[date][idOfRecipe].servings;
+      let meal_id = {meal_id: mealIdOfRecipe, consume_servings: consumedServingsOfRecipe, consume_date: date};
+      let outputObject = Object.assign(responseJson[0], meal_id);
+      return [outputObject];
     } else {
       console.log("fetchMealRecipes Not ok");
       //console.log(response);
@@ -345,4 +355,23 @@ export function getDiarySummaryWithReportInfo(reportInfo) {
   let consumptionPerMeal = getConsumptionPerMeal(reportInfo)
   let summary = generateSummary(consumptionPerMeal);
   return summary;
+}
+
+export async function sendDeleteMealRequest(user_token, meal_id) {
+  try {
+    var url = `${GET_MEAL_URL}${meal_id}/delete/?user_token=${user_token}`
+    //console.log(url);
+    let response = await fetch(url, {
+      method: 'DELETE'
+    });
+    if (response.ok) {
+      return true;
+    } else {
+      console.log("sendDeleteMealRequest Error");
+      return false;
+    }
+  } catch(err) {
+    console.log("sendDeleteMealRequest Error");
+    console.log(err);
+  }
 }
