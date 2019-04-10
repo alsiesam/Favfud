@@ -3,7 +3,7 @@ import { Platform, Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, 
 import { Divider, Rating } from "react-native-elements";
 import { Row, Col } from "react-native-easy-grid";
 import * as func from './Recipe_Functions.js';
-import { Title, Text } from '@shoutem/ui';
+import { Title, Text, Heading } from '@shoutem/ui';
 import { Constants } from 'expo';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -44,12 +44,12 @@ export default class Recipe_Healthy_Body_Selections extends Component {
       this.state = { 
         isLoading: true,
         isRefreshing: false,
-        recommend_recipe: props.navigation.state.params.recommend_recipe,
         user_token: props.navigation.state.params.user_token,
-        recommend_recipe: [{}],
+        recommend_recipe: [],
         dataSource: [],
         rated_recipe_ids: '',
         hasScrolled: false,
+        noRecommend: false,
       }
     }
 
@@ -70,9 +70,15 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         return fetch(HEALTHY_CHOICE_URL, header)
         .then((response) => response.json())
         .then((responseJson) => {
-          this.setState({
-            recommend_recipe: [...this.state.recommend_recipe, ...responseJson],
-          });
+            if(!responseJson || Object.keys(responseJson[0]).length === 0){
+                this.setState({
+                    noRecommend: true,
+                });
+            } else {
+                this.setState({
+                    recommend_recipe: responseJson,
+                });
+            }
         })
         .catch((error) =>{
           console.error(error);
@@ -128,6 +134,14 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         const {navigate} = this.props.navigation;
         let render = [];
         let recipe = this.state.recommend_recipe;
+        if(recipe.length > 0 && Object.keys(recipe[0]).length != 0){
+            render.push(
+                <Text key={-1} style={styles.main_desc}>
+                    Weekly recommended recipes for improving your health condition and helping you in nurturing a healthy eating habit.
+                    Enjoy your meal!
+                </Text>
+            );
+        }
         for(var i = 0; i < this.state.recommend_recipe.length; i++){
             render.push(
                 <View key={i} style={{marginTop: 5, marginLeft: 5, marginRight: 5, marginBottom: 5,}}>
@@ -236,12 +250,11 @@ export default class Recipe_Healthy_Body_Selections extends Component {
                 //         {this.renderSections()}
                 //     </View>
                 // </ScrollView>
-                <View>
+                <View style={styles.scroll_view}>
                     <Animated.ScrollView
                         scrollEventThrottle={5}
                         showsVerticalScrollIndicator={false}
                         onScroll={Animated.event([{nativeEvent: {contentOffset: {y: this.animatedScroll}}}], {useNativeDriver: true})}
-                        contentContainerStyle={styles.scroll_view}
                         style={{zIndex: 0}}
                     >
                         <View style={styles.screen_view}>
@@ -260,11 +273,15 @@ export default class Recipe_Healthy_Body_Selections extends Component {
                                     </Animated.View>
                                 </Animated.View>
                                 </Animated.View>
-                                <Text style={styles.main_desc}>
-                                    Weekly recommended recipes for improving your health condition and helping you in nurturing a healthy eating habit.
-                                    Enjoy your meal!
-                                </Text>
-                                {this.renderSections()}
+                                {
+                                    this.state.noRecommend 
+                                    ?
+                                        <View style={styles.noRecommend_container}> 
+                                            <Text style={styles.main_desc}>Sorry, there is no recipe to be recommended to you at the moment.</Text>
+                                        </View>
+                                    :
+                                    this.renderSections()
+                                }
                         </View>
                     </Animated.ScrollView>
                 </View>
@@ -311,6 +328,12 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         marginRight: 20,
         marginBottom: 20,
         fontSize: 18,
+    },
+    noRecommend_container: {
+        flexDirection:'row',
+        flex: 1,
+        flexWrap: 'wrap',
+        marginVertical: 20,
     },
     section_container: {
         backgroundColor: 'white',
