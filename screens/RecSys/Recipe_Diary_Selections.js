@@ -102,7 +102,7 @@ export default class Recipe_Diary_Selections extends Component {
         if(recipe.length > 0 && Object.keys(recipe[0]).length != 0){
             render.push(
                 <Text key={-1} style={styles.main_desc}>
-                    Weekly recommended recipes for improving your health condition and helping you in nurturing a healthy eating habit.
+                    Recommended recipes based on your Diary records to help you maintain a balanced diet.
                     Enjoy your meal!
                 </Text>
             );
