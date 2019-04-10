@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, ImageBackground, TouchableOpacity, Image} from 'react-native';
+import { Platform, Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, ImageBackground, TouchableOpacity, Image, Animated, } from 'react-native';
 import { Divider, Rating } from "react-native-elements";
 import { Row, Col } from "react-native-easy-grid";
 import * as func from './Recipe_Functions.js';
 import { Title, Text } from '@shoutem/ui';
+import { Constants } from 'expo';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -12,7 +13,27 @@ const API_HOST = 'http://django-fyp.herokuapp.com/';
 const HEALTHY_CHOICE_URL = `${API_HOST}recsys/recommendation/healthy/body/selections/`;
 const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 
+const IMAGE_HEIGHT = SCREEN_HEIGHT * 0.5;
+const HEADER_HEIGHT = (Platform.OS === 'ios') ? Constants.statusBarHeight : 0;
+const SCROLL_HEIGHT = IMAGE_HEIGHT - HEADER_HEIGHT;
+
 export default class Recipe_Healthy_Body_Selections extends Component {
+
+    animatedScroll = new Animated.Value(0);
+    imgScale = this.animatedScroll.interpolate({
+        inputRange: [-25, 0],
+        outputRange: [1.1, 1],
+        extrapolateRight: "clamp"
+    });
+    imgOpacity = this.animatedScroll.interpolate({
+        inputRange: [0, SCROLL_HEIGHT],
+        outputRange: [0.2, 0],
+    });
+    imgTextOpacity = this.animatedScroll.interpolate({
+        inputRange: [0, SCROLL_HEIGHT],
+        outputRange: [1, 0],
+    });
+
 
     static navigationOptions = {
         title: 'Healthy Choice',
@@ -77,7 +98,7 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         theme_type = theme.split('_')[1].charAt(0).toUpperCase() + theme.split('_')[1].slice(1);
         switch(theme_prototype){
             case 'age':
-                desc = `Recipes for ${them_type}`;
+                desc = `Recipes for ${theme_type}`;
                 break;
 
             case 'illness':
@@ -196,25 +217,57 @@ export default class Recipe_Healthy_Body_Selections extends Component {
             )
         } else {
             return(
-                <ScrollView contentContainerStyle={styles.scroll_view}>
-                    <View style={styles.screen_view}>
-                        <View style={styles.banner_view}>
-                            <ImageBackground
-                            source={require('../../assets/images/healthy.jpeg')}
-                            style={styles.banner_container}
-                            imageStyle={styles.banner_image}
-                            >
-                            <Text style={styles.banner_text}>Healthy Body</Text>
-                            <Text style={{...styles.banner_text, ...{marginBottom: 10}}}>Selections</Text>
-                            </ImageBackground>
+                // <ScrollView contentContainerStyle={styles.scroll_view}>
+                //     <View style={styles.screen_view}>
+                //         <View style={styles.banner_view}>
+                //             <ImageBackground
+                //             source={require('../../assets/images/healthy.jpeg')}
+                //             style={styles.banner_container}
+                //             imageStyle={styles.banner_image}
+                //             >
+                //             <Text style={styles.banner_text}>Healthy Body</Text>
+                //             <Text style={{...styles.banner_text, ...{marginBottom: 10}}}>Selections</Text>
+                //             </ImageBackground>
+                //         </View>
+                //         <Text style={styles.main_desc}>
+                //             Weekly recommended recipes for improving your health condition and helping you in nurturing a healthy eating habit.
+                //             Enjoy your meal!
+                //         </Text>
+                //         {this.renderSections()}
+                //     </View>
+                // </ScrollView>
+                <View>
+                    <Animated.ScrollView
+                        scrollEventThrottle={5}
+                        showsVerticalScrollIndicator={false}
+                        onScroll={Animated.event([{nativeEvent: {contentOffset: {y: this.animatedScroll}}}], {useNativeDriver: true})}
+                        contentContainerStyle={styles.scroll_view}
+                        style={{zIndex: 0}}
+                    >
+                        <View style={styles.screen_view}>
+                            <Animated.View style={[{
+                                transform: [{translateY: Animated.multiply(this.animatedScroll, 0.65)}, {scale: this.imgScale}],
+                            },]}>
+                                <Animated.View style={[styles.banner_view, {opacity: this.imgTextOpacity,}]}>
+                                    <Animated.Image
+                                        source={require('../../assets/images/healthy.jpeg')}
+                                        style={{height: IMAGE_HEIGHT, width: "100%", opacity: this.imgOpacity,}}
+                                    >
+                                    </Animated.Image>
+                                    <Animated.View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'flex-end', opacity: this.imgTextOpacity,}}>
+                                        <Text style={styles.banner_text}>Healthy Body</Text>
+                                        <Text style={{...styles.banner_text, ...{marginBottom: 10}}}>Selections</Text>
+                                    </Animated.View>
+                                </Animated.View>
+                                </Animated.View>
+                                <Text style={styles.main_desc}>
+                                    Weekly recommended recipes for improving your health condition and helping you in nurturing a healthy eating habit.
+                                    Enjoy your meal!
+                                </Text>
+                                {this.renderSections()}
                         </View>
-                        <Text style={styles.main_desc}>
-                            Weekly recommended recipes for improving your health condition and helping you in nurturing a healthy eating habit.
-                            Enjoy your meal!
-                        </Text>
-                        {this.renderSections()}
-                    </View>
-                </ScrollView>
+                    </Animated.ScrollView>
+                </View>
             );
         }
     }
@@ -235,13 +288,14 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
+        backgroundColor: 'rgba(66, 244, 146, 0.2)',
     },
     banner_image: {
         opacity: 0.2,
     },
     banner_container: {
         width: SCREEN_WIDTH,
-        height: 300,
+        height: IMAGE_HEIGHT,
         backgroundColor: 'rgba(66, 244, 146, 0.2)',
         justifyContent: 'flex-end',
     },

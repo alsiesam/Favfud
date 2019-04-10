@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, ImageBackground, TouchableOpacity, Image} from 'react-native';
+import { Platform, Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, ImageBackground, TouchableOpacity, Image, Animated, } from 'react-native';
 import { Divider, Rating } from "react-native-elements";
 import { Row, Col } from "react-native-easy-grid";
 import * as func from './Recipe_Functions.js';
 import { Title, Text } from '@shoutem/ui';
+import { Constants } from 'expo';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -12,7 +13,26 @@ const API_HOST = 'http://django-fyp.herokuapp.com/';
 const DIARY_CHOICE_URL = `${API_HOST}recsys/recommendation/diary/selections/`;
 const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 
+const IMAGE_HEIGHT = SCREEN_HEIGHT * 0.5;
+const HEADER_HEIGHT = (Platform.OS === 'ios') ? Constants.statusBarHeight : 0;
+const SCROLL_HEIGHT = IMAGE_HEIGHT - HEADER_HEIGHT;
+
 export default class Recipe_Diary_Selections extends Component {
+
+    animatedScroll = new Animated.Value(0);
+    imgScale = this.animatedScroll.interpolate({
+        inputRange: [-25, 0],
+        outputRange: [1.1, 1],
+        extrapolateRight: "clamp"
+    });
+    imgOpacity = this.animatedScroll.interpolate({
+        inputRange: [0, SCROLL_HEIGHT],
+        outputRange: [0.2, 0],
+    });
+    imgTextOpacity = this.animatedScroll.interpolate({
+        inputRange: [0, SCROLL_HEIGHT],
+        outputRange: [1, 0],
+    });
 
     static navigationOptions = {
         title: 'Healthy Choice',
@@ -76,29 +96,23 @@ export default class Recipe_Diary_Selections extends Component {
         for(var i = 0; i < this.state.recommend_recipe.length; i++){
             render.push(
                 <View key={i} style={{marginTop: 5, marginLeft: 5, marginRight: 5, marginBottom: 5,}}>
-                    {this.renderRecipesInList(recipe[i].recommend_recipes, recipe[i].theme, navigate, this.state)}
+                    {this.renderRecipesInList(recipe[i].recommend_recipes, recipe[i].theme, recipe[i].reason, navigate, this.state)}
                 </View>
             );
         }
         return render;
     }
 
-    getDesc(data, theme) {
-        recommend_reason = '';
-        if(data && data.length > 0){
-            recommend_reason = data[0].reason;
-        }
-        if(!theme){
+    getDesc(reason) {
+        if(!reason){
             return '';
         }
-        type = theme.split('_')[0];
-        spec = theme.split('_')[1];
-        desc = `These recipes contain ${recommend_reason}, `;
+        desc = `These recipes contain ${reason}, `;
         desc += `which help you achieve a standard level of nutrient intake.`;
         return desc;
     }
 
-    renderRecipesInList(data, theme, navigate, state) {
+    renderRecipesInList(data, theme, reason, navigate, state) {
         if(!data || Object.keys(data[0]).length == 0){
           return;
         }
@@ -106,7 +120,7 @@ export default class Recipe_Diary_Selections extends Component {
         return(
             <View style={styles.section_container}>
 			    <Title style={styles.subtitle}>Diary Recommendation This Week</Title>
-                <Text style={styles.sub_desc}>{this.getDesc(data, theme)}</Text>
+                <Text style={styles.sub_desc}>{this.getDesc(reason, theme)}</Text>
                 <Divider style={{ marginBottom: 10, }} />
                 {data.map((rowData, index) => {
                     recipe = rowData;
@@ -152,25 +166,57 @@ export default class Recipe_Diary_Selections extends Component {
             )
         } else {
             return(
-                <ScrollView contentContainerStyle={styles.scroll_view}>
-                    <View style={styles.screen_view}>
-                        <View style={styles.banner_view}>
-                            <ImageBackground
-                            source={require('../../assets/images/diary.jpg')}
-                            style={styles.banner_container}
-                            imageStyle={styles.banner_image}
-                            >
-                            <Text style={styles.banner_text}>Diary</Text>
-                            <Text style={{...styles.banner_text, ...{marginBottom: 10}}}>Selections</Text>
-                            </ImageBackground>
+                // <ScrollView contentContainerStyle={styles.scroll_view}>
+                //     <View style={styles.screen_view}>
+                //         <View style={styles.banner_view}>
+                //             <ImageBackground
+                //             source={require('../../assets/images/diary.jpg')}
+                //             style={styles.banner_container}
+                //             imageStyle={styles.banner_image}
+                //             >
+                //             <Text style={styles.banner_text}>Diary</Text>
+                //             <Text style={{...styles.banner_text, ...{marginBottom: 10}}}>Selections</Text>
+                //             </ImageBackground>
+                //         </View>
+                //         <Text style={styles.main_desc}>
+                //             Recommended recipes based on your Diary records to help you maintain a balanced diet.
+                //             Enjoy your meal!
+                //         </Text>
+                //         {this.renderSections()}
+                //     </View>
+                // </ScrollView>
+                <View>
+                    <Animated.ScrollView
+                        scrollEventThrottle={5}
+                        showsVerticalScrollIndicator={false}
+                        onScroll={Animated.event([{nativeEvent: {contentOffset: {y: this.animatedScroll}}}], {useNativeDriver: true})}
+                        contentContainerStyle={styles.scroll_view}
+                        style={{zIndex: 0}}
+                    >
+                        <View style={styles.screen_view}>
+                            <Animated.View style={[{
+                                transform: [{translateY: Animated.multiply(this.animatedScroll, 0.65)}, {scale: this.imgScale}],
+                            },]}>
+                                <Animated.View style={[styles.banner_view, {opacity: this.imgTextOpacity,}]}>
+                                    <Animated.Image
+                                        source={require('../../assets/images/diary.jpg')}
+                                        style={{height: IMAGE_HEIGHT, width: "100%", opacity: this.imgOpacity,}}
+                                    >
+                                    </Animated.Image>
+                                    <Animated.View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'flex-end', opacity: this.imgTextOpacity,}}>
+                                        <Text style={styles.banner_text}>Diary</Text>
+                                        <Text style={{...styles.banner_text, ...{marginBottom: 10}}}>Selections</Text>
+                                    </Animated.View>
+                                </Animated.View>
+                                </Animated.View>
+                                <Text style={styles.main_desc}>
+                                    Weekly recommended recipes for improving your health condition and helping you in nurturing a healthy eating habit.
+                                    Enjoy your meal!
+                                </Text>
+                                {this.renderSections()}
                         </View>
-                        <Text style={styles.main_desc}>
-                            Recommended recipes based on your Diary records to help you maintain a balanced diet.
-                            Enjoy your meal!
-                        </Text>
-                        {this.renderSections()}
-                    </View>
-                </ScrollView>
+                    </Animated.ScrollView>
+                </View>
             );
         }
     }
@@ -191,13 +237,14 @@ export default class Recipe_Diary_Selections extends Component {
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
+        backgroundColor: 'rgba(157, 65, 244, 0.4)',
     },
     banner_image: {
         opacity: 0.2,
     },
     banner_container: {
         width: SCREEN_WIDTH,
-        height: 300,
+        height: IMAGE_HEIGHT,
         backgroundColor: 'rgba(157, 65, 244, 0.4)',
         justifyContent: 'flex-end',
     },
