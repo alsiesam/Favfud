@@ -102,12 +102,18 @@ export async function fetchMealRecipes(mealRecords, date) {
     });
     if (response.ok) {
       let responseJson = await response.json();
-      let idOfRecipe = responseJson[0].id;
-      let mealIdOfRecipe = mealRecords[date][idOfRecipe].meal_id;
-      let consumedServingsOfRecipe = mealRecords[date][idOfRecipe].servings;
-      let meal_id = {meal_id: mealIdOfRecipe, consume_servings: consumedServingsOfRecipe, consume_date: date};
-      let outputObject = Object.assign(responseJson[0], meal_id);
-      return [outputObject];
+      let outputObject = [];
+      for (var i=0; i<responseJson.length; i++) {
+        let idOfRecipe = responseJson[i].id;
+        let mealIdOfRecipe = mealRecords[date][idOfRecipe].meal_id;
+        let consumedServingsOfRecipe = mealRecords[date][idOfRecipe].servings;
+        let meal_id = {meal_id: mealIdOfRecipe, consume_servings: consumedServingsOfRecipe, consume_date: date};
+
+        let new_item = Object.assign(responseJson[i], meal_id);
+        outputObject.push(new_item);
+      }
+
+      return outputObject;
     } else {
       console.log("fetchMealRecipes Not ok");
       //console.log(response);
