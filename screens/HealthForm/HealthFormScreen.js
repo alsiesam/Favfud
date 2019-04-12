@@ -19,6 +19,7 @@ const EMAIL_ADDRESS = 'email_address';
 const API_HOST = 'https://django-fyp.herokuapp.com';
 const HEALTHFORM_POST_URL = `${API_HOST}/healthform/insert`;
 const ILLNESS_GET_URL = `${API_HOST}/healthform/illness/`;
+const REGISTER_REQUEST_URL = 'https://favfud-app.herokuapp.com/api/rest-auth/registration/';
 
 export default class HealthFormScreen extends React.Component {
 
@@ -30,7 +31,9 @@ export default class HealthFormScreen extends React.Component {
       super(props);
       this.state = {
 					register_email: props.navigation.state.params.register_email,
-					register_password: props.navigation.state.params.register_password,
+					//register_password: props.navigation.state.params.register_password,
+					token: '',
+          credentials: props.navigation.state.params.credentials,
 
 					modalVisible: false,
 					loading: true,
@@ -46,7 +49,7 @@ export default class HealthFormScreen extends React.Component {
 
 					taboos: [],
 			};
-			console.log([this.state.register_email, this.state.register_password]);
+			//console.log([this.state.register_email, this.state.token]);
 			this.getIllnessList();
   }
 
@@ -93,6 +96,55 @@ export default class HealthFormScreen extends React.Component {
     }
   }
 
+  async sendRegisterRequest(credentials) {
+    try {
+      console.log(credentials);
+      let response = await fetch(REGISTER_REQUEST_URL, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(credentials)
+      });
+      let responseJson = await response.json();
+      return responseJson;
+    } catch (err) {
+      console.log("sendRegisterRequest error");
+      return false;
+    }
+  }
+
+  showAlert(title, message) {
+    Alert.alert(
+      title,
+      message,
+      [
+        {text: 'OK'},
+      ],
+      {cancelable: false},
+    );
+  }
+
+  showErrorMsg(response) {
+    if (response.non_field_errors) {
+      this.showAlert('Error', response.non_field_errors.toString());
+      this.props.navigation.navigate('Auth');
+    }
+    if (response.password1) {
+      this.showAlert('Error: Password', response.password1.toString());
+      this.props.navigation.navigate('Auth');
+    }
+    if (response.password) {
+      this.showAlert('Error: Password', response.password.toString());
+      this.props.navigation.navigate('Auth');
+    }
+    if (response.email) {
+      this.showAlert('Error: Email', response.email.toString());
+      this.props.navigation.navigate('Auth');
+    }
+  }
+
 	async submit() {
 		this.setState({loading: true});
 		if (this.validate() == false) {
@@ -126,7 +178,7 @@ export default class HealthFormScreen extends React.Component {
 				taboos: taboos_array
 			});
 
-			console.log(form);
+			//console.log(form);
 
 			// fetch(HEALTHFORM_POST_URL, {
       //   method: 'POST',
@@ -154,9 +206,16 @@ export default class HealthFormScreen extends React.Component {
 			//   }
 			// ).done();
 
-			let user_token = 'abc1234';
-			let email = this.state.register_email;
-			this.switchToApp(user_token, email);
+			//let user_token = 'abc1234';
+			//let email = this.state.register_email;
+      let response = await this.sendRegisterRequest(this.state.credentials);
+			if (response.key) {
+        this.setState({token: response.key});
+        this.switchToApp();
+      } else {
+        this.showErrorMsg(response);
+        console.log("Error");
+      }
 		}
 		this.setState({'loading': false});
 	}
@@ -177,7 +236,7 @@ export default class HealthFormScreen extends React.Component {
     }
   }
 
-  async switchToApp(user_token, email) {
+  async switchToApp(user_token=this.state.token, email=this.state.register_email) {
     try {
       await this.storeToken(user_token);
       await this.storeEmail(email);
