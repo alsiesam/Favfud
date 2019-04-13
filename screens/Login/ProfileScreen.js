@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet,AsyncStorage, SectionList, Alert } from 'react-native';
+import { ScrollView, StyleSheet,AsyncStorage, SectionList, Alert, ActivityIndicator,  } from 'react-native';
 import {
   Text,
   Button,
@@ -11,6 +11,7 @@ import { StyleProvider } from '@shoutem/theme';
 
 const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
+const UPDATE_RECOMMENDATION_DEMO_URL = 'http://django-fyp.herokuapp.com/recsys/recommendation/update/recommendation/demo/';
 
 export default class ProfileScreen extends React.Component {
   static navigationOptions = {
@@ -22,11 +23,14 @@ export default class ProfileScreen extends React.Component {
     this.state = {
       email:'',
       token:'',
+      isLoadingScreen: true,
+      isLoadingRecommendation: false,
     };
   }
 
   componentDidMount(){
     this.getTokenAndEmail()
+    this.setState({isLoadingScreen: false})
   }
 
   async getTokenAndEmail() {
@@ -109,7 +113,22 @@ export default class ProfileScreen extends React.Component {
         title: 'Token',
       },
     ];
-
+    if(this.state.isLoading){
+      return(
+        <View style={styles.loading_container}>
+          <Text>Loading...</Text>
+          <ActivityIndicator/>
+        </View>
+      )
+    }
+    if(this.state.isLoadingRecommendation){
+      return(
+        <View style={styles.loading_container}>
+          <Text>Updating Your Recommendation...</Text>
+          <ActivityIndicator/>
+        </View>
+      )
+    }
     return (
       <View style={styles.container}>
         <ScrollView style={styles.scrollContainer}>
@@ -120,7 +139,7 @@ export default class ProfileScreen extends React.Component {
             stickySectionHeadersEnabled={true}
             keyExtractor={(item, index) => index}
             sections={sections}
-          />
+          />          
         </ScrollView>
 
         <View style={styles.refreshContainer}>
@@ -129,7 +148,7 @@ export default class ProfileScreen extends React.Component {
               styleName="secondary full-width"
               onPress={this._handleRefresh}
               style={{marginBottom:10}}>
-                <Text>Refresh</Text>
+                <Text>Update Recommendation</Text>
             </Button>
             <Button
             onPress= {this._handleLogout}
@@ -157,8 +176,22 @@ export default class ProfileScreen extends React.Component {
   };
 
   _handleRefresh = () => {
-    this.getTokenAndEmail();
     console.log(this.state.token);
+    this.setState({isLoadingRecommendation: true})
+    fetch(UPDATE_RECOMMENDATION_DEMO_URL, {
+      method: 'POST',
+      headers: new Headers ({
+        usertoken: this.state.token,
+      }),
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson);
+      this.setState({isLoadingRecommendation: false})
+    })
+    .catch((error) =>{
+      console.error(error);
+    });
   };
 
 }
@@ -183,6 +216,11 @@ const SectionContent = props => {
 
 
 const styles = StyleSheet.create({
+  loading_container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
     paddingTop: 15,
