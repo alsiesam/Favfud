@@ -58,43 +58,58 @@ export default class HomeScreen extends React.Component {
 
   submitCredentialsRegister() {
     if (this.state.email !== undefined && this.state.password !== undefined) {
-      // this.register({
-      //   email: this.state.email,
-      //   password1: this.state.password,
-      //   password2: this.state.password2
-      // }, (response) => {
-      //   console.log("Unsuccesful registration");
-      //   console.log(response);
-      //   this.showErrorMsg(response);
-      // });
+      this.register({
+        email: this.state.email,
+        password1: this.state.password,
+        password2: this.state.password2
+      }, (response) => {
+        console.log("Unsuccesful registration");
+        console.log(response);
+        this.showErrorMsg(response);
+      });
+      /*
       this.props.navigation.navigate(
         {
           routeName: 'HealthForm',
           params: {register_email: this.state.email, register_password: this.state.password},
         }
       );
+      */
     }
   }
 
-  register(credentials, callback) {
-      this.setState({isLoading: true});
-      fetch(REGISTER_REQUEST_URL, {
+  async sendRegisterRequest(credentials) {
+    try {
+      let response = await fetch(REGISTER_REQUEST_URL, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(credentials)
-      }).then((response) => {
-        return response.json();
-      }).then((response) => {
-        //console.log(response);
-        if (response.key) {
-          this.switchToApp(response.key, credentials.email, 'Register');
-        } else {
-          if (callback) { callback(response); }
-        }
-      }).done();
+      });
+      let responseJson = await response.json();
+      return responseJson;
+    } catch (err) {
+      console.log("sendRegisterRequest error");
+      return false;
+    }
+  }
+
+  async register(credentials, callback) {
+      this.setState({isLoading: true});
+      this.props.navigation.navigate('HealthForm', {
+        register_email: credentials.email,
+        credentials: credentials,
+      });
+      /*
+      let response = await this.sendRegisterRequest(credentials);
+      if (response.key) {
+        this.switchToApp(response.key, credentials.email, 'Register');
+      } else {
+        if (callback) { callback(response); }
+      }
+      */
       this.setState({isLoading: false});
     }
 
@@ -191,7 +206,6 @@ export default class HomeScreen extends React.Component {
     try{
       let token = await AsyncStorage.getItem(ACCESS_TOKEN);
       this.setState({token});
-      console.log('[getToken] Token is:' + token);
     } catch (err) {
       console.log('[getToken] Error')
     }
@@ -218,7 +232,6 @@ export default class HomeScreen extends React.Component {
   async getEmail() {
     try{
       let email = await AsyncStorage.getItem(EMAIL_ADDRESS);
-      console.log('[getEmail] Email is:' + email);
       this.setState({stored_email: email});
     } catch (err) {
       console.log('[getEmail] Error')
