@@ -162,7 +162,7 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         }
         type = theme.split('_')[0];
         spec = theme.split('_')[1];
-        desc = `These recipes contains ${recommend_reason}, `;
+        desc = `These recipes contain ${recommend_reason}, `;
         if(theme.match(/illness_.*/g)){
             desc += `which can help control the condition of your ${spec}.`;
         } else if (theme.match(/age_.*/g)){

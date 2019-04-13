@@ -17,7 +17,7 @@ import StatusBarBackground from '../../components/StatusBarBackground';
 const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
 const API_HOST = 'https://django-fyp.herokuapp.com';
-const HEALTHFORM_POST_URL = `${API_HOST}/healthform/insert`;
+const HEALTHFORM_POST_URL = `${API_HOST}/healthform/insert/`;
 const ILLNESS_GET_URL = `${API_HOST}/healthform/illness/`;
 const REGISTER_REQUEST_URL = 'https://favfud-app.herokuapp.com/api/rest-auth/registration/';
 
@@ -98,7 +98,7 @@ export default class HealthFormScreen extends React.Component {
 
   async sendRegisterRequest(credentials) {
     try {
-      console.log(credentials);
+      // console.log(credentials);
       let response = await fetch(REGISTER_REQUEST_URL, {
         method: 'POST',
         headers: {
@@ -166,58 +166,64 @@ export default class HealthFormScreen extends React.Component {
 				taboos_array = taboos_array.splice(taboos_array.lastIndexOf(''), 1);
 			}
 
-			let form = JSON.stringify({
-				sex: this.state.sex,
-				age: this.state.age,
-				weight: this.state.weight,
-				height: this.state.height,
+			let response_token = await this.createAccount(this.state.credentials);
+			if(response_token){
+				let form = JSON.stringify({
+					user_token: response_token,
+					sex: this.state.sex,
+					age: this.state.age,
+					weight: this.state.weight,
+					height: this.state.height,
 
-				consume_level: this.state.consume_level,
-				illness: illness_array,
+					consume_level: this.state.consume_level,
+					illness: illness_array,
 
-				taboos: taboos_array
-			});
+					taboos: taboos_array
+				});
 
-			//console.log(form);
-
-			// fetch(HEALTHFORM_POST_URL, {
-      //   method: 'POST',
-			// 	headers: {
-			// 		"Content-Type" : "text/plain",
-			// 	},
-      //   body: form,
-      // }).then((response) => {
-			// 	console.warn(response);
-			// 	const statusCode = response.status;
-			// 	if (statusCode == 200) {
-			// 		let responsetext = response.text();
-			// 		this.storeToken(responsetext);
-			// 		this.switchToApp();
-			// 	}
-			// 	else if(statusCode == 400) {
-			// 		let responseText = response.text();
-			// 		Alert.alert('An error occured in submitting form data', responseText);
-			// 	}
-			// 	else {
-	    //     Alert.alert('An error occured in the server', 'Please try again or contact us.');
-			// 	}
-      // }).catch((error) => {
-			// 		console.error(error);
-			//   }
-			// ).done();
-
-			//let user_token = 'abc1234';
-			//let email = this.state.register_email;
-      let response = await this.sendRegisterRequest(this.state.credentials);
-			if (response.key) {
-        this.setState({token: response.key});
-        this.switchToApp();
-      } else {
-        this.showErrorMsg(response);
-        console.log("Error");
-      }
+				// console.log(form);
+				await this.insertHealthFormRecord(form);
+			}
 		}
 		this.setState({'loading': false});
+	}
+
+	async createAccount(credentials) {
+		let response = await this.sendRegisterRequest(this.state.credentials);
+		if (response.key) {
+			this.setState({token: response.key});
+			return response.key;
+		} else {
+			this.showErrorMsg(response);
+			console.log("Error");
+		}
+		return null;
+	}
+
+	async insertHealthFormRecord(form) {
+		fetch(HEALTHFORM_POST_URL, {
+			method: 'POST',
+			headers: {
+				"Content-Type" : "text/plain",
+			},
+			body: form,
+		}).then((response) => {
+			// console.warn(response);
+			const statusCode = response.status;
+			if (statusCode == 200) {
+				this.switchToApp();
+			}
+			else if(statusCode == 400) {
+				let responseText = response.text();
+				Alert.alert('An error occured in submitting form data', responseText);
+			}
+			else {
+				Alert.alert('An error occured in the server', 'Please try again or contact us.');
+			}
+		}).catch((error) => {
+				console.error(error);
+			}
+		).done();
 	}
 
 	async storeToken(accessToken) {
