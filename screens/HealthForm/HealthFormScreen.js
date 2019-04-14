@@ -506,8 +506,8 @@ export default class HealthFormScreen extends React.Component {
 											return (
 												<Row key={key}>
 													<Col size={8}>{textInput}</Col>
-													<Col size={1}>{add}</Col>
-													<Col size={1}>{key > 0? remove: empty}</Col>
+													<Col size={1}>{this.state.taboos.length > 1? remove: empty}</Col>
+													<Col size={1}>{key == this.state.taboos.length - 1? add: empty}</Col>
 												</Row>
 											);
 										})
@@ -557,7 +557,7 @@ export default class HealthFormScreen extends React.Component {
 				{
 					this.state.loading
 					? (
-						<Overlay styleName='fill-parent' style={{'backgroundColor': '#cccccc',}}>
+						<Overlay styleName='fill-parent' style={{'backgroundColor': 'rgba(204, 204, 204, 0.8)',}}>
 							<ActivityIndicator size="large" color="#ffffff" />
 						</Overlay>
 					)
