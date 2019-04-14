@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Dimensions, StyleSheet, View, ActivityIndicator, FlatList, AsyncStorage, TouchableOpacity, Image} from 'react-native';
+import { Dimensions, StyleSheet, View, ScrollView, ActivityIndicator, FlatList, AsyncStorage, TouchableOpacity, Image, RefreshControl, } from 'react-native';
 import { Row } from "react-native-easy-grid";
 import * as func from './Recipe_Functions.js';
 import { Text } from '@shoutem/ui';
@@ -105,10 +105,20 @@ export default class Recipe_Rated extends Component {
         data = this.state.dataSource;
         if(data.length == 0){
             return(
-                <View style={styles.center}>
-                    <Text style={styles.remind_text}>There is no rated recipe</Text>
-                    <Text style={styles.remind_text}>at this moment.</Text>
-                </View>
+                <ScrollView
+                    refreshControl={
+                        <RefreshControl
+                        refreshing={this.state.isRefreshing}
+                        onRefresh={this.refresh.bind(this)}
+                        />
+                    }
+                    contentContainerStyle={styles.screen_view}
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
+                >
+                        <Text style={styles.remind_text}>There is no rated recipe</Text>
+                        <Text style={styles.remind_text}>at this moment.</Text>
+                </ScrollView>
             );
         } else {
             return(
@@ -119,6 +129,8 @@ export default class Recipe_Rated extends Component {
                     onScroll={this.handleOnScroll.bind(this)}
                     scrollEventThrottle={500}
                     numColumns={2}
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
                     renderItem={({ item: rowData }) => {
                       return(
                         <View style={styles.recipe_view}>

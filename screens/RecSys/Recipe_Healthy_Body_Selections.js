@@ -100,11 +100,22 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         if(!theme){
             return;
         }
-        theme_prototype = theme.split('_')[0];
-        theme_type = theme.split('_')[1].charAt(0).toUpperCase() + theme.split('_')[1].slice(1);
+        arr = theme.split('_');
+        theme_prototype = arr[0];
+        theme_type = arr[1].charAt(0).toUpperCase() + arr[1].slice(1);
+        if(arr.length == 3){
+            sexuality = arr[2].charAt(0).toUpperCase() + arr[2].slice(1);
+        }
         switch(theme_prototype){
             case 'age':
-                desc = `Recipes for ${theme_type}`;
+                if(theme_type == 'Adults')
+                    desc = `Recipes for ${sexuality} ${theme_type}`;
+                else if(theme_type == 'Teens'){
+                    theme_type = 'Teenagers';
+                    desc = `Recipes for ${sexuality} ${theme_type}`;
+                }
+                else
+                    desc = `Recipes for ${theme_type}`;
                 break;
 
             case 'illness':

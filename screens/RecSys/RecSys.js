@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StatusBar, StyleSheet, ActivityIndicator, ScrollView, AsyncStorage} from 'react-native';
+import { Platform, Dimensions, StatusBar, StyleSheet, ActivityIndicator, ScrollView, AsyncStorage, RefreshControl } from 'react-native';
 import { Avatar } from "react-native-elements";
 import { Container } from "native-base";
 import { Col, Row } from "react-native-easy-grid";
@@ -26,6 +26,7 @@ export default class RecSys extends Component {
       super(props);
       this.state = { 
         isLoading: true,
+        isRefreshing: false,
         isFetching: false,
         dataSource: [],
         favoriteRecipes: [{}],
@@ -106,6 +107,12 @@ export default class RecSys extends Component {
         console.error(error);
       });
     }
+
+    refresh = () => {
+      this.setState({ isRefreshing: true });
+      this.componentWillMount();
+      this.setState({ isRefreshing: false });
+    }
   
     render() {
         const {navigate} = this.props.navigation;
@@ -121,7 +128,14 @@ export default class RecSys extends Component {
           <Container>
             <StatusBarBackground />
             <Container style={styles.screen_container}>
-                <ScrollView>
+                <ScrollView
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={this.state.isRefreshing}
+                      onRefresh={this.refresh.bind(this)}
+                    />
+                  }
+                >
                   <Row style={{marginTop: Platform.OS === 'ios' ? 0: 40}}>
                     <Col style={{width: SCREEN_WIDTH*0.8}}>
                       <Heading style={styles.title}>{this.state.greeting}</Heading>
