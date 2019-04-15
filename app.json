@@ -23,8 +23,9 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.favfud.fyp",
       "supportsTablet": true
     },
-    "description": ""
+    "description": "Dietary-based Recipe Recommendation Mobile App"
   }
 }

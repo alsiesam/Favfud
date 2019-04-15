@@ -40,6 +40,7 @@ const DiaryStack = createStackNavigator({
   DiaryReport: {screen: DiaryReportScreen},
   Diary_Recipe_Information: {screen: Recipe_Information},
   EditMealForm: {screen: EditMealFormScreen},
+  Recipe_Nutrition: {screen: Recipe_Nutrition},
 },{
   initialRouteName: 'Diary',
 });
@@ -92,6 +93,7 @@ RecSysStack.navigationOptions = {
 const RatedStack = createStackNavigator({
   Recipe_Rated: Recipe_Rated,
   Recipe_Information: {screen: Recipe_Information},
+  Recipe_Nutrition: {screen: Recipe_Nutrition},
 });
 
 RatedStack.navigationOptions = {
@@ -107,6 +109,7 @@ RatedStack.navigationOptions = {
 const BookmarkStack = createStackNavigator({
   Recipe_Bookmarked: Recipe_Bookmarked,
   Recipe_Information: {screen: Recipe_Information},
+  Recipe_Nutrition: {screen: Recipe_Nutrition},
 });
 
 BookmarkStack.navigationOptions = {
@@ -122,6 +125,7 @@ BookmarkStack.navigationOptions = {
 const SearchStack = createStackNavigator({
   Recipe_Search: Recipe_Search,
   Recipe_Information: {screen: Recipe_Information},
+  Recipe_Nutrition: {screen: Recipe_Nutrition},
 });
 
 SearchStack.navigationOptions = {
