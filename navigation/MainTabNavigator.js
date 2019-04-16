@@ -2,23 +2,23 @@ import React from 'react';
 import { Platform, Button } from 'react-native';
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
 
-import TabBarIcon from '../../components/TabBarIcon';
-import HomeScreen from '../../screens/Login/HomeScreen';
-import DiaryScreen from '../../screens/Diary/DiaryScreen';
-import EditMealFormScreen from '../../screens/Diary/EditMealFormScreen';
+import TabBarIcon from '../components/TabBarIcon';
+import HomeScreen from '../screens/Login/HomeScreen';
+import DiaryScreen from '../screens/Diary/DiaryScreen';
+import EditMealFormScreen from '../screens/Diary/EditMealFormScreen';
 
-import AddMealFormScreen from '../../screens/Diary/AddMealFormScreen';
-import DiaryReportScreen from '../../screens/Diary/DiaryReportScreen';
-import ProfileScreen from '../../screens/Login/ProfileScreen';
+import AddMealFormScreen from '../screens/Diary/AddMealFormScreen';
+import DiaryReportScreen from '../screens/Diary/DiaryReportScreen';
+import ProfileScreen from '../screens/Login/ProfileScreen';
 
-import RecSys from '../../screens/RecSys/RecSys';
-import Recipe_Information from '../../screens/RecSys/Recipe_Information';
-import Recipe_Nutrition from '../../screens/RecSys/Recipe_Nutrition';
-import Recipe_Rated from '../../screens/RecSys/Recipe_Rated';
-import Recipe_Bookmarked from '../../screens/RecSys/Recipe_Bookmarked';
-import Recipe_Search from '../../screens/RecSys/Recipe_Search';
-import Recipe_Healthy_Body_Selections from '../../screens/RecSys/Recipe_Healthy_Body_Selections';
-import Recipe_Diary_Selections from '../../screens/RecSys/Recipe_Diary_Selections';
+import RecSys from '../screens/RecSys/RecSys';
+import Recipe_Information from '../screens/RecSys/Recipe_Information';
+import Recipe_Nutrition from '../screens/RecSys/Recipe_Nutrition';
+import Recipe_Rated from '../screens/RecSys/Recipe_Rated';
+import Recipe_Bookmarked from '../screens/RecSys/Recipe_Bookmarked';
+import Recipe_Search from '../screens/RecSys/Recipe_Search';
+import Recipe_Healthy_Body_Selections from '../screens/RecSys/Recipe_Healthy_Body_Selections';
+import Recipe_Diary_Selections from '../screens/RecSys/Recipe_Diary_Selections';
 
 const HomeStack = createStackNavigator({
   Home: HomeScreen,

@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { Dimensions, StyleSheet, View, ScrollView, ActivityIndicator, FlatList, AsyncStorage, TouchableOpacity, Image, RefreshControl, } from 'react-native';
-import { Row, } from "react-native-easy-grid";
+import { Row } from "react-native-easy-grid";
 import * as func from './Recipe_Functions.js';
 import { Text } from '@shoutem/ui';
+import { NavigationEvents } from 'react-navigation';
 
 const SCREEN_WIDTH = Dimensions.get('window').width - 40;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -170,6 +171,9 @@ export default class Recipe_Bookmarked extends Component {
         } else {
             return(
                 <View style={styles.screen_view}>
+                    <NavigationEvents
+                        onWillFocus={this.refresh.bind(this)}
+                    />
                     {this.renderBookmarkedRecipes()}
                 </View>
             );

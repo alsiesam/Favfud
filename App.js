@@ -2,7 +2,7 @@ import React from 'react';
 import { Platform, StatusBar, StyleSheet, View, YellowBox } from 'react-native';
 import { AppLoading, Asset, Icon } from 'expo';
 import * as Font from 'expo-font';
-import AppNavigator from './navigation/Login/LoginAppNavigator';
+import AppNavigator from './navigation/LoginAppNavigator';
 
 const ignoredWarnings = [
   'Require cycles are allowed',

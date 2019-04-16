@@ -3,9 +3,9 @@ import { Button, Text } from 'react-native';
 import { createAppContainer, createSwitchNavigator, createStackNavigator} from 'react-navigation';
 
 import MainTabNavigator from './MainTabNavigator';
-import AppLoadingScreen from '../../screens/Login/AppLoadingScreen';
-import LoginScreen from '../../screens/Login/LoginScreen';
-import HealthFormScreen from '../../screens/HealthForm/HealthFormScreen';
+import AppLoadingScreen from '../screens/Login/AppLoadingScreen';
+import LoginScreen from '../screens/Login/LoginScreen';
+import HealthFormScreen from '../screens/HealthForm/HealthFormScreen';
 
 // const MainAppStack = createAppContainer(
 //   createSwitchNavigator({
