@@ -3,6 +3,7 @@ import { Platform, Dimensions, StyleSheet, View, Image, FlatList, ActivityIndica
 import { Rating, Divider } from "react-native-elements";
 import { Container, Button, Icon, } from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
+import RecipeRating from "../../components/RecipeRating";
 import * as func from './Recipe_Functions.js';
 
 import { Heading, Text } from '@shoutem/ui';
@@ -355,13 +356,18 @@ export default class Recipe_Information extends Component {
                 </Row>
                 <Row style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginBottom: 20, }}>
                   {this.renderRatingInfo()}
-                  <Rating
+                  <RecipeRating
+                    onFinishRating={(rating) => this.ratingCompleted(rating)}
+                    imageSize={30}
+                    startingValue={this.getRating()}
+                  />
+                  {/* <Rating
                     showRating
                     onFinishRating={(rating) => this.ratingCompleted(rating)}
                     imageSize={30}
                     startingValue={this.getRating()}
                     showRating={false}
-                  />
+                  /> */}
                 </Row>
                 <Divider style={{ marginBottom: 20, }} />
                 <Row>
