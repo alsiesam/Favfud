@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import { Dimensions, StyleSheet, View, ScrollView, ActivityIndicator, FlatList, AsyncStorage, TouchableOpacity, Image, RefreshControl, } from 'react-native';
 import { Row } from "react-native-easy-grid";
-import * as func from './Recipe_Functions.js';
 import { Text } from '@shoutem/ui';
 import { NavigationEvents } from 'react-navigation';
+import color from '../../constants/Colors';
+import * as func from './Recipe_Functions.js';
+
 
 const SCREEN_WIDTH = Dimensions.get('window').width - 40;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -13,10 +15,17 @@ const API_HOST = 'http://django-fyp.herokuapp.com/';
 const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 const EQUIRE_BOOKMARKED_URL = `${API_HOST}recsys/interaction/enquire/bookmark/`;
 
+const THEME_COLOR = color.bookmarkedThemeColor;
+const TEXT_COLOR = 'rgba(255, 255, 255, 0.8)';
+
 export default class Recipe_Bookmarked extends Component {
 
     static navigationOptions = {
         title: 'Bookmarked Recipes',
+        headerStyle: {
+            backgroundColor: THEME_COLOR,
+        },
+        headerTintColor: TEXT_COLOR,
     };
   
     constructor(props){
@@ -145,8 +154,8 @@ export default class Recipe_Bookmarked extends Component {
                                 source={{uri: rowData.imageurlsbysize_360}}
                             />
                             <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
-                                <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
-                                {rowData.recipe_name}
+                                <Text numberOfLines={2} style={{...{flex: 1, flexWrap: 'wrap'}, ...styles.text}}>
+                                    {rowData.recipe_name}
                                 </Text>
                             </Row>
                             </TouchableOpacity>
@@ -164,8 +173,8 @@ export default class Recipe_Bookmarked extends Component {
         if (this.state.isLoading) {
             return(
                 <View style={styles.screen_view}>
-                    <Text>Loading...</Text>
-                    <ActivityIndicator/>
+                    <Text style={styles.text}>Loading...</Text>
+                    <ActivityIndicator color={styles.text.color}/>
                 </View>
             )
         } else {
@@ -183,10 +192,14 @@ export default class Recipe_Bookmarked extends Component {
   }
   
   const styles = StyleSheet.create({
+    text: {
+        color: TEXT_COLOR,
+    },
     screen_view: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: THEME_COLOR,
     },
     center: {
         justifyContent: 'center',

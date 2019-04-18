@@ -14,7 +14,7 @@ class StatusBarBackground extends Component{
 
   render(){
     return(
-      <View style={[styles.statusBarBackground, this.props.style || {}]}>
+      <View style={[styles.statusBarBackground, this.props.style, {backgroundColor: 'barColor' in this.props ? this.props.barColor : 'white',} || {}]}>
       </View>
     );
   }
@@ -23,7 +23,6 @@ class StatusBarBackground extends Component{
 const styles = StyleSheet.create({
   statusBarBackground: {
     height: (Platform.OS === 'ios') ? Constants.statusBarHeight : 0, 
-    backgroundColor: "white",
   }
 
 })

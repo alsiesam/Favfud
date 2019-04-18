@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import { Platform, Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, ImageBackground, TouchableOpacity, Image, Animated, } from 'react-native';
 import { Divider, Rating } from "react-native-elements";
 import { Row, Col } from "react-native-easy-grid";
-import * as func from './Recipe_Functions.js';
 import { Title, Text, Heading } from '@shoutem/ui';
 import { Constants } from 'expo';
+import color from '../../constants/Colors';
+import * as func from './Recipe_Functions.js';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -16,6 +17,9 @@ const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 const IMAGE_HEIGHT = SCREEN_HEIGHT * 0.5;
 const HEADER_HEIGHT = (Platform.OS === 'ios') ? Constants.statusBarHeight : 0;
 const SCROLL_HEIGHT = IMAGE_HEIGHT - HEADER_HEIGHT;
+
+const THEME_COLOR = color.dsThemeColor;
+const THEME_TEXT_COLOR = color.dsThemeTextColor;
 
 export default class Recipe_Diary_Selections extends Component {
 
@@ -132,7 +136,7 @@ export default class Recipe_Diary_Selections extends Component {
         }
 
         return(
-            <View style={styles.section_container}>
+            <View borderRadius={20} style={styles.section_container}>
 			    <Title style={styles.subtitle}>Diary Recommendation This Week</Title>
                 <Text style={styles.sub_desc}>{this.getDesc(reason, theme)}</Text>
                 <Divider style={{ marginBottom: 10, }} />
@@ -179,25 +183,6 @@ export default class Recipe_Diary_Selections extends Component {
             )
         } else {
             return(
-                // <ScrollView contentContainerStyle={styles.scroll_view}>
-                //     <View style={styles.screen_view}>
-                //         <View style={styles.banner_view}>
-                //             <ImageBackground
-                //             source={require('../../assets/images/diary.jpg')}
-                //             style={styles.banner_container}
-                //             imageStyle={styles.banner_image}
-                //             >
-                //             <Text style={styles.banner_text}>Diary</Text>
-                //             <Text style={{...styles.banner_text, ...{marginBottom: 10}}}>Selections</Text>
-                //             </ImageBackground>
-                //         </View>
-                //         <Text style={styles.main_desc}>
-                //             Recommended recipes based on your Diary records to help you maintain a balanced diet.
-                //             Enjoy your meal!
-                //         </Text>
-                //         {this.renderSections()}
-                //     </View>
-                // </ScrollView>
                 <View style={styles.scroll_view}>
                     <Animated.ScrollView
                         scrollEventThrottle={5}
@@ -253,7 +238,7 @@ export default class Recipe_Diary_Selections extends Component {
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
-        backgroundColor: 'rgba(157, 65, 244, 0.4)',
+        backgroundColor: THEME_COLOR,
     },
     banner_image: {
         opacity: 0.2,
@@ -261,11 +246,11 @@ export default class Recipe_Diary_Selections extends Component {
     banner_container: {
         width: SCREEN_WIDTH,
         height: IMAGE_HEIGHT,
-        backgroundColor: 'rgba(157, 65, 244, 0.4)',
+        backgroundColor: THEME_COLOR,
         justifyContent: 'flex-end',
     },
     banner_text: {
-        color: 'rgba(255, 255, 255, 1)',
+        color: THEME_TEXT_COLOR,
         fontFamily: 'Rubik-Bold',
         fontSize: 32,
         alignSelf: 'flex-start',
@@ -284,10 +269,17 @@ export default class Recipe_Diary_Selections extends Component {
         marginVertical: 20,
     },
     section_container: {
+        width: SCREEN_WIDTH * 0.9,
+        alignSelf: 'center',
         backgroundColor: 'white',
         paddingTop: 20,
         paddingBottom: 20,
         marginBottom: 30,
+        shadowColor: 'black',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 5,
+        elevation:  Platform.OS == 'android' ? 2 : 0,
     },
     subtitle: {
         marginBottom: 20,
@@ -300,28 +292,9 @@ export default class Recipe_Diary_Selections extends Component {
         marginBottom: 20,
         marginRight: 20,
     },
-    recipe_view: {
-        margin: 15,
-        marginTop: 20,
-        width: SCREEN_WIDTH/2-20,
-        borderColor: 'transparent',
-        backgroundColor: 'transparent',
-        justifyContent: 'center',
-    },
-    recipe_image: {
-        marginBottom: 5,
-        width: SCREEN_WIDTH/2-20,
-        height: SCREEN_WIDTH/2-20,
-        backgroundColor: 'transparent',
-        borderRadius: 25,
-    },
-    recipe_text: {
-        marginBottom: 10,
-        textAlignVertical: "center",
-        textAlign: 'center',
-        backgroundColor: 'transparent',
-    },
     list_row: {
+        paddingLeft: 10,
+        paddingRight: 10,
 		marginTop: 10,
 		marginBottom: 10,
 		fontSize: 12,
@@ -330,7 +303,7 @@ export default class Recipe_Diary_Selections extends Component {
         width: (SCREEN_WIDTH-200)/4,
         height: (SCREEN_WIDTH-200)/4,
         backgroundColor: 'transparent',
-        borderRadius: 15,
+        borderRadius: 10,
     },
   });
   

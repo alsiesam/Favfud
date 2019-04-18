@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StatusBar, StyleSheet, ActivityIndicator, ScrollView, AsyncStorage, RefreshControl } from 'react-native';
+import { Platform, Dimensions, StyleSheet, ActivityIndicator, ScrollView, AsyncStorage, RefreshControl } from 'react-native';
 import { Avatar } from "react-native-elements";
 import { Container } from "native-base";
 import { Col, Row } from "react-native-easy-grid";
-import * as func from './Recipe_Functions.js';
+import { NavigationEvents } from 'react-navigation';
 import StatusBarBackground from '../../components/StatusBarBackground';
 import { Heading, Text } from '@shoutem/ui';
+import color from '../../constants/Colors';
+import * as func from './Recipe_Functions.js';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -15,10 +17,11 @@ const YOUR_FAVORITES_URL = `${API_HOST}recsys/recommendation/yrfav/`;
 const POPULAR_RECIPES_URL = `${API_HOST}recsys/recommendation/popular/`;
 const RANDOM_PICKS_URL = `${API_HOST}recsys/recommendation/random/8/`;
 
+const THEME_COLOR = color.recsysThemeColor;
+
 export default class RecSys extends Component {
 
     static navigationOptions = {
-      //title: 'RecSys',
       header: null,
     };
   
@@ -28,6 +31,10 @@ export default class RecSys extends Component {
         isLoading: true,
         isRefreshing: false,
         isFetching: false,
+        activeSlide1: 0,
+        activeSlide2: 0,
+        activeSlide3: 0,
+        activeSlide4: 0,
         dataSource: [],
         favoriteRecipes: [{}],
         popularRecipes: [{}],
@@ -126,7 +133,13 @@ export default class RecSys extends Component {
         }
         return(
           <Container>
-            <StatusBarBackground />
+            <StatusBarBackground
+              barColor={THEME_COLOR}
+            />
+            {/* Release until demo */}
+            {/* <NavigationEvents
+                onWillFocus={this.refresh.bind(this)}
+            /> */}
             <Container style={styles.screen_container}>
                 <ScrollView
                   refreshControl={
@@ -150,10 +163,10 @@ export default class RecSys extends Component {
                       />
                     </Col>
                   </Row>
-                  {func.renderHealthyChoice('Healthy Choice', want_divider=true, navigate, this.state)}
-                  {func.renderMainMenuRecipesInComplexCarousel('Your Favorites', this.state.favoriteRecipes, want_divider=true, navigate, this.state)}
-                  {func.renderMainMenuRecipesInSimpleCarousel('Popular Cuisines', this.state.popularRecipes, want_divider=true, navigate, this.state)}
-                  {func.renderMainMenuRecipesInSimpleCarousel('Random Picks', this.state.randomRecipes, want_divider=false, navigate, this.state)}
+                  {func.renderHealthyChoice('Healthy Choice', want_divider=true, navigate, this)}
+                  {func.renderMainMenuRecipesInComplexCarousel('Your Favorites', this.state.favoriteRecipes, want_divider=true, navigate, this)}
+                  {func.renderMainMenuRecipesInSimpleCarousel('Popular Cuisines', this.state.popularRecipes, want_divider=true, navigate, this, 3)}
+                  {func.renderMainMenuRecipesInSimpleCarousel('Random Picks', this.state.randomRecipes, want_divider=false, navigate, this, 4)}
                 </ScrollView>
               </Container>
             </Container>
@@ -170,6 +183,7 @@ export default class RecSys extends Component {
     },
     screen_container: {
       flex: 1,
+      backgroundColor: THEME_COLOR,
     },
     title: {
       margin: 20,

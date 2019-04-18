@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { Dimensions, StyleSheet, View, ScrollView, ActivityIndicator, FlatList, AsyncStorage, TouchableOpacity, Image, RefreshControl, } from 'react-native';
 import { Row } from "react-native-easy-grid";
-import * as func from './Recipe_Functions.js';
 import { Text } from '@shoutem/ui';
 import { NavigationEvents } from 'react-navigation';
+import color from '../../constants/Colors';
+import * as func from './Recipe_Functions.js';
 
 const SCREEN_WIDTH = Dimensions.get('window').width - 40;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -12,10 +13,15 @@ const ASYNC_STORAGE_KEYS_FOR_RECIPE_RATINGS = 'recipe_ratings';
 const API_HOST = 'http://django-fyp.herokuapp.com/';
 const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 
+const THEME_COLOR = color.ratedThemeColor;
+
 export default class Recipe_Rated extends Component {
 
     static navigationOptions = {
         title: 'Rated Recipes',
+        headerStyle: {
+            backgroundColor: THEME_COLOR,
+        },
     };
     
     constructor(props){
@@ -145,7 +151,7 @@ export default class Recipe_Rated extends Component {
                             />
                             <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
                                 <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
-                                {rowData.recipe_name}
+                                    {rowData.recipe_name}
                                 </Text>
                             </Row>
                           </TouchableOpacity>
@@ -186,6 +192,7 @@ export default class Recipe_Rated extends Component {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: THEME_COLOR,
     },
     center: {
         justifyContent: 'center',

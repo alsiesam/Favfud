@@ -2,8 +2,9 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, AsyncStorage, Dimensions, ImageBackground } from 'react-native';
 import { Divider } from "react-native-elements";
 import { Col, Row, Grid } from "react-native-easy-grid";
-import Carousel from 'react-native-snap-carousel';
+import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { Title, Text } from '@shoutem/ui';
+import color from '../../constants/Colors';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -12,6 +13,11 @@ const ASYNC_STORAGE_KEYS_FOR_RECIPE_RATINGS = 'recipe_ratings';
 const API_HOST = 'http://django-fyp.herokuapp.com/';
 const EQUIRE_BOOKMARKED_URL = `${API_HOST}recsys/interaction/enquire/bookmark/`;
 const EQUIRE_RATED_URL = `${API_HOST}recsys/interaction/enquire/rating/`;
+
+const HBS_THEME_COLOR = color.hbsThemeColor;
+const DS_THEME_COLOR = color.dsThemeColor;
+const HBS_THEME_TEXT_COLOR = color.hbsThemeTextColor;
+const DS_THEME_TEXT_COLOR = color.dsThemeTextColor;
 
 export function secondsToHms(d) {
     d = Number(d);
@@ -81,7 +87,8 @@ export function fetchRatedRecipes(user_token) {
     });
 }
 
-export function renderHealthyChoice(title, want_divider, navigate, state) {
+export function renderHealthyChoice(title, want_divider, navigate, this_obj) {
+  state = this_obj.state;
   divider = null;
   if(want_divider){
     divider = <Divider style={{ marginBottom: 10, }} />
@@ -90,16 +97,16 @@ export function renderHealthyChoice(title, want_divider, navigate, state) {
     {
       navigateScreen: 'Recipe_Healthy_Body_Selections',
       sourceImg: require('../../assets/images/healthy.jpeg'),
-      bgColor: 'rgba(66, 244, 146, 0.2)',
+      bgColor: HBS_THEME_COLOR,
       textContent: ['Healthy Body', 'Selections'],
-      textColor: 'rgba(0, 0, 0, 0.5)',
+      textColor: HBS_THEME_TEXT_COLOR,
     },
     {
       navigateScreen: 'Recipe_Diary_Selections',
       sourceImg: require('../../assets/images/diary.jpg'),
-      bgColor: 'rgba(157, 65, 244, 0.4)',
+      bgColor: DS_THEME_COLOR,
       textContent: ['Diary','Selections'],
-      textColor: 'rgba(255, 255, 255, 1)',
+      textColor: DS_THEME_TEXT_COLOR,
     },
   ];
   return(
@@ -111,7 +118,7 @@ export function renderHealthyChoice(title, want_divider, navigate, state) {
         renderItem={({ item: layoutObj }) => {
           return(
             <View>
-              <View style={[{flex:1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', margin: 20, }]}>
+              <View style={[{flex:1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', margin: 20, marginBottom: 0,}]}>
                 <TouchableOpacity 
                     onPress={() => navigate({routeName: layoutObj.navigateScreen, params: {user_token: state.user_token}})}
                 >
@@ -133,15 +140,20 @@ export function renderHealthyChoice(title, want_divider, navigate, state) {
             </View>
           );
         }}
+        onSnapToItem={(index) => this_obj.setState({ activeSlide1: index })}
         sliderWidth={SCREEN_WIDTH}
         itemWidth={SCREEN_WIDTH}
+      />
+      <Pagination
+          dotsLength={layout.length}
+          activeDotIndex={ this_obj.state.activeSlide1 }
       />
       {divider}
   </View>
   );
 }
 
-export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider, navigate, state){
+export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider, navigate, this_obj){
   if(!data || Object.keys(data[0]).length == 0){
     return;
   }
@@ -151,6 +163,7 @@ export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider
   }
   renderGrid = (rowData, numRow, numCol) => {
     let render = [];
+    let remainRow = numRow;
     for(var i = 0; i < numRow*numCol; i += numCol){
       tmp = []
       for(var j = i; j < i+numCol; j += 1){
@@ -159,7 +172,7 @@ export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider
       render.push(<Row key={i}>{
         tmp.map((index) => {
           return(
-            <View key={index} style={{marginTop: 5, marginLeft: 5, marginRight: 5, marginBottom: 5,}}>
+            <View key={index} style={{margin: styles.small_recipe_image.width*0.05, marginBottom: remainRow == 1 ? 0 : styles.small_recipe_image.width*0.05,}}>
               <TouchableOpacity
               key={rowData['recommend_recipes'][index].id}
               onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData['recommend_recipes'][index], user_token: state.user_token}, key: 'Info'+rowData['recommend_recipes'][index].id})}
@@ -173,6 +186,7 @@ export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider
           );
         })
       }</Row>);
+      remainRow -= 1;
     }
     return render;
   }
@@ -185,7 +199,7 @@ export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider
           renderItem={({ item: rowData }) => {
             return(
               <View style={styles.carouselView}>
-                <View style={{flexDirection:'row'}}>
+                <View style={{flexDirection:'row', height: 50, alignItems: 'center'}}>
                   <Text numberOfLines={2} style={{ flex: 1, flexWrap: 'wrap', textAlign: 'center', marginBottom: 10, }}>Since you like {rowData.reason_recipe_name}</Text>
                 </View>
                 <Grid>
@@ -194,15 +208,20 @@ export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider
               </View>
             );
           }}
+          onSnapToItem={(index) => this_obj.setState({ activeSlide2: index })}
           sliderWidth={SCREEN_WIDTH}
           itemWidth={SCREEN_WIDTH}
+        />
+        <Pagination
+          dotsLength={data.length}
+          activeDotIndex={ this_obj.state.activeSlide2 }
         />
         {divider}
     </View>
   );
 }
 
-export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider, navigate, state) {
+export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider, navigate, this_obj, num) {
   if(!data || Object.keys(data[0]).length == 0){
     return;
   }
@@ -218,13 +237,13 @@ export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider,
           data={data}
           renderItem={({ item: rowData }) => {
             return(
-              <View style={{marginTop: 20, marginLeft: 20, marginRight: 20, marginBottom: 20,}}>
+              <View style={{margin: 40, marginLeft: 10, marginBottom: 0,}}>
                 <TouchableOpacity key={rowData.id} onPress={() => navigate({routeName: 'Recipe_Information', params: {recipe: rowData, user_token: state.user_token}, key: 'Info'+rowData.id})}>
                 <Image
                   style={styles.big_recipe_image}
                   source={{uri: rowData.imageurlsbysize_360}}
                 />
-                <Row style={{height: 50, width: styles.big_recipe_image.width, flexDirection:'row'}}>
+                <Row style={{height: 30, width: styles.big_recipe_image.width, flexDirection:'row', alignItems: 'center',}}>
                   <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
                     {rowData.recipe_name}
                   </Text>
@@ -233,8 +252,13 @@ export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider,
             </View>
             );
           }}
+          onSnapToItem={(index) => this_obj.setState({ [`activeSlide${num}`]: index })}
           sliderWidth={SCREEN_WIDTH}
-          itemWidth={styles.big_recipe_image.width + 40}
+          itemWidth={SCREEN_WIDTH*0.7 + 20} // adjust marginLeft in the View
+        />
+        <Pagination
+          dotsLength={data.length}
+          activeDotIndex={ this_obj.state[`activeSlide${num}`] }
         />
         {divider}
       </View>
@@ -291,23 +315,17 @@ export function renderSearchResultsList(title, data, want_divider, navigate, sta
 
 const styles = StyleSheet.create({
   small_recipe_image: {
-    width: (SCREEN_WIDTH-40)/2-10,
-    height: (SCREEN_WIDTH-40)/2-10,
+    width: SCREEN_WIDTH*0.42,
+    height: SCREEN_WIDTH*0.42,
     backgroundColor: 'transparent',
     borderRadius: 25,
   },
   big_recipe_image: {
     marginBottom: 5,
-    width: SCREEN_WIDTH-100,
-    height: SCREEN_WIDTH-100,
+    width: SCREEN_WIDTH*0.7,
+    height: SCREEN_WIDTH*0.7,
     backgroundColor: 'transparent',
     borderRadius: 25,
-  },
-  recipe_text: {
-    marginBottom: 10,
-    textAlignVertical: "center",
-    textAlign: 'center',
-    backgroundColor: 'transparent',
   },
   content: {
     paddingTop: 0,
