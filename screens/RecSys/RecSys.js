@@ -13,11 +13,14 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const ASYNC_STORAGE_KEYS = ['user_token', 'email_address'];
 const API_HOST = 'http://django-fyp.herokuapp.com/';
+const SELECTIONS_EXIST_URL = `${API_HOST}recsys/recommendation/selections/exist/`;
 const YOUR_FAVORITES_URL = `${API_HOST}recsys/recommendation/yrfav/`;
 const POPULAR_RECIPES_URL = `${API_HOST}recsys/recommendation/popular/`;
 const RANDOM_PICKS_URL = `${API_HOST}recsys/recommendation/random/8/`;
 
-const THEME_COLOR = color.recsysThemeColor;
+let time = func.getTime();
+const THEME_COLOR = color.themeColor.recsys.theme[time];
+const TEXT_COLOR = color.themeColor.recsys.text[time];
 
 export default class RecSys extends Component {
 
@@ -35,6 +38,8 @@ export default class RecSys extends Component {
         activeSlide2: 0,
         activeSlide3: 0,
         activeSlide4: 0,
+        hbsExist: 0,
+        dsExist: 0,
         dataSource: [],
         favoriteRecipes: [{}],
         popularRecipes: [{}],
@@ -51,6 +56,7 @@ export default class RecSys extends Component {
         var user_name = response[1][1];
         if(user_token){
           this.setState({user_token: user_token});
+          this.fetchSelectionsExist(user_token);
           recipe_categories = ['favoriteRecipes', 'popularRecipes', 'randomRecipes'];
           recipe_categories.forEach(function(cat){
             this.fetchRecipes(cat, this.state.user_token);
@@ -60,12 +66,9 @@ export default class RecSys extends Component {
         }
         if(user_name){
           this.setState({user_name: user_name});
-          var d = new Date();
-          var n = d.getHours();
-          var greet = 'Hi';
-          if(n >= 6 && n < 12) {
+          if(time == 'morning') {
             greet = 'Good morning';
-          } else if(n >= 12 && n < 18) {
+          } else if(time == 'afternoon') {
             greet = 'Good Afternoon';
           } else {
             greet = 'Good night';
@@ -73,6 +76,25 @@ export default class RecSys extends Component {
           this.setState({greeting: `${greet}, ${this.state.user_name}.`})
         }
         this.setState({isLoading: false,})
+      });
+    }
+
+    fetchSelectionsExist(user_token) {
+      let header = {
+        headers: new Headers ({
+          usertoken: user_token,
+        }),
+      };
+      return fetch(SELECTIONS_EXIST_URL, header)
+      .then((response) => response.json())
+      .then((responseJson) => {
+        this.setState({
+          hbsExist: responseJson['healthy_body_selections'],
+          dsExist: responseJson['diary_selections'],
+        });
+      })
+      .catch((error) =>{
+        console.error(error);
       });
     }
 
@@ -126,8 +148,8 @@ export default class RecSys extends Component {
         if(this.state.isLoading){
             return(
               <Container style={styles.loading_container}>
-                <Text>Loading...</Text>
-                <ActivityIndicator/>
+                <Text style={styles.text}>Loading...</Text>
+                <ActivityIndicator color={styles.text.color}/>
               </Container>
             )
         }
@@ -146,12 +168,13 @@ export default class RecSys extends Component {
                     <RefreshControl
                       refreshing={this.state.isRefreshing}
                       onRefresh={this.refresh.bind(this)}
+                      tintColor={TEXT_COLOR}
                     />
                   }
                 >
-                  <Row style={{marginTop: Platform.OS === 'ios' ? 0: 40}}>
+                  <Row style={{marginTop: Platform.OS === 'ios' ? 0: 40,}}>
                     <Col style={{width: SCREEN_WIDTH*0.8}}>
-                      <Heading style={styles.title}>{this.state.greeting}</Heading>
+                      <Heading style={{...styles.title, ...styles.text}}>{this.state.greeting}</Heading>
                     </Col>
                     <Col style={{width: SCREEN_WIDTH*0.2, flex:1, flexDirection: 'row', justifyContent: 'flex-end'}}>
                       <Avatar
@@ -176,10 +199,14 @@ export default class RecSys extends Component {
   }
   
   const styles = StyleSheet.create({
+    text: {
+      color: TEXT_COLOR,
+    },
     loading_container: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
+      backgroundColor: THEME_COLOR,
     },
     screen_container: {
       flex: 1,

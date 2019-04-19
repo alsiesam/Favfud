@@ -18,8 +18,8 @@ const IMAGE_HEIGHT = SCREEN_HEIGHT * 0.5;
 const HEADER_HEIGHT = (Platform.OS === 'ios') ? Constants.statusBarHeight : 0;
 const SCROLL_HEIGHT = IMAGE_HEIGHT - HEADER_HEIGHT;
 
-const THEME_COLOR = color.dsThemeColor;
-const THEME_TEXT_COLOR = color.dsThemeTextColor;
+const THEME_COLOR = color.themeColor.ds.theme;
+const TEXT_COLOR = color.themeColor.ds.text;
 
 export default class Recipe_Diary_Selections extends Component {
 
@@ -250,7 +250,7 @@ export default class Recipe_Diary_Selections extends Component {
         justifyContent: 'flex-end',
     },
     banner_text: {
-        color: THEME_TEXT_COLOR,
+        color: TEXT_COLOR,
         fontFamily: 'Rubik-Bold',
         fontSize: 32,
         alignSelf: 'flex-start',

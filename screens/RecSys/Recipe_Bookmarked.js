@@ -7,7 +7,7 @@ import color from '../../constants/Colors';
 import * as func from './Recipe_Functions.js';
 
 
-const SCREEN_WIDTH = Dimensions.get('window').width - 40;
+const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const ASYNC_STORAGE_KEYS_FOR_USER_TOKEN = 'user_token';
 const ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE = 'bookmarked_recipe';
@@ -15,8 +15,8 @@ const API_HOST = 'http://django-fyp.herokuapp.com/';
 const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 const EQUIRE_BOOKMARKED_URL = `${API_HOST}recsys/interaction/enquire/bookmark/`;
 
-const THEME_COLOR = color.bookmarkedThemeColor;
-const TEXT_COLOR = 'rgba(255, 255, 255, 0.8)';
+const THEME_COLOR = color.themeColor.bookmarked.theme;
+const TEXT_COLOR = color.themeColor.bookmarked.text;
 
 export default class Recipe_Bookmarked extends Component {
 
@@ -163,7 +163,7 @@ export default class Recipe_Bookmarked extends Component {
                       );
                     }}
                     keyExtractor={(item, index) => index.toString()}
-                    contentContainerStyle={[{width: SCREEN_WIDTH + 40, marginBottom: 30,}, styles.center]}
+                    contentContainerStyle={[{width: SCREEN_WIDTH, marginBottom: 30,}, styles.center]}
                 />
             );
         }
@@ -200,6 +200,7 @@ export default class Recipe_Bookmarked extends Component {
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: THEME_COLOR,
+        width: SCREEN_WIDTH,
     },
     center: {
         justifyContent: 'center',
@@ -207,20 +208,20 @@ export default class Recipe_Bookmarked extends Component {
     },
     remind_text: {
         fontSize: 20,
-        color: 'gray',
+        color: TEXT_COLOR,
     },
     recipe_view: {
         margin: 15,
         marginTop: 20,
-        width: SCREEN_WIDTH/2-20,
+        width: SCREEN_WIDTH * 0.4,
         borderColor: 'transparent',
         backgroundColor: 'transparent',
         justifyContent: 'center',
     },
     recipe_image: {
         marginBottom: 5,
-        width: SCREEN_WIDTH/2-20,
-        height: SCREEN_WIDTH/2-20,
+        width: SCREEN_WIDTH * 0.4,
+        height: SCREEN_WIDTH * 0.4,
         backgroundColor: 'transparent',
         borderRadius: 25,
     },

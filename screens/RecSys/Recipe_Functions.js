@@ -14,10 +14,20 @@ const API_HOST = 'http://django-fyp.herokuapp.com/';
 const EQUIRE_BOOKMARKED_URL = `${API_HOST}recsys/interaction/enquire/bookmark/`;
 const EQUIRE_RATED_URL = `${API_HOST}recsys/interaction/enquire/rating/`;
 
-const HBS_THEME_COLOR = color.hbsThemeColor;
-const DS_THEME_COLOR = color.dsThemeColor;
-const HBS_THEME_TEXT_COLOR = color.hbsThemeTextColor;
-const DS_THEME_TEXT_COLOR = color.dsThemeTextColor;
+export function getTime() {
+  time = '';
+  var d = new Date();
+  var n = d.getHours();
+  var greet = 'Hi';
+  if(n >= 6 && n < 12) {
+    time = 'morning';
+  } else if(n >= 12 && n < 18) {
+    time = 'afternoon';
+  } else {
+    time = 'night';
+  }
+  return time;
+}
 
 export function secondsToHms(d) {
     d = Number(d);
@@ -97,18 +107,27 @@ export function renderHealthyChoice(title, want_divider, navigate, this_obj) {
     {
       navigateScreen: 'Recipe_Healthy_Body_Selections',
       sourceImg: require('../../assets/images/healthy.jpeg'),
-      bgColor: HBS_THEME_COLOR,
+      bgColor: color.themeColor.hbs.theme,
       textContent: ['Healthy Body', 'Selections'],
-      textColor: HBS_THEME_TEXT_COLOR,
+      textColor: color.themeColor.hbs.text,
     },
     {
       navigateScreen: 'Recipe_Diary_Selections',
       sourceImg: require('../../assets/images/diary.jpg'),
-      bgColor: DS_THEME_COLOR,
+      bgColor: color.themeColor.ds.theme,
       textContent: ['Diary','Selections'],
-      textColor: DS_THEME_TEXT_COLOR,
+      textColor: color.themeColor.ds.text,
     },
   ];
+  if(state.hbsExist == 0){
+    layout = layout.filter(l => l.navigateScreen != 'Recipe_Healthy_Body_Selections');
+  }
+  if(state.dsExist == 0){
+    layout = layout.filter(l => l.navigateScreen != 'Recipe_Diary_Selections');
+  }
+  if(layout.length == 0){
+    return;
+  }
   return(
       <View>
       <Title style={styles.subtitle}>{title}</Title>
@@ -118,7 +137,7 @@ export function renderHealthyChoice(title, want_divider, navigate, this_obj) {
         renderItem={({ item: layoutObj }) => {
           return(
             <View>
-              <View style={[{flex:1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', margin: 20, marginBottom: 0,}]}>
+              <View style={[{flex:1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', margin: 20, marginBottom: layout.length > 1 ? 0 : 20,}]}>
                 <TouchableOpacity 
                     onPress={() => navigate({routeName: layoutObj.navigateScreen, params: {user_token: state.user_token}})}
                 >
@@ -146,6 +165,8 @@ export function renderHealthyChoice(title, want_divider, navigate, this_obj) {
       />
       <Pagination
           dotsLength={layout.length}
+          dotColor={color.themeColor.recsys.text[getTime()]}
+          inactiveDotColor={color.themeColor.recsys.text[getTime()]}
           activeDotIndex={ this_obj.state.activeSlide1 }
       />
       {divider}
@@ -200,7 +221,7 @@ export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider
             return(
               <View style={styles.carouselView}>
                 <View style={{flexDirection:'row', height: 50, alignItems: 'center'}}>
-                  <Text numberOfLines={2} style={{ flex: 1, flexWrap: 'wrap', textAlign: 'center', marginBottom: 10, }}>Since you like {rowData.reason_recipe_name}</Text>
+                  <Text numberOfLines={2} style={styles.yrfav_reason}>Since you like {rowData.reason_recipe_name}</Text>
                 </View>
                 <Grid>
                   {renderGrid(rowData,2,2)}
@@ -214,6 +235,8 @@ export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider
         />
         <Pagination
           dotsLength={data.length}
+          dotColor={color.themeColor.recsys.text[getTime()]}
+          inactiveDotColor={color.themeColor.recsys.text[getTime()]}
           activeDotIndex={ this_obj.state.activeSlide2 }
         />
         {divider}
@@ -244,7 +267,7 @@ export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider,
                   source={{uri: rowData.imageurlsbysize_360}}
                 />
                 <Row style={{height: 30, width: styles.big_recipe_image.width, flexDirection:'row', alignItems: 'center',}}>
-                  <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
+                  <Text numberOfLines={2} style={styles.recipe_name}>
                     {rowData.recipe_name}
                   </Text>
                 </Row>
@@ -314,6 +337,9 @@ export function renderSearchResultsList(title, data, want_divider, navigate, sta
 }
 
 const styles = StyleSheet.create({
+  recsys_text: {
+    color: color.themeColor.recsys.text[getTime()],
+  },
   small_recipe_image: {
     width: SCREEN_WIDTH*0.42,
     height: SCREEN_WIDTH*0.42,
@@ -339,6 +365,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     marginRight: 20,
     fontSize: 20,
+    color: color.themeColor.recsys.text[getTime()],
   },
   carouselView: {
     margin: 20,
@@ -351,5 +378,17 @@ const styles = StyleSheet.create({
 		marginTop: 10,
 		marginBottom: 10,
 		fontSize: 12,
-	},
+  },
+  yrfav_reason:{
+    flex: 1,
+    flexWrap: 'wrap',
+    textAlign: 'center',
+    marginBottom: 10,
+    color: color.themeColor.recsys.text[getTime()],
+  },
+  recipe_name: {
+    flex: 1,
+    flexWrap: 'wrap',
+    color: color.themeColor.recsys.text[getTime()],
+  },
 });

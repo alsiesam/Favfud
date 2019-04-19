@@ -19,8 +19,8 @@ const IMAGE_HEIGHT = SCREEN_HEIGHT * 0.5;
 const HEADER_HEIGHT = (Platform.OS === 'ios') ? Constants.statusBarHeight : 0;
 const SCROLL_HEIGHT = IMAGE_HEIGHT - HEADER_HEIGHT;
 
-const THEME_COLOR = color.hbsThemeColor;
-const THEME_TEXT_COLOR = color.hbsThemeTextColor;
+const THEME_COLOR = color.themeColor.hbs.theme;
+const TEXT_COLOR = color.themeColor.hbs.text;
 
 export default class Recipe_Healthy_Body_Selections extends Component {
 
@@ -326,7 +326,7 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         justifyContent: 'flex-end',
     },
     banner_text: {
-        color: THEME_TEXT_COLOR,
+        color: TEXT_COLOR,
         fontFamily: 'Rubik-Bold',
         fontSize: 32,
         alignSelf: 'flex-start',
