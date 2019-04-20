@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StyleSheet, View, Image, FlatList, ActivityIndicator, Alert, TouchableOpacity, Linking, ScrollView, AsyncStorage} from 'react-native';
+import { Platform, Dimensions, StyleSheet, View, Image, FlatList, ActivityIndicator, Alert, TouchableOpacity, Linking, ScrollView, AsyncStorage, StatusBar } from 'react-native';
 import { Rating, Divider } from "react-native-elements";
 import { Container, Button, Icon, } from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
@@ -16,6 +16,8 @@ const ASYNC_STORAGE_KEYS_FOR_RECIPE_RATINGS = 'recipe_ratings';
 const API_HOST = 'http://django-fyp.herokuapp.com/';
 const UPDATE_INTERACTION_URL = `${API_HOST}recsys/interaction/update/`;
 const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
+
+const TEXT_COLOR = 'rgba(0,0,0,1)';
 
 export default class Recipe_Information extends Component {
   
@@ -55,6 +57,21 @@ export default class Recipe_Information extends Component {
         isLoading: false
       });
     });
+  }
+
+  componentDidMount() {
+    this.props.navigation.addListener(
+        'willFocus',
+        () => {
+          {
+            TEXT_COLOR != undefined && TEXT_COLOR.match(/(255\s*,?\s*){2}255/) != null
+            ?
+            StatusBar.setBarStyle("light-content")
+            :
+            StatusBar.setBarStyle("dark-content")
+          }
+        }
+    );
   }
 
   updateInteraction(act, remarks) {
@@ -318,7 +335,7 @@ export default class Recipe_Information extends Component {
         return(
           <Container style={styles.screen_container}>
             <ScrollView>
-            <View>
+            <View> 
               <Grid>
                 <Row style={{
                   flex:2, justifyContent:'space-between', alignSelf:'center',

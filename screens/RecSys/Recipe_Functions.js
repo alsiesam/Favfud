@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Image, AsyncStorage, Dimensions, Im
 import { Divider } from "react-native-elements";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import Carousel, { Pagination } from 'react-native-snap-carousel';
+import Placeholder from 'rn-placeholder';
 import { Title, Text } from '@shoutem/ui';
 import color from '../../constants/Colors';
 
@@ -97,11 +98,51 @@ export function fetchRatedRecipes(user_token) {
     });
 }
 
+function renderPlaceholder(divider, num_placeholder, view_height = SCREEN_HEIGHT * 0.42, placeholder_size = view_height * 0.5) {
+  view_padding = 20;
+  place_margin_bottom = 20;
+  if(!num_placeholder || num_placeholder == undefined){
+    num_placeholder = Math.floor(view_height / placeholder_size);
+    view_height = view_height + view_padding * 2 + place_margin_bottom * (num_placeholder-1);
+  } else {
+    view_height = placeholder_size * num_placeholder + view_padding * 2 + place_margin_bottom * (num_placeholder-1);
+  }
+  return(
+    <View>
+      <View style={{flex: num_placeholder, 
+        padding: view_padding, width: SCREEN_WIDTH,
+        height: view_height, }}>
+        {
+          [...Array(num_placeholder).keys()].map(index => {
+            return(
+              <View key={'placeholder'+index} style={{marginBottom: index == num_placeholder-1 ? 0 : place_margin_bottom}}>
+                <Placeholder.ImageContent
+                    size={placeholder_size}
+                    animate="fade"
+                    lineNumber={4}
+                    lineSpacing={5}
+                    lastLineWidth="30%"
+                    color="gray"
+                >
+                </Placeholder.ImageContent>
+              </View>
+            );
+          })
+        }
+      </View>
+      { divider }
+    </View>
+  );
+}
+
 export function renderHealthyChoice(title, want_divider, navigate, this_obj) {
-  state = this_obj.state;
   divider = null;
   if(want_divider){
     divider = <Divider style={{ marginBottom: 10, }} />
+  }
+  state = this_obj.state;
+  if(state.hbsExist == undefined || state.dsExist == undefined) {
+    return renderPlaceholder(divider, 1);
   }
   let layout = [
     {
@@ -130,57 +171,60 @@ export function renderHealthyChoice(title, want_divider, navigate, this_obj) {
   }
   return(
       <View>
-      <Title style={styles.subtitle}>{title}</Title>
-      <Carousel
-        ref={(c) => { this._carousel = c; }}
-        data={layout}
-        renderItem={({ item: layoutObj }) => {
-          return(
-            <View>
-              <View style={[{flex:1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', margin: 20, marginBottom: layout.length > 1 ? 0 : 20,}]}>
-                <TouchableOpacity 
-                    onPress={() => navigate({routeName: layoutObj.navigateScreen, params: {user_token: state.user_token}})}
-                >
-                  <ImageBackground
-                  source={layoutObj.sourceImg}
-                  style={[{width: SCREEN_WIDTH * 0.8, height: 200, marginBottom: 10, backgroundColor: layoutObj.bgColor, borderRadius: 15,}, styles.center]}
-                  imageStyle={[{opacity: 0.2, borderRadius: 15,}]}
+        <Title style={styles.subtitle}>{title}</Title>
+        <Carousel
+          ref={(c) => { this._carousel = c; }}
+          data={layout}
+          renderItem={({ item: layoutObj }) => {
+            return(
+              <View>
+                <View style={[{flex:1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', margin: 20, marginBottom: layout.length > 1 ? 0 : 20,}]}>
+                  <TouchableOpacity 
+                      onPress={() => navigate({routeName: layoutObj.navigateScreen, params: {user_token: state.user_token}})}
                   >
-                  { 
-                    layoutObj.textContent.map((text, index) => {
-                      return(
-                        <Title key={'bannerText'+index} style={{color: layoutObj.textColor, }}>{text}</Title>
-                      );
-                    })
-                  }
-                  </ImageBackground>
-                </TouchableOpacity>
+                    <ImageBackground
+                    source={layoutObj.sourceImg}
+                    style={[{width: SCREEN_WIDTH * 0.8, height: 200, marginBottom: 10, backgroundColor: layoutObj.bgColor, borderRadius: 15,}, styles.center]}
+                    imageStyle={[{opacity: 0.2, borderRadius: 15,}]}
+                    >
+                    { 
+                      layoutObj.textContent.map((text, index) => {
+                        return(
+                          <Title key={'bannerText'+index} style={{color: layoutObj.textColor, }}>{text}</Title>
+                        );
+                      })
+                    }
+                    </ImageBackground>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          );
-        }}
-        onSnapToItem={(index) => this_obj.setState({ activeSlide1: index })}
-        sliderWidth={SCREEN_WIDTH}
-        itemWidth={SCREEN_WIDTH}
-      />
-      <Pagination
-          dotsLength={layout.length}
-          dotColor={color.themeColor.recsys.text[getTime()]}
-          inactiveDotColor={color.themeColor.recsys.text[getTime()]}
-          activeDotIndex={ this_obj.state.activeSlide1 }
-      />
-      {divider}
-  </View>
+            );
+          }}
+          onSnapToItem={(index) => this_obj.setState({ activeSlide1: index })}
+          sliderWidth={SCREEN_WIDTH}
+          itemWidth={SCREEN_WIDTH}
+        />
+        <Pagination
+            dotsLength={layout.length}
+            dotColor={color.themeColor.recsys.text[getTime()]}
+            inactiveDotColor={color.themeColor.recsys.text[getTime()]}
+            activeDotIndex={ this_obj.state.activeSlide1 }
+        />
+        {divider}
+    </View>
   );
 }
 
 export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider, navigate, this_obj){
-  if(!data || Object.keys(data[0]).length == 0){
-    return;
-  }
   divider = null;
   if(want_divider){
     divider = <Divider style={{ marginBottom: 10, }} />
+  }
+  if(!data){
+    return renderPlaceholder(divider);
+  } 
+  else if(Object.keys(data[0]).length == 0){
+    return;
   }
   renderGrid = (rowData, numRow, numCol) => {
     let render = [];
@@ -245,12 +289,15 @@ export function renderMainMenuRecipesInComplexCarousel(title, data, want_divider
 }
 
 export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider, navigate, this_obj, num) {
-  if(!data || Object.keys(data[0]).length == 0){
-    return;
-  }
   divider = null;
   if(want_divider){
     divider = <Divider style={{ marginBottom: 10, }} />
+  }
+  if(!data){
+    return renderPlaceholder(divider);
+  } 
+  else if(Object.keys(data[0]).length == 0){
+    return renderPlaceholder(divider);
   }
   return(
       <View>
@@ -281,6 +328,8 @@ export function renderMainMenuRecipesInSimpleCarousel(title, data, want_divider,
         />
         <Pagination
           dotsLength={data.length}
+          dotColor={color.themeColor.recsys.text[getTime()]}
+          inactiveDotColor={color.themeColor.recsys.text[getTime()]}
           activeDotIndex={ this_obj.state[`activeSlide${num}`] }
         />
         {divider}

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Dimensions, StyleSheet, View, ScrollView, ActivityIndicator, FlatList, AsyncStorage, TouchableOpacity, Image, RefreshControl, } from 'react-native';
+import { Dimensions, StyleSheet, View, ScrollView, ActivityIndicator, FlatList, AsyncStorage, TouchableOpacity, Image, RefreshControl, StatusBar, } from 'react-native';
 import { Row } from "react-native-easy-grid";
 import { Text } from '@shoutem/ui';
 import { NavigationEvents } from 'react-navigation';
@@ -57,6 +57,21 @@ export default class Recipe_Rated extends Component {
                 });
             }
         });
+    }
+
+    componentDidMount() {
+        this.props.navigation.addListener(
+            'willFocus',
+            () => {
+                {
+                TEXT_COLOR != undefined && TEXT_COLOR.match(/(255\s*,?\s*){2}255/) != null
+                ?
+                StatusBar.setBarStyle("light-content")
+                :
+                StatusBar.setBarStyle("dark-content")
+                }
+            }
+        );
     }
 
     getRefreshedData() {

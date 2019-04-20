@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StyleSheet, ActivityIndicator, ScrollView, AsyncStorage, RefreshControl } from 'react-native';
+import { Platform, Dimensions, View, StyleSheet, ActivityIndicator, ScrollView, AsyncStorage, RefreshControl, StatusBar } from 'react-native';
 import { Avatar } from "react-native-elements";
-import { Container } from "native-base";
 import { Col, Row } from "react-native-easy-grid";
 import { NavigationEvents } from 'react-navigation';
 import StatusBarBackground from '../../components/StatusBarBackground';
 import { Heading, Text } from '@shoutem/ui';
+import { LinearGradient } from 'expo';
 import color from '../../constants/Colors';
 import * as func from './Recipe_Functions.js';
 
@@ -21,6 +21,7 @@ const RANDOM_PICKS_URL = `${API_HOST}recsys/recommendation/random/8/`;
 let time = func.getTime();
 const THEME_COLOR = color.themeColor.recsys.theme[time];
 const TEXT_COLOR = color.themeColor.recsys.text[time];
+const GRADIENT_COLOR = color.themeColor.recsys.gradient[time];
 
 export default class RecSys extends Component {
 
@@ -38,12 +39,6 @@ export default class RecSys extends Component {
         activeSlide2: 0,
         activeSlide3: 0,
         activeSlide4: 0,
-        hbsExist: 0,
-        dsExist: 0,
-        dataSource: [],
-        favoriteRecipes: [{}],
-        popularRecipes: [{}],
-        randomRecipes: [{}],
         user_token: '',
         user_name: 'Guest',
         greeting: 'Hi, Guest.',
@@ -77,6 +72,21 @@ export default class RecSys extends Component {
         }
         this.setState({isLoading: false,})
       });
+    }
+
+    componentDidMount() {
+      this.props.navigation.addListener(
+          'willFocus',
+          () => {
+            {
+              TEXT_COLOR != undefined && TEXT_COLOR.match(/(255\s*,?\s*){2}255/) != null
+              ?
+              StatusBar.setBarStyle("light-content")
+              :
+              StatusBar.setBarStyle("dark-content")
+            }
+          }
+      );
     }
 
     fetchSelectionsExist(user_token) {
@@ -147,52 +157,51 @@ export default class RecSys extends Component {
         const {navigate} = this.props.navigation;
         if(this.state.isLoading){
             return(
-              <Container style={styles.loading_container}>
+              <View style={styles.loading_container}>
                 <Text style={styles.text}>Loading...</Text>
                 <ActivityIndicator color={styles.text.color}/>
-              </Container>
+              </View>
             )
         }
         return(
-          <Container>
-            <StatusBarBackground
-              barColor={THEME_COLOR}
-            />
+          <View style={styles.screen_container}>
             {/* Release until demo */}
             {/* <NavigationEvents
                 onWillFocus={this.refresh.bind(this)}
             /> */}
-            <Container style={styles.screen_container}>
-                <ScrollView
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={this.state.isRefreshing}
-                      onRefresh={this.refresh.bind(this)}
-                      tintColor={TEXT_COLOR}
-                    />
-                  }
-                >
-                  <Row style={{marginTop: Platform.OS === 'ios' ? 0: 40,}}>
-                    <Col style={{width: SCREEN_WIDTH*0.8}}>
-                      <Heading style={{...styles.title, ...styles.text}}>{this.state.greeting}</Heading>
-                    </Col>
-                    <Col style={{width: SCREEN_WIDTH*0.2, flex:1, flexDirection: 'row', justifyContent: 'flex-end'}}>
-                      <Avatar
-                        medium
-                        rounded
-                        title={this.state.user_name[0].toUpperCase()}
-                        containerStyle={styles.avatar} 
-                        onPress={() => navigate('Profile')}
-                      />
-                    </Col>
-                  </Row>
-                  {func.renderHealthyChoice('Healthy Choice', want_divider=true, navigate, this)}
-                  {func.renderMainMenuRecipesInComplexCarousel('Your Favorites', this.state.favoriteRecipes, want_divider=true, navigate, this)}
-                  {func.renderMainMenuRecipesInSimpleCarousel('Popular Cuisines', this.state.popularRecipes, want_divider=true, navigate, this, 3)}
-                  {func.renderMainMenuRecipesInSimpleCarousel('Random Picks', this.state.randomRecipes, want_divider=false, navigate, this, 4)}
-                </ScrollView>
-              </Container>
-            </Container>
+            <ScrollView
+              refreshControl={
+                <RefreshControl
+                  refreshing={this.state.isRefreshing}
+                  onRefresh={this.refresh.bind(this)}
+                  tintColor={TEXT_COLOR}
+                />
+              }
+              style={{backgroundColor: THEME_COLOR}}
+            >
+              <StatusBarBackground height='autofix' /> 
+              <LinearGradient colors={GRADIENT_COLOR} >
+              <Row style={{marginTop: Platform.OS === 'ios' ? 0: 40,}}>
+                <Col style={{width: SCREEN_WIDTH*0.8}}>
+                  <Heading style={{...styles.title, ...styles.text}}>{this.state.greeting}</Heading>
+                </Col>
+                <Col style={{width: SCREEN_WIDTH*0.2, flex:1, flexDirection: 'row', justifyContent: 'flex-end'}}>
+                  <Avatar
+                    medium
+                    rounded
+                    title={this.state.user_name[0].toUpperCase()}
+                    containerStyle={styles.avatar} 
+                    onPress={() => navigate('Profile')}
+                  />
+                </Col>
+              </Row>
+              {func.renderHealthyChoice('Healthy Choice', want_divider=true, navigate, this)}
+              {func.renderMainMenuRecipesInComplexCarousel('Your Favorites', this.state.favoriteRecipes, want_divider=true, navigate, this)}
+              {func.renderMainMenuRecipesInSimpleCarousel('Popular Cuisines', this.state.popularRecipes, want_divider=true, navigate, this, 3)}
+              {func.renderMainMenuRecipesInSimpleCarousel('Random Picks', this.state.randomRecipes, want_divider=false, navigate, this, 4)}
+              </LinearGradient>                
+            </ScrollView>
+          </View>
         );
     }
   

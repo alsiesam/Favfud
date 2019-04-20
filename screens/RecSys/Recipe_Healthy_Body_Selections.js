@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, ImageBackground, TouchableOpacity, Image, Animated, } from 'react-native';
+import { Platform, Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, ImageBackground, TouchableOpacity, Image, Animated, StatusBar, } from 'react-native';
 import { Divider, Rating } from "react-native-elements";
 import { Row, Col } from "react-native-easy-grid";
 import Carousel, { Pagination } from 'react-native-snap-carousel';
@@ -21,6 +21,7 @@ const SCROLL_HEIGHT = IMAGE_HEIGHT - HEADER_HEIGHT;
 
 const THEME_COLOR = color.themeColor.hbs.theme;
 const TEXT_COLOR = color.themeColor.hbs.text;
+const INTEXT_COLOR = 'rgba(0,0,0,1)';
 
 export default class Recipe_Healthy_Body_Selections extends Component {
 
@@ -62,6 +63,21 @@ export default class Recipe_Healthy_Body_Selections extends Component {
     componentWillMount(){
         this.fetchRecipes(this.state.user_token);
         this.setState({isLoading: false});
+    }
+
+    componentDidMount() {
+        this.props.navigation.addListener(
+            'willFocus',
+            () => {
+                {
+                    INTEXT_COLOR != undefined && INTEXT_COLOR.match(/(255\s*,?\s*){2}255/) != null
+                    ?
+                    StatusBar.setBarStyle("light-content")
+                    :
+                    StatusBar.setBarStyle("dark-content")
+                }
+            }
+        );
     }
 
     fetchRecipes(user_token) {

@@ -8,6 +8,8 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const ASYNC_STORAGE_KEYS_FOR_USER_TOKEN = 'user_token';
 
+const TEXT_COLOR = 'rgba(0,0,0,1)';
+
 export default class Recipe_Search extends Component {
 
     static navigationOptions = {
@@ -31,6 +33,21 @@ export default class Recipe_Search extends Component {
               this.setState({user_token: ut});
           }
       });
+    }
+
+    componentDidMount() {
+      this.props.navigation.addListener(
+          'willFocus',
+          () => {
+              {
+              TEXT_COLOR != undefined && TEXT_COLOR.match(/(255\s*,?\s*){2}255/) != null
+              ?
+              StatusBar.setBarStyle("light-content")
+              :
+              StatusBar.setBarStyle("dark-content")
+              }
+          }
+      );
     }
 
     fetchData(keyword) {

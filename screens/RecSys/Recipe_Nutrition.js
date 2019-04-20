@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, View, ScrollView, StyleSheet } from 'react-native';
+import { Platform, Dimensions, View, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import { Icon, } from "native-base";
 import { Avatar } from "react-native-elements";
 import { Col, Row, Grid } from "react-native-easy-grid";
@@ -11,6 +11,8 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 var NUTRIENTS = ['Energy', 'Carbohydrate', 'Fiber', 'Protein', 'Starch', 'Cholesterol', 'Sugar', 'Fat', 'Trans Fatty acids', 'Saturated Fatty Acids', 'Vitamin A', 'Vitamin C', 'Sodium', 'Calcium', 'Iron', 'Potassium'];
 var NUTRIENTS_ABBR = ['enerc_kcal', 'chocdf', 'fibtg', 'procnt', 'starch', 'chole', 'sugar', 'fat', 'fatrn', 'fasat', 'vita_iu', 'vitc', 'na', 'ca', 'fe', 'k'];
 
+const TEXT_COLOR = 'rgba(0,0,0,1)';
+
 export default class Recipe_Nutrition extends Component {
 
     constructor(props){
@@ -18,6 +20,21 @@ export default class Recipe_Nutrition extends Component {
         this.state = { 
           recipe: props.navigation.state.params.recipe
         }
+    }
+
+    componentDidMount() {
+        this.props.navigation.addListener(
+            'willFocus',
+            () => {
+              {
+                TEXT_COLOR != undefined && TEXT_COLOR.match(/(255\s*,?\s*){2}255/) != null
+                ?
+                StatusBar.setBarStyle("light-content")
+                :
+                StatusBar.setBarStyle("dark-content")
+              }
+            }
+        );
     }
 
     getNutrients(recipe) {

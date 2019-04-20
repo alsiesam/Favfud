@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet,AsyncStorage, SectionList, Alert, ActivityIndicator,  } from 'react-native';
+import { ScrollView, StyleSheet,AsyncStorage, SectionList, Alert, ActivityIndicator, StatusBar  } from 'react-native';
 import {
   Text,
   Button,
@@ -12,6 +12,8 @@ import { StyleProvider } from '@shoutem/theme';
 const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
 const UPDATE_RECOMMENDATION_DEMO_URL = 'http://django-fyp.herokuapp.com/recsys/recommendation/update/recommendation/demo/';
+
+const TEXT_COLOR = 'rgba(0,0,0,1)';
 
 export default class ProfileScreen extends React.Component {
   static navigationOptions = {
@@ -28,10 +30,25 @@ export default class ProfileScreen extends React.Component {
     };
   }
 
-  componentDidMount(){
+  componentWillMount(){
     this.getTokenAndEmail()
     this.setState({isLoadingScreen: false})
   }
+
+  componentDidMount() {
+    this.props.navigation.addListener(
+        'willFocus',
+        () => {
+            {
+                TEXT_COLOR != undefined && TEXT_COLOR.match(/(255\s*,?\s*){2}255/) != null
+                ?
+                StatusBar.setBarStyle("light-content")
+                :
+                StatusBar.setBarStyle("dark-content")
+            }
+        }
+    );
+}
 
   async getTokenAndEmail() {
     try{

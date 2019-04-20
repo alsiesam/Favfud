@@ -8,15 +8,20 @@ const themeColor = {
       night: 'rgba(19,23,75,0.8)',
     },
     text: {
-      morning: 'rgba(0, 0, 0, 1)',
+      morning: 'rgba(255, 255, 255, 0.8)',
       afternoon: 'rgba(0, 0, 0, 1)',
       night: 'rgba(255, 255, 255, 0.8)',
+    },
+    gradient: {
+      morning: 'rgba(0, 0, 0, 1)',
+      afternoon: ['rgba(252,162,57,0.8)','rgba(246,92,64,0.8)','rgba(255,119,87,0.8)',],
+      night: ['rgba(19,23,75,0.8)', 'rgba(19,100,200,0.8)', 'rgba(19,150,250,0.8)'],
     },
   },
 
   hbs: {
     theme: 'rgba(66, 244, 146, 0.4)',
-    text: 'rgba(0, 0, 0, 0.5)',
+    text: 'rgba(255, 255, 255, 1)',
   },
   
   ds: {
