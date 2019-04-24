@@ -13,6 +13,7 @@ import {
   Icon,
   Caption,
 } from '@shoutem/ui';
+import { LinearGradient } from 'expo';
 import { Col, Row, Grid } from "react-native-easy-grid";
 import AnimatedBar from "react-native-animated-bar";
 import moment from "moment";
@@ -89,7 +90,7 @@ export default class DiaryReportScreen extends React.Component {
   renderRecommendations() {
     return(
       <View>
-        <Divider styleName="section-header" style={{justifyContent:"center", paddingTop:15, paddingBottom:5}}>
+        <Divider styleName="section-header" style={{justifyContent:"center", paddingTop:15, paddingBottom:5, backgroundColor:'rgba(255,255,255,0.4)'}}>
           <Subtitle style={{fontSize: 20}}>Recommendations:</Subtitle>
         </Divider>
         <Text style={{fontSize: 14, marginTop:5, marginBottom:0}}>{this.state.summary.text}</Text>
@@ -142,29 +143,33 @@ export default class DiaryReportScreen extends React.Component {
   render() {
     let haveRecommendations = Object.keys(this.state.recommendations).length>0
     return(
-      <ScrollView style={styles.container}>
-        <View style={{alignItems: 'center', marginTop: 10}}>
-          <Divider styleName="section-header" style={{justifyContent:"center", paddingTop:15, paddingBottom:5}}>
-            <Title style={{fontSize: 20}}>Summary</Title>
-          </Divider>
-          <Text style={{fontSize: 14, marginTop:5, marginBottom:15}}>{this.state.summary.text}</Text>
-          <Divider styleName="section-header" style={{justifyContent:"center", paddingTop:15, paddingBottom:5}}>
-            <Subtitle style={{fontSize: 20}}>Nutrition Consumption:</Subtitle>
-          </Divider>
-        </View>
-        <Grid style={styles.grid}>
-          {this.renderNutritionRow("energy")}
-          <Divider styleName="line"/>
-          {this.renderNutritionRow("carb")}
-          <Divider styleName="line"/>
-          {this.renderNutritionRow("fat")}
-          <Divider styleName="line"/>
-          {this.renderNutritionRow("protein")}
-        </Grid>
-        {/*this.renderReminderText()*/}
-        {haveRecommendations?
-          this.renderRecommendations(): <View />}
-      </ScrollView>
+      <LinearGradient
+        colors={['#AAFF7F', '#E2F7D4', '#C9F7FF']}
+        style={{flex:1}}>
+        <ScrollView style={styles.container}>
+          <View style={{alignItems: 'center', marginTop: 10}}>
+            <Divider styleName="section-header" style={{justifyContent:"center", paddingTop:15, paddingBottom:5, backgroundColor:'rgba(255,255,255,0.4)'}}>
+              <Title style={{fontSize: 20}}>Summary</Title>
+            </Divider>
+            <Text style={{fontSize: 14, marginTop:5, marginBottom:15}}>{this.state.summary.text}</Text>
+            <Divider styleName="section-header" style={{justifyContent:"center", paddingTop:15, paddingBottom:5, backgroundColor:'rgba(255,255,255,0.4)'}}>
+              <Subtitle style={{fontSize: 20}}>Nutrition Consumption:</Subtitle>
+            </Divider>
+          </View>
+          <Grid style={styles.grid}>
+            {this.renderNutritionRow("energy")}
+            <Divider styleName="line"/>
+            {this.renderNutritionRow("carb")}
+            <Divider styleName="line"/>
+            {this.renderNutritionRow("fat")}
+            <Divider styleName="line"/>
+            {this.renderNutritionRow("protein")}
+          </Grid>
+          {/*this.renderReminderText()*/}
+          {haveRecommendations?
+            this.renderRecommendations(): <View />}
+        </ScrollView>
+      </LinearGradient>
     );
   }
 }
