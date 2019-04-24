@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, ActivityIndicator, RefreshControl} from 'react-native';
+import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, ActivityIndicator, RefreshControl, Dimensions} from 'react-native';
 import {
   Text,
   Button,
@@ -11,6 +11,7 @@ import {
   Subtitle,
   Icon,
 } from '@shoutem/ui';
+import { LinearGradient } from 'expo';
 import { StyleProvider } from '@shoutem/theme';
 import moment from "moment";
 import Calendar from '../../library/react-native-calendar-select';
@@ -32,6 +33,9 @@ const GET_MEAL_URL = 'https://favfud-app.herokuapp.com/api/diary/meal?user=';
 export default class DiaryScreen extends React.Component {
   static navigationOptions = {
     title: 'Diary',
+    headerStyle: {
+        backgroundColor: '#AAFF7F',
+    },
   };
 
   constructor(props) {
@@ -60,6 +64,7 @@ export default class DiaryScreen extends React.Component {
     this.setState({
       isLoading: false,
       isReportLoading: false,
+      haveMeal:false,
       mealRecords: {},
       mealRecipes: {},
       reccomendations: {},
@@ -256,7 +261,7 @@ export default class DiaryScreen extends React.Component {
     const {navigate} = this.props.navigation;
     return(
       <Grid style={styles.mealGrid}>
-          <Row style={{height: 'auto', backgroundColor: '#e6e6e6',}}>
+          <Row style={{height: 'auto', backgroundColor: 'rgba(230,230,230,0.6)',}}>
               <Text>
                   {moment(date).format("D MMM YYYY")}
               </Text>
@@ -360,6 +365,7 @@ export default class DiaryScreen extends React.Component {
     return(
       <Button
         onPress={this._handleReport}
+        style={{backgroundColor:'#7FAAFF', borderRadius: 5, borderWidth: 1, borderColor: '#eee'}}
         styleName="secondary full-width">
           <Text>View Full Report</Text>
       </Button>
@@ -368,53 +374,17 @@ export default class DiaryScreen extends React.Component {
 
   renderNavigationBar() {
     return(
-      <NavigationBar
-        styleName="inline"
-        style={{
-          container: {
-            height: 40,
-            paddingVertical: 0,
-          },
-          componentsContainer:{
-            //backgroundColor: 'grey',
-            paddingHorizontal: 5,
-            paddingVertical: 0,
-            flex: 1,
-          },
-          leftComponent:{
-            //backgroundColor: 'grey',
-            flex: 2,
-          },
-          centerComponent:{
-            width: 'auto',
-            paddingHorizontal: 0,
-            paddingVertical: 0,
-            //backgroundColor: 'grey',
-            flex: 5,
-          },
-          rightComponent:{
-            flex: 2,
-            //width: 'auto',
-            //paddingHorizontal: 0,
-            //backgroundColor: 'grey',
-          }
-        }}
-        leftComponent={
-          <Button onPress={this.state.isEditMode?this._handleCancelEdit:this._handleEdit}>
-            <Subtitle>{this.state.isEditMode?"Cancel":"Edit Meal"}</Subtitle>
-          </Button>
-        }
-        centerComponent={
-          <Button onPress={this.openCalendar}>
-            <Subtitle>{moment(this.state.startDate).format("D MMM")} to {moment(this.state.endDate).format("D MMM")}</Subtitle>
-          </Button>
-          }
-        rightComponent={this.state.isEditMode?<View />:(
-          <Button onPress={this._handleAdd}>
-            <Subtitle>Add Meal</Subtitle>
-          </Button>
-        )}>
-      </NavigationBar>
+      <View style={styles.navBarArea}>
+        <TouchableOpacity onPress={this.state.isEditMode?this._handleCancelEdit:this._handleEdit}>
+          <Subtitle>{this.state.isEditMode?"Cancel":"Edit Meal"}</Subtitle>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={this.openCalendar}>
+          <Subtitle>{moment(this.state.startDate).format("D MMM")} to {moment(this.state.endDate).format("D MMM")}</Subtitle>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={this._handleAdd}>
+          <Subtitle>Add Meal</Subtitle>
+        </TouchableOpacity>
+      </View>
     );
   }
 
@@ -449,10 +419,23 @@ export default class DiaryScreen extends React.Component {
   }
 
   render() {
+    /*
+    #aaff7f
+    #d47fff
+    #ffd47f
+    #7faaff
+    #ff7faa
+    #7fffd4
+    */
     return (
       <View style={styles.container}>
-        {this.renderNavigationBar()}
-        {this.renderCalendar()}
+        <LinearGradient
+          colors={['#AAFF7F', '#E2F7D4', '#C9F7FF']}
+          style={{flex:1}}>
+
+          {this.renderNavigationBar()}
+
+          {this.renderCalendar()}
           <ScrollView style={styles.scrollContainer}
           refreshControl={<RefreshControl
             refreshing={this.state.refreshing}
@@ -462,6 +445,7 @@ export default class DiaryScreen extends React.Component {
             {this.state.isEditMode?<View />:<Divider styleName="line" />}
             {this.renderMealListContainer()}
           </ScrollView>
+        </LinearGradient>
       </View>
     );
   }
@@ -493,7 +477,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   navBarArea: {
-      height: 50,
+    height: 'auto',
+    backgroundColor:'rgba(238, 238, 238, 0.9)',
+    flexDirection: 'row',
+    justifyContent : 'space-around',
+  },
+  navLeftComponent:{
+    flex: 3,
+    backgroundColor:'#7FAAFF',
+    paddingHorizontal: 0,
+    margin: 0,
+  },
+  navCenterComponent:{
+    width: 'auto',
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    flex: 5,
+    backgroundColor:'#7FAAFF',
+    margin: 0,
+  },
+  navRightComponent:{
+    flex: 3,
+    margin: 0,
+    backgroundColor:'#7FAAFF',
+    //width: 'auto',
+    //paddingHorizontal: 0,
   },
   scrollContainer:{
     flex: 1,
