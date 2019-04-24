@@ -21,6 +21,9 @@ import moment from "moment";
 export default class DiaryReportScreen extends React.Component {
   static navigationOptions = {
     title: 'Diary - Report',
+    headerStyle: {
+        backgroundColor: '#AAFF7F',
+    },
   };
 
   constructor(props) {

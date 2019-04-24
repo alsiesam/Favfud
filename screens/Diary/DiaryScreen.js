@@ -33,6 +33,9 @@ const GET_MEAL_URL = 'https://favfud-app.herokuapp.com/api/diary/meal?user=';
 export default class DiaryScreen extends React.Component {
   static navigationOptions = {
     title: 'Diary',
+    headerStyle: {
+        backgroundColor: '#AAFF7F',
+    },
   };
 
   constructor(props) {
@@ -475,7 +478,7 @@ const styles = StyleSheet.create({
   },
   navBarArea: {
     height: 'auto',
-    backgroundColor:'rgba(238, 238, 238, 0.7)',
+    backgroundColor:'rgba(238, 238, 238, 0.9)',
     flexDirection: 'row',
     justifyContent : 'space-around',
   },

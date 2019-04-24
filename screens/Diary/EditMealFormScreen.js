@@ -11,6 +11,7 @@ import {
   Subtitle,
   Icon,
 } from '@shoutem/ui';
+import { LinearGradient } from 'expo';
 import moment from "moment";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import Calendar from '../../library/react-native-calendar-select';
@@ -36,6 +37,9 @@ const DismissKeyboard = ({ children }) => (
 export default class AddMealFormScreen extends React.Component {
   static navigationOptions = {
     title: 'Diary - Edit Meal',
+    headerStyle: {
+        backgroundColor: '#AAFF7F',
+    },
   };
 
   constructor(props) {
@@ -73,7 +77,7 @@ export default class AddMealFormScreen extends React.Component {
   renderDatepicker() {
     return(
     <DatePicker
-        style={{width: 300, marginHorizontal:10, borderColor: 'gray', borderWidth: 1,}}
+        style={{width: 300, marginHorizontal:10, borderColor: 'gray', borderWidth: 1, backgroundColor:'#ffffff'}}
         date={this.state.date}
         mode="date"
         placeholder="select date"
@@ -365,69 +369,79 @@ export default class AddMealFormScreen extends React.Component {
   render() {
     if(this.state.isLoading) {
       return(
-        <View>
+        <LinearGradient
+          colors={['#AAFF7F', '#E2F7D4', '#C9F7FF']}
+          style={{flex:1}}>
           {this.renderLoading(50)}
-        </View>
+        </LinearGradient>
       );
     } else if(this.state.isSearchMode){
       return(
-        <Container style={styles.screen_container}>
-          {this.renderSearchEngine()}
-          {this.renderSearchEngineButtons()}
-        </Container>
+        <LinearGradient
+          colors={['#AAFF7F', '#E2F7D4', '#C9F7FF']}
+          style={{flex:1}}>
+          <Container style={styles.screen_container}>
+            {this.renderSearchEngine()}
+            {this.renderSearchEngineButtons()}
+          </Container>
+        </LinearGradient>
       );
     } else {
       return(
-        <DismissKeyboard>
-          <View style={styles.container}>
-            <Grid style={styles.grid}>
-              <Row style={styles.rowInput}>
-                <Subtitle>Date: </Subtitle>
-                {this.renderDatepicker()}
-              </Row>
+        <LinearGradient
+          colors={['#AAFF7F', '#E2F7D4', '#C9F7FF']}
+          style={{flex:1}}>
+          <DismissKeyboard>
+            <View style={styles.container}>
+              <Grid style={styles.grid}>
+                <Row style={styles.rowInput}>
+                  <Subtitle>Date: </Subtitle>
+                  {this.renderDatepicker()}
+                </Row>
 
-              <Row style={styles.rowInput}>
-                <Subtitle>No. of Servings: </Subtitle>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder={''}
-                    keyboardType = {'numeric'}
-                    onChangeText={(servings) => this.setState({servings})}
-                    value={this.state.servings}
-                  />
-              </Row>
+                <Row style={styles.rowInput}>
+                  <Subtitle>No. of Servings: </Subtitle>
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder={''}
+                      keyboardType = {'numeric'}
+                      onChangeText={(servings) => this.setState({servings})}
+                      value={this.state.servings}
+                    />
+                </Row>
 
-              <Row style={styles.rowInput}>
-                <Subtitle>Dish: </Subtitle>
-                  {/*
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder={''}
-                    keyboardType = {'numeric'}
-                    onChangeText={(dishId) => this.setState({dishId})}
-                    value={this.state.dishId}
-                  />
-                  */}
-              </Row>
-              <Row>
-                {this.state.dishId != ''?this.renderSelectedDish():<View />}
-              </Row>
-            </Grid>
-            {
-              this.renderSearchButton()
-            }
-            <View style={styles.buttonContainer}>
-              <Button styleName="secondary full-width" onPress={this._handleDelete}>
-                <Text>Delete Meal</Text>
-              </Button>
+                <Row style={styles.rowInput}>
+                  <Subtitle>Dish: </Subtitle>
+                    {/*
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder={''}
+                      keyboardType = {'numeric'}
+                      onChangeText={(dishId) => this.setState({dishId})}
+                      value={this.state.dishId}
+                    />
+                    */}
+                </Row>
+                <Row>
+                  {this.state.dishId != ''?this.renderSelectedDish():<View />}
+                </Row>
+              </Grid>
+              {
+                this.renderSearchButton()
+              }
+              <View style={styles.buttonContainer}>
+                <Button styleName="secondary full-width" onPress={this._handleDelete}>
+                  <Text>Delete Meal</Text>
+                </Button>
+              </View>
+              <View style={styles.buttonContainer}>
+                <Button styleName="secondary full-width" onPress={this._handleChange}>
+                  <Text>Change Meal</Text>
+                </Button>
+              </View>
             </View>
-            <View style={styles.buttonContainer}>
-              <Button styleName="secondary full-width" onPress={this._handleChange}>
-                <Text>Change Meal</Text>
-              </Button>
-            </View>
-          </View>
-        </DismissKeyboard>
+          </DismissKeyboard>
+        </LinearGradient>
       );
     }
   }
@@ -528,6 +542,7 @@ const styles = StyleSheet.create({
   screen_container: {
       flex: 1,
       marginHorizontal: 25,
+      backgroundColor: 'transparent',
     },
   small_recipe_image: {
     width: (SCREEN_WIDTH-50)/3-20,
