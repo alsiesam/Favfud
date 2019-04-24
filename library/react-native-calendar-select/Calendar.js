@@ -17,6 +17,7 @@ import {
   Dimensions,
   TouchableHighlight
 } from 'react-native';
+import { LinearGradient } from 'expo';
 import Moment from 'moment';
 import styles from './CalendarStyle';
 import MonthList from './MonthList';
@@ -240,84 +241,88 @@ export default class Calendar extends Component {
         visible={this.state.isModalVisible}
         onRequestClose={this.close}>
         <View style={[styles.container, mainBack]}>
-          <View style={styles.ctrl}>
-            <TouchableHighlight
-              underlayColor="transparent"
-              onPress={this.cancel}
-              >
-              <Icon.Ionicons
-                size={22}
-                name={Platform.OS === 'ios' ? 'ios-close' : 'md-close'}
-              />
-            </TouchableHighlight>
-            {isClearVisible && <TouchableHighlight
-              underlayColor="transparent"
-              activeOpacity={0.8}
-              onPress={this.clear}>
-              <Text style={[styles.clearText, subFontColor]}>{this._i18n('clear', 'text')}</Text>
-            </TouchableHighlight>}
-          </View>
-          <View style={styles.result}>
-            <View style={styles.resultPart}>
-              <Text style={[styles.resultText, styles.startText, subFontColor]}>
-                {startDateText || this._i18n('start', 'text')}
-              </Text>
-              <Text style={[styles.resultText, styles.startText, subFontColor]}>
-                {startWeekdayText || this._i18n('date', 'text')}
-              </Text>
-            </View>
-            <View style={[styles.resultSlash, subBack]}/>
-            <View style={styles.resultPart}>
-              <Text style={[styles.resultText, styles.endText, subFontColor]}>
-                {endDateText || this._i18n('end', 'text')}
-              </Text>
-              <Text style={[styles.resultText, styles.endText, subFontColor]}>
-                {endWeekdayText || this._i18n('date', 'text')}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.week}>
-            {[7, 1, 2, 3, 4, 5, 6].map(item =>
-              <Text style={[styles.weekText, subFontColor]}　key={item}>{this._i18n(item, 'w')}</Text>
-            )}
-          </View>
-          <View style={[styles.scroll, {borderColor}]}>
-            <MonthList
-              today={this._today}
-              minDate={this._minDate}
-              maxDate={this._maxDate}
-              startDate={this.state.startDate}
-              endDate={this.state.endDate}
-              onChoose={this._onChoose}
-              i18n={this.props.i18n}
-              color={color}
-            />
-          </View>
-          <View style={styles.btn}>
-            {isValid ?
+          <LinearGradient
+            colors={['#E2F7D4', '#C9F7FF', '#88DBFD']}
+            style={{flex:1}}>
+            <View style={styles.ctrl}>
               <TouchableHighlight
-                underlayColor="rgba(255, 255, 255, 0.45)"
-                style={styles.confirmContainer}
-                onPress={this.confirm}>
-                <View style={styles.confirmBtn}>
-                  <Text
-                    ellipsisMode="tail" numberOfLines={1}
-                    style={[styles.confirmText, subFontColor]}>
-                    {this._i18n('save', 'text')}
-                  </Text>
-                </View>
-              </TouchableHighlight> :
-              <View style={[styles.confirmContainer, styles.confirmContainerDisabled]}>
-                <View style={styles.confirmBtn}>
-                  <Text
-                    ellipsisMode="tail" numberOfLines={1}
-                    style={[styles.confirmText, styles.confirmTextDisabled]}>
-                    {this._i18n('save', 'text')}
-                  </Text>
-                </View>
+                underlayColor="transparent"
+                onPress={this.cancel}
+                >
+                <Icon.Ionicons
+                  size={22}
+                  name={Platform.OS === 'ios' ? 'ios-close' : 'md-close'}
+                />
+              </TouchableHighlight>
+              {isClearVisible && <TouchableHighlight
+                underlayColor="transparent"
+                activeOpacity={0.8}
+                onPress={this.clear}>
+                <Text style={[styles.clearText, subFontColor]}>{this._i18n('clear', 'text')}</Text>
+              </TouchableHighlight>}
+            </View>
+            <View style={styles.result}>
+              <View style={styles.resultPart}>
+                <Text style={[styles.resultText, styles.startText, subFontColor]}>
+                  {startDateText || this._i18n('start', 'text')}
+                </Text>
+                <Text style={[styles.resultText, styles.startText, subFontColor]}>
+                  {startWeekdayText || this._i18n('date', 'text')}
+                </Text>
               </View>
-            }
-          </View>
+              <View style={[styles.resultSlash, subBack]}/>
+              <View style={styles.resultPart}>
+                <Text style={[styles.resultText, styles.endText, subFontColor]}>
+                  {endDateText || this._i18n('end', 'text')}
+                </Text>
+                <Text style={[styles.resultText, styles.endText, subFontColor]}>
+                  {endWeekdayText || this._i18n('date', 'text')}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.week}>
+              {[7, 1, 2, 3, 4, 5, 6].map(item =>
+                <Text style={[styles.weekText, subFontColor]}　key={item}>{this._i18n(item, 'w')}</Text>
+              )}
+            </View>
+            <View style={[styles.scroll, {borderColor}]}>
+              <MonthList
+                today={this._today}
+                minDate={this._minDate}
+                maxDate={this._maxDate}
+                startDate={this.state.startDate}
+                endDate={this.state.endDate}
+                onChoose={this._onChoose}
+                i18n={this.props.i18n}
+                color={color}
+              />
+            </View>
+            <View style={styles.btn}>
+              {isValid ?
+                <TouchableHighlight
+                  underlayColor="rgba(255, 255, 255, 0.45)"
+                  style={styles.confirmContainer}
+                  onPress={this.confirm}>
+                  <View style={styles.confirmBtn}>
+                    <Text
+                      ellipsisMode="tail" numberOfLines={1}
+                      style={[styles.confirmText, subFontColor]}>
+                      {this._i18n('save', 'text')}
+                    </Text>
+                  </View>
+                </TouchableHighlight> :
+                <View style={[styles.confirmContainer, styles.confirmContainerDisabled]}>
+                  <View style={styles.confirmBtn}>
+                    <Text
+                      ellipsisMode="tail" numberOfLines={1}
+                      style={[styles.confirmText, styles.confirmTextDisabled]}>
+                      {this._i18n('save', 'text')}
+                    </Text>
+                  </View>
+                </View>
+              }
+            </View>
+          </LinearGradient>
         </View>
       </Modal>
     );
