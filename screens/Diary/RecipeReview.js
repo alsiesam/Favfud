@@ -155,7 +155,6 @@ class RecipeReview extends Component {
                                     </Button>
                                     <Button transparent onPress={()=>{
                                         this.setState({modal2Visible: true});
-                                        console.log(this.state.modal2Visible);
                                     }}>
                                     <Icon type='MaterialCommunityIcons' name='nutrition' style={{'color':'green'}}/>
                                     </Button>

@@ -78,8 +78,6 @@ class RecipeNutrition extends Component {
     }
 
     render() {
-        console.log(this.props.modal2Visible);
-
         const recipe = this.props.recipe;
 
         numofservings = '';
