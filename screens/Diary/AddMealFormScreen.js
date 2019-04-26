@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, Alert, Keyboard, TouchableWithoutFeedback, ActivityIndicator, StatusBar, Dimensions, Platform} from 'react-native';
+import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, Alert, Keyboard, TouchableWithoutFeedback, ActivityIndicator, StatusBar, Dimensions, Platform, Modal } from 'react-native';
 import {
   Text,
   Button,
@@ -18,6 +18,8 @@ import Calendar from '../../library/react-native-calendar-select';
 import DatePicker from 'react-native-datepicker';
 import { SearchBar, } from "react-native-elements";
 import { Container, } from "native-base";
+
+import RecipeReview from "./RecipeReview";
 
 const ACCESS_TOKEN = 'user_token'
 const ADD_MEAL_URL  = 'https://favfud-app.herokuapp.com/api/diary/meal/create/';
@@ -52,7 +54,9 @@ export default class AddMealFormScreen extends React.Component {
       dataSource: [],
       searchError: false,
       keyword: '',
-      isSearchMode:false,
+      isSearchMode: false,
+      reviewRecipe: null,
+      modal1Visible: false,
     };
   }
 
@@ -246,6 +250,13 @@ export default class AddMealFormScreen extends React.Component {
     );
   }
 
+
+  /* 
+  
+   Start:  This part of code is changed for adding dish after reviewing the recipe
+
+  */
+
   renderSearchResultsList(title, data, want_divider, navigate, state) {
   	if (!Array.isArray(data)) {
   		console.log('undefined data');
@@ -264,13 +275,7 @@ export default class AddMealFormScreen extends React.Component {
   				// console.warn(recipe);
   				//ingredients = getIngredients(recipe).slice(0, 3);
   				return (
-  					<TouchableOpacity key={recipe.id} onPress={() => {
-              this.setState({
-                dishId:String(recipe.id),
-                isSearchMode:false,
-                selectedRecipe: recipe,
-              });
-          }}>
+          <TouchableOpacity key={recipe.id} onPress={() => this.renderRecipeReview(recipe)}>
   					<Row>
   						<Image
   							style={[styles.small_recipe_image, {marginLeft: 10, marginRight: 10}]}
@@ -296,6 +301,28 @@ export default class AddMealFormScreen extends React.Component {
   		</View>
   	);
   }
+
+  renderRecipeReview(recipe) {
+    this.setState({
+      reviewRecipe: recipe,
+      modal1Visible: true,
+    });
+  }
+
+  addDish(recipe) {
+    this.setState({
+      modal1Visible: false,
+      dishId:String(recipe.id),
+      isSearchMode:false,
+      selectedRecipe: recipe,
+    });
+  }
+
+  /* 
+  
+    End: This part of code is changed for adding dish after reviewing the recipe
+
+  */
 
   renderSelectedDish(recipe=this.state.selectedRecipe){
     return(
@@ -346,6 +373,22 @@ export default class AddMealFormScreen extends React.Component {
           colors={['#AAFF7F', '#E2F7D4', '#C9F7FF']}
           style={{flex:1}}>
           <Container style={styles.screen_container}>
+          {/* 
+  
+            Start: This part of code is changed for adding dish after reviewing the recipe
+
+          */}
+            <RecipeReview
+              recipe={this.state.reviewRecipe}
+              modal1Visible={this.state.modal1Visible}
+              parent={this}
+              navigate={this.props.navigation}
+            />
+          {/* 
+  
+            End: This part of code is changed for adding dish after reviewing the recipe
+
+          */}
             {this.renderSearchEngine()}
             {this.renderSearchEngineButtons()}
           </Container>
