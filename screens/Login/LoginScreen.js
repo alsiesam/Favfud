@@ -24,7 +24,7 @@ import Container from 'native-base';
 const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
 const LOGIN_REQUEST_URL = 'https://favfud-app.herokuapp.com/api/rest-auth/login/';
-const REGISTER_REQUEST_URL = 'https://favfud-app.herokuapp.com/api/rest-auth/registration/';
+const REGISTER_VERIFY_REQUEST_URL = 'https://favfud-app.herokuapp.com/api/rest-auth/registration-verify/';
 
 const DismissKeyboard = ({ children }) => (
   <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -64,7 +64,6 @@ export default class HomeScreen extends React.Component {
         password2: this.state.password2
       }, (response) => {
         console.log("Unsuccesful registration");
-        console.log(response);
         this.showErrorMsg(response);
       });
       /*
@@ -78,9 +77,9 @@ export default class HomeScreen extends React.Component {
     }
   }
 
-  async sendRegisterRequest(credentials) {
+  async sendRegisterVerifyRequest(credentials) {
     try {
-      let response = await fetch(REGISTER_REQUEST_URL, {
+      let response = await fetch(REGISTER_VERIFY_REQUEST_URL, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -88,8 +87,7 @@ export default class HomeScreen extends React.Component {
         },
         body: JSON.stringify(credentials)
       });
-      let responseJson = await response.json();
-      return responseJson;
+      return response;
     } catch (err) {
       console.log("sendRegisterRequest error");
       return false;
@@ -98,18 +96,18 @@ export default class HomeScreen extends React.Component {
 
   async register(credentials, callback) {
       this.setState({isLoading: true});
-      this.props.navigation.navigate('HealthForm', {
-        register_email: credentials.email,
-        credentials: credentials,
-      });
-      /*
-      let response = await this.sendRegisterRequest(credentials);
-      if (response.key) {
-        this.switchToApp(response.key, credentials.email, 'Register');
+
+      let response = await this.sendRegisterVerifyRequest(credentials);
+      if (response.ok) {
+        this.props.navigation.navigate('HealthForm', {
+          register_email: credentials.email,
+          credentials: credentials,
+        });
       } else {
-        if (callback) { callback(response); }
+        let responseJson = await response.json();
+        if (callback) { callback(responseJson); }
       }
-      */
+
       this.setState({isLoading: false});
     }
 
