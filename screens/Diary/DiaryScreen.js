@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet,AsyncStorage, SectionList, FlatList, Image, TouchableOpacity, ActivityIndicator, RefreshControl, Dimensions} from 'react-native';
+import { NavigationEvents } from 'react-navigation';
 import {
   Text,
   Button,
@@ -34,7 +35,7 @@ export default class DiaryScreen extends React.Component {
   static navigationOptions = {
     title: 'Diary',
     headerStyle: {
-        backgroundColor: '#AAFF7F',
+        backgroundColor: '#FFFFFF',
     },
   };
 
@@ -42,8 +43,8 @@ export default class DiaryScreen extends React.Component {
     super(props);
     var refresh = props.navigation.getParam('refresh');
     var today = new Date;
-    var endDate = moment(today).subtract(1, 'days');
-    var startDate = moment(today).subtract(7, 'days');
+    var endDate = moment(today);
+    var startDate = moment(today).subtract(6, 'days');
     this.state = {
       email:'',
       token:'',
@@ -123,14 +124,11 @@ export default class DiaryScreen extends React.Component {
   async setup(token, startDate=this.state.startDate, endDate=this.state.endDate){
     this.setState({isReportLoading: true, isLoading: true});
     try {
-      //let results = await Promise.all([sleep(1), sleep(2)]);
       actions = [];
       actions.push(fetchMealRecordByToken(token, startDate, endDate));
       actions.push(getDiaryReport(token, startDate, endDate));
       let results = await Promise.all(actions);
       if(results[0] && results [1]) {
-        //console.log(results[0]);
-
         let responseJson = results[0];
         let reportData = results[1];
         let mealRecords = updateMealRecords(responseJson, this.state.mealRecords);
@@ -430,8 +428,11 @@ export default class DiaryScreen extends React.Component {
     return (
       <View style={styles.container}>
         <LinearGradient
-          colors={['#AAFF7F', '#E2F7D4', '#C9F7FF']}
+          colors={['#FFFFFF', '#C9F7FF']}
           style={{flex:1}}>
+          <NavigationEvents
+            onWillFocus={this._handleRefresh}
+          />
 
           {this.renderNavigationBar()}
 

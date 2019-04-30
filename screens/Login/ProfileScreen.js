@@ -12,6 +12,7 @@ import { StyleProvider } from '@shoutem/theme';
 const ACCESS_TOKEN = 'user_token';
 const EMAIL_ADDRESS = 'email_address';
 const UPDATE_RECOMMENDATION_DEMO_URL = 'http://django-fyp.herokuapp.com/recsys/recommendation/update/recommendation/demo/';
+const RETRIEVE_HEALTHFORM_URL = 'http://django-fyp.herokuapp.com/healthform/retrieve/';
 
 const TEXT_COLOR = 'rgba(0,0,0,1)';
 
@@ -25,13 +26,23 @@ export default class ProfileScreen extends React.Component {
     this.state = {
       email:'',
       token:'',
+      sex: '',
+      age: '',
+      weight: '',
+      height: '',
+      consume_level: '',
+      illness: [],
+      taboos: [],
       isLoadingScreen: true,
       isLoadingRecommendation: false,
     };
   }
 
-  componentWillMount(){
-    this.getTokenAndEmail()
+  async componentWillMount(){
+    let token = await this.getTokenAndEmail()
+    if (token){
+        this.getHealthform(token)
+    }
     this.setState({isLoadingScreen: false})
   }
 
@@ -56,8 +67,38 @@ export default class ProfileScreen extends React.Component {
       let email = await AsyncStorage.getItem(EMAIL_ADDRESS);
       this.setState({token});
       this.setState({email});
+      return token
     } catch (err) {
       console.log('[getToken] Error')
+    }
+  }
+
+  async getHealthform(token=this.state.token) {
+    try{
+      console.log(token)
+      let response = await fetch(RETRIEVE_HEALTHFORM_URL, {
+        method: 'GET',
+        headers: {
+          'usertoken': token
+        }
+      });
+      let responseJson = await response.json();
+      if (response.ok && Object.keys(responseJson).length>0) {
+        this.setState({
+          sex: responseJson.sex,
+          age: responseJson.age,
+          weight: responseJson.weight+" kg",
+          height: responseJson.height+" cm",
+          consume_level: responseJson.consume_level,
+          illness: responseJson.illness.toString(),
+          taboos: responseJson.taboos.toString()
+        });
+      } else {
+        console.log('[getHealthform] Error')
+        return false;
+      }
+    } catch (err) {
+      console.log('[getHealthform] Error')
     }
   }
 
@@ -126,8 +167,32 @@ export default class ProfileScreen extends React.Component {
         title: 'Email',
       },
       {
-        data: [{value:this.state.token,},],
-        title: 'Token',
+        data: [{value:this.state.sex,},],
+        title: 'Sex',
+      },
+      {
+        data: [{value:this.state.age,},],
+        title: 'Age',
+      },
+      {
+        data: [{value:this.state.height,},],
+        title: 'Height',
+      },
+      {
+        data: [{value:this.state.weight,},],
+        title: 'Weight',
+      },
+      {
+        data: [{value:this.state.consume_level,},],
+        title: 'Energy Consumption',
+      },
+      {
+        data: [{value:this.state.illness,},],
+        title: 'Illness',
+      },
+      {
+        data: [{value:this.state.taboos,},],
+        title: 'Taboos',
       },
     ];
     if(this.state.isLoading){
@@ -156,24 +221,24 @@ export default class ProfileScreen extends React.Component {
             stickySectionHeadersEnabled={true}
             keyExtractor={(item, index) => index}
             sections={sections}
-          />          
-        </ScrollView>
+          />
 
-        <View style={styles.refreshContainer}>
-          <View style={styles.buttonContainer}>
-            <Button
-              styleName="secondary full-width"
-              onPress={this._handleRefresh}
-              style={{marginBottom:10}}>
-                <Text>Update Recommendation</Text>
-            </Button>
-            <Button
-            onPress= {this._handleLogout}
-            styleName="secondary full-width">
-              <Text>Logout</Text>
-            </Button>
+          <View style={styles.refreshContainer}>
+            <View style={styles.buttonContainer}>
+              <Button
+                styleName="secondary full-width"
+                onPress={this._handleRefresh}
+                style={{marginBottom:10}}>
+                  <Text>Update Recommendation</Text>
+              </Button>
+              <Button
+              onPress= {this._handleLogout}
+              styleName="secondary full-width">
+                <Text>Logout</Text>
+              </Button>
+            </View>
           </View>
-        </View>
+        </ScrollView>
       </View>
     );
   }
@@ -253,10 +318,6 @@ const styles = StyleSheet.create({
   },
   refreshContainer: {
     flex: 1,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     alignItems: 'center',
   },
   buttonContainer: {

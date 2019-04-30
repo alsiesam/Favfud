@@ -22,7 +22,7 @@ export default class DiaryReportScreen extends React.Component {
   static navigationOptions = {
     title: 'Diary - Report',
     headerStyle: {
-        backgroundColor: '#AAFF7F',
+        backgroundColor: '#FFFFFF',
     },
   };
 
@@ -40,7 +40,6 @@ export default class DiaryReportScreen extends React.Component {
       nutritionValue: nutritionValue,
       recommendations: recommendations,
     };
-    console.log(recommendations);
   }
 
   renderBarChart(nutrition) {
@@ -147,7 +146,7 @@ export default class DiaryReportScreen extends React.Component {
     let haveRecommendations = Object.keys(this.state.recommendations).length>0
     return(
       <LinearGradient
-        colors={['#AAFF7F', '#E2F7D4', '#C9F7FF']}
+        colors={['#FFFFFF', '#C9F7FF']}
         style={{flex:1}}>
         <ScrollView style={styles.container}>
           <View style={{alignItems: 'center', marginTop: 10}}>

@@ -180,7 +180,7 @@ export async function fetchRecipesWithNutrition(summary) {
   }
 }
 
-export function generateReportInfo(mealRecords, mealRecipes, startDate=moment(today).subtract(7, 'days'), endDate=moment(today).subtract(1, 'days')){
+export function generateReportInfo(mealRecords, mealRecipes, startDate=moment(today).subtract(6, 'days'), endDate=moment(today)){
   let new_reportInfo = {
     numOfDays: 0,
     numOfMeals: 0,
@@ -347,7 +347,7 @@ export async function getDiarySummary(token, startDate=moment(new Date).subtract
   return summary;
 }
 */
-export async function getDiaryReport(token, startDate=moment(new Date).subtract(7, 'days'), endDate=moment(new Date).subtract(1, 'days')) {
+export async function getDiaryReport(token, startDate=moment(new Date).subtract(6, 'days'), endDate=moment(new Date)) {
   let reportData = await fetchReportByToken(token, startDate, endDate);
   if (reportData) {
     reportData.summary["text"] = generateSummaryText(reportData.summary);

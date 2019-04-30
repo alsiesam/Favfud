@@ -38,7 +38,7 @@ export default class HomeScreen extends React.Component {
     };
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this.getToken();
     this.getEmail();
   }
