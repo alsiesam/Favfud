@@ -36,14 +36,14 @@ export default class AddMealFormScreen extends React.Component {
   static navigationOptions = {
     title: 'Diary - Add Meal',
     headerStyle: {
-        backgroundColor: '#AAFF7F',
+        backgroundColor: '#FFFFFF',
     },
   };
 
   constructor(props) {
     super(props);
     this.state = {
-      servings: '',
+      servings: '1',
       dishId: '',
       selectedRecipe:{},
       date: moment(),
@@ -335,7 +335,7 @@ export default class AddMealFormScreen extends React.Component {
     if(this.state.isLoading) {
       return(
         <LinearGradient
-          colors={['#AAFF7F', '#E2F7D4', '#C9F7FF']}
+          colors={['#FFFFFF', '#C9F7FF']}
           style={{flex:1}}>
           {this.renderLoading(50)}
         </LinearGradient>
@@ -343,7 +343,7 @@ export default class AddMealFormScreen extends React.Component {
     } else if(this.state.isSearchMode){
       return(
         <LinearGradient
-          colors={['#AAFF7F', '#E2F7D4', '#C9F7FF']}
+          colors={['#FFFFFF', '#C9F7FF']}
           style={{flex:1}}>
           <Container style={styles.screen_container}>
             {this.renderSearchEngine()}
@@ -354,7 +354,7 @@ export default class AddMealFormScreen extends React.Component {
     } else {
       return(
         <LinearGradient
-          colors={['#AAFF7F', '#E2F7D4', '#C9F7FF']}
+          colors={['#FFFFFF', '#C9F7FF']}
           style={{flex:1}}>
           <DismissKeyboard>
             <View style={styles.container}>
