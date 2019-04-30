@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
-import { Dimensions, StyleSheet, View, ScrollView, ActivityIndicator, FlatList, AsyncStorage, TouchableOpacity, Image, RefreshControl, } from 'react-native';
+import { Dimensions, StyleSheet, View, ScrollView, ActivityIndicator, FlatList, AsyncStorage, TouchableOpacity, Image, RefreshControl, StatusBar } from 'react-native';
 import { Row } from "react-native-easy-grid";
-import * as func from './Recipe_Functions.js';
 import { Text } from '@shoutem/ui';
 import { NavigationEvents } from 'react-navigation';
+import color from '../../constants/Colors';
+import * as func from './Recipe_Functions.js';
 
-const SCREEN_WIDTH = Dimensions.get('window').width - 40;
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const ASYNC_STORAGE_KEYS_FOR_USER_TOKEN = 'user_token';
 const ASYNC_STORAGE_KEYS_FOR_BOOKMARKED_RECIPE = 'bookmarked_recipe';
@@ -13,10 +15,17 @@ const API_HOST = 'http://django-fyp.herokuapp.com/';
 const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 const EQUIRE_BOOKMARKED_URL = `${API_HOST}recsys/interaction/enquire/bookmark/`;
 
+const THEME_COLOR = color.themeColor.bookmarked.theme;
+const TEXT_COLOR = color.themeColor.bookmarked.text;
+
 export default class Recipe_Bookmarked extends Component {
 
     static navigationOptions = {
         title: 'Bookmarked Recipes',
+        headerStyle: {
+            backgroundColor: THEME_COLOR,
+        },
+        headerTintColor: TEXT_COLOR,
     };
   
     constructor(props){
@@ -51,6 +60,21 @@ export default class Recipe_Bookmarked extends Component {
                 });
             }
         });
+    }
+
+    componentDidMount() {
+        this.props.navigation.addListener(
+            'willFocus',
+            () => {
+                {
+                    TEXT_COLOR != undefined && TEXT_COLOR.match(/(255\s*,?\s*){2}255/) != null
+                    ?
+                    StatusBar.setBarStyle("light-content")
+                    :
+                    StatusBar.setBarStyle("dark-content")
+                }
+            }
+        );
     }
 
     getRefreshedData() {
@@ -145,8 +169,8 @@ export default class Recipe_Bookmarked extends Component {
                                 source={{uri: rowData.imageurlsbysize_360}}
                             />
                             <Row style={{height: 50, width: styles.recipe_image.width, flexDirection:'row'}}>
-                                <Text numberOfLines={2} style={{flex: 1, flexWrap: 'wrap'}}>
-                                {rowData.recipe_name}
+                                <Text numberOfLines={2} style={{...{flex: 1, flexWrap: 'wrap'}, ...styles.text}}>
+                                    {rowData.recipe_name}
                                 </Text>
                             </Row>
                             </TouchableOpacity>
@@ -154,7 +178,7 @@ export default class Recipe_Bookmarked extends Component {
                       );
                     }}
                     keyExtractor={(item, index) => index.toString()}
-                    contentContainerStyle={[{width: SCREEN_WIDTH + 40, marginBottom: 30,}, styles.center]}
+                    contentContainerStyle={[{width: SCREEN_WIDTH, marginBottom: 30,}, styles.center]}
                 />
             );
         }
@@ -164,8 +188,8 @@ export default class Recipe_Bookmarked extends Component {
         if (this.state.isLoading) {
             return(
                 <View style={styles.screen_view}>
-                    <Text>Loading...</Text>
-                    <ActivityIndicator/>
+                    <Text style={styles.text}>Loading...</Text>
+                    <ActivityIndicator color={styles.text.color}/>
                 </View>
             )
         } else {
@@ -183,10 +207,15 @@ export default class Recipe_Bookmarked extends Component {
   }
   
   const styles = StyleSheet.create({
+    text: {
+        color: TEXT_COLOR,
+    },
     screen_view: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: THEME_COLOR,
+        width: SCREEN_WIDTH,
     },
     center: {
         justifyContent: 'center',
@@ -194,20 +223,20 @@ export default class Recipe_Bookmarked extends Component {
     },
     remind_text: {
         fontSize: 20,
-        color: 'gray',
+        color: TEXT_COLOR,
     },
     recipe_view: {
         margin: 15,
         marginTop: 20,
-        width: SCREEN_WIDTH/2-20,
+        width: SCREEN_WIDTH * 0.4,
         borderColor: 'transparent',
         backgroundColor: 'transparent',
         justifyContent: 'center',
     },
     recipe_image: {
         marginBottom: 5,
-        width: SCREEN_WIDTH/2-20,
-        height: SCREEN_WIDTH/2-20,
+        width: SCREEN_WIDTH * 0.4,
+        height: SCREEN_WIDTH * 0.4,
         backgroundColor: 'transparent',
         borderRadius: 25,
     },

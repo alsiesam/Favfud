@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, View, ScrollView, StyleSheet } from 'react-native';
+import { Platform, Dimensions, View, ScrollView, StyleSheet, StatusBar } from 'react-native';
+import { Icon, } from "native-base";
 import { Avatar } from "react-native-elements";
 import { Col, Row, Grid } from "react-native-easy-grid";
 
@@ -7,8 +8,10 @@ import { Heading, Text } from '@shoutem/ui';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-var NUTRIENTS = ['Potassium', 'Sodium', 'Cholesterol', 'Trans Fatty acids', 'Saturated Fatty Acids', 'Carbohydrate', 'Fiber', 'Protein', 'Vitamin C', 'Calcium', 'Iron', 'Sugar', 'Energy', 'Fat', 'Vitamin A', 'Starch'];
-var NUTRIENTS_ABBR = ['k', 'na', 'chole', 'fatrn', 'fasat', 'chocdf', 'fibtg', 'procnt', 'vitc', 'ca', 'fe', 'sugar', 'enerc_kcal', 'fat', 'vita_iu', 'starch'];
+var NUTRIENTS = ['Energy', 'Carbohydrate', 'Fiber', 'Protein', 'Starch', 'Cholesterol', 'Sugar', 'Fat', 'Trans Fatty acids', 'Saturated Fatty Acids', 'Vitamin A', 'Vitamin C', 'Sodium', 'Calcium', 'Iron', 'Potassium'];
+var NUTRIENTS_ABBR = ['enerc_kcal', 'chocdf', 'fibtg', 'procnt', 'starch', 'chole', 'sugar', 'fat', 'fatrn', 'fasat', 'vita_iu', 'vitc', 'na', 'ca', 'fe', 'k'];
+
+const TEXT_COLOR = 'rgba(0,0,0,1)';
 
 export default class Recipe_Nutrition extends Component {
 
@@ -19,8 +22,23 @@ export default class Recipe_Nutrition extends Component {
         }
     }
 
+    componentDidMount() {
+        this.props.navigation.addListener(
+            'willFocus',
+            () => {
+              {
+                TEXT_COLOR != undefined && TEXT_COLOR.match(/(255\s*,?\s*){2}255/) != null
+                ?
+                StatusBar.setBarStyle("light-content")
+                :
+                StatusBar.setBarStyle("dark-content")
+              }
+            }
+        );
+    }
+
     getNutrients(recipe) {
-        let subset = ({k, na, chole, fatrn, fasat, chocdf, fibtg, procnt, vitc, ca, fe, sugar, enerc_kcal, fat, vita_iu, starch}) => ({k, na, chole, fatrn, fasat, chocdf, fibtg, procnt, vitc, ca, fe, sugar, enerc_kcal, fat, vita_iu, starch});
+        let subset = ({enerc_kcal, chocdf, fibtg, procnt, starch, chole, sugar, fat, fatrn, fasat, vita_iu, vitc, na, ca, fe, k}) => ({enerc_kcal, chocdf, fibtg, procnt, starch, chole, sugar, fat, fatrn, fasat, vita_iu, vitc, na, ca, fe, k});
         return subset(recipe);
     }
 
@@ -78,6 +96,19 @@ export default class Recipe_Nutrition extends Component {
 
     render() {
         const recipe = this.state.recipe;
+
+        numofservings = '';
+        if('numberofservings' in recipe){
+          numofservings = 
+          <Row style={{height:'auto', marginBottom:10}}>
+            <Icon type='Ionicons' name='md-person' style={{fontSize:14, marginRight:10, marginTop: 2,}}/>
+            <Text style={{fontSize: 14, textAlign: 'center', textAlignVertical: 'center',}}> {
+              recipe.numberofservings
+            } servings
+            </Text>
+          </Row>;
+        }
+
         return(
             <ScrollView>
                 <View style={styles.screen_view}>
@@ -91,6 +122,9 @@ export default class Recipe_Nutrition extends Component {
                     />
                     <View style={{flexDirection:'row', flex: 1, flexWrap: 'wrap'}}> 
                         <Heading style={styles.title}>{recipe.recipe_name}</Heading>
+                    </View>
+                    <View style={{flexDirection:'row', flex: 1, flexWrap: 'wrap'}}> 
+                        {numofservings}
                     </View>
                     {this._renderGrid(this.getNutrients(recipe))} 
                 </View>

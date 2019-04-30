@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, ImageBackground, TouchableOpacity, Image, Animated, } from 'react-native';
+import { Platform, Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, ImageBackground, TouchableOpacity, Image, Animated, StatusBar, } from 'react-native';
 import { Divider, Rating } from "react-native-elements";
 import { Row, Col } from "react-native-easy-grid";
-import * as func from './Recipe_Functions.js';
+import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { Title, Text, Heading } from '@shoutem/ui';
 import { Constants } from 'expo';
+import color from '../../constants/Colors';
+import * as func from './Recipe_Functions.js';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -16,6 +18,10 @@ const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 const IMAGE_HEIGHT = SCREEN_HEIGHT * 0.5;
 const HEADER_HEIGHT = (Platform.OS === 'ios') ? Constants.statusBarHeight : 0;
 const SCROLL_HEIGHT = IMAGE_HEIGHT - HEADER_HEIGHT;
+
+const THEME_COLOR = color.themeColor.hbs.theme;
+const TEXT_COLOR = color.themeColor.hbs.text;
+const INTEXT_COLOR = 'rgba(0,0,0,1)';
 
 export default class Recipe_Healthy_Body_Selections extends Component {
 
@@ -50,12 +56,28 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         rated_recipe_ids: '',
         hasScrolled: false,
         noRecommend: false,
+        activeSlide: 0,
       }
     }
 
     componentWillMount(){
         this.fetchRecipes(this.state.user_token);
         this.setState({isLoading: false});
+    }
+
+    componentDidMount() {
+        this.props.navigation.addListener(
+            'willFocus',
+            () => {
+                {
+                    INTEXT_COLOR != undefined && INTEXT_COLOR.match(/(255\s*,?\s*){2}255/) != null
+                    ?
+                    StatusBar.setBarStyle("light-content")
+                    :
+                    StatusBar.setBarStyle("dark-content")
+                }
+            }
+        );
     }
 
     fetchRecipes(user_token) {
@@ -143,24 +165,35 @@ export default class Recipe_Healthy_Body_Selections extends Component {
 
     renderSections() {
         const {navigate} = this.props.navigation;
-        let render = [];
         let recipe = this.state.recommend_recipe;
-        if(recipe.length > 0 && Object.keys(recipe[0]).length != 0){
-            render.push(
+        return(
+            <View>
                 <Text key={-1} style={styles.main_desc}>
-                    Weekly recommended recipes for improving your health condition and helping you in nurturing a healthy eating habit.
-                    Enjoy your meal!
+                        Weekly recommended recipes for improving your health condition and helping you in nurturing a healthy eating habit.
+                        Enjoy your meal!
                 </Text>
-            );
-        }
-        for(var i = 0; i < this.state.recommend_recipe.length; i++){
-            render.push(
-                <View key={i} style={{marginTop: 5, marginLeft: 5, marginRight: 5, marginBottom: 5,}}>
-                    {this.renderRecipesInList(this.parseSectionDesc(recipe[i].theme), recipe[i].recommend_recipes, recipe[i].theme, navigate, this.state)}
-                </View>
-            );
-        }
-        return render;
+                <Carousel
+                    key={'carousel'}
+                    ref={(c) => { this._carousel = c; }}
+                    data={this.state.recommend_recipe}
+                    renderItem={({ item: item }) => {
+                        return(
+                            <View key={item.theme} style={{margin: 5,}}>
+                                {this.renderRecipesInList(this.parseSectionDesc(item.theme), item.recommend_recipes, item.theme, navigate, this.state)}
+                            </View>
+                        );
+                    }}
+                    onSnapToItem={(index) => this.setState({ activeSlide: index })}
+                    sliderWidth={SCREEN_WIDTH}
+                    itemWidth={SCREEN_WIDTH * 0.84}
+                />
+                <Pagination
+                    key={'pagination'}
+                    dotsLength={recipe.length}
+                    activeDotIndex={ this.state.activeSlide }
+                />
+            </View>
+        );
     }
 
     getDesc(data, theme) {
@@ -194,7 +227,7 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         }
 
         return(
-            <View style={styles.section_container}>
+            <View borderRadius={20} style={styles.section_container}>
 			    <Title style={styles.subtitle}>{title}</Title>
                 <Text style={styles.sub_desc}>{this.getDesc(data, theme)}</Text>
                 <Divider style={{ marginBottom: 10, }} />
@@ -242,25 +275,6 @@ export default class Recipe_Healthy_Body_Selections extends Component {
             )
         } else {
             return(
-                // <ScrollView contentContainerStyle={styles.scroll_view}>
-                //     <View style={styles.screen_view}>
-                //         <View style={styles.banner_view}>
-                //             <ImageBackground
-                //             source={require('../../assets/images/healthy.jpeg')}
-                //             style={styles.banner_container}
-                //             imageStyle={styles.banner_image}
-                //             >
-                //             <Text style={styles.banner_text}>Healthy Body</Text>
-                //             <Text style={{...styles.banner_text, ...{marginBottom: 10}}}>Selections</Text>
-                //             </ImageBackground>
-                //         </View>
-                //         <Text style={styles.main_desc}>
-                //             Weekly recommended recipes for improving your health condition and helping you in nurturing a healthy eating habit.
-                //             Enjoy your meal!
-                //         </Text>
-                //         {this.renderSections()}
-                //     </View>
-                // </ScrollView>
                 <View style={styles.scroll_view}>
                     <Animated.ScrollView
                         scrollEventThrottle={5}
@@ -316,7 +330,7 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
-        backgroundColor: 'rgba(66, 244, 146, 0.2)',
+        backgroundColor: THEME_COLOR,
     },
     banner_image: {
         opacity: 0.2,
@@ -324,11 +338,11 @@ export default class Recipe_Healthy_Body_Selections extends Component {
     banner_container: {
         width: SCREEN_WIDTH,
         height: IMAGE_HEIGHT,
-        backgroundColor: 'rgba(66, 244, 146, 0.2)',
+        backgroundColor: THEME_COLOR,
         justifyContent: 'flex-end',
     },
     banner_text: {
-        color: 'rgba(0, 0, 0, 0.5)',
+        color: TEXT_COLOR,
         fontFamily: 'Rubik-Bold',
         fontSize: 32,
         alignSelf: 'flex-start',
@@ -347,10 +361,16 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         marginVertical: 20,
     },
     section_container: {
+        width: SCREEN_WIDTH * 0.85,
+        alignSelf: 'center',
         backgroundColor: 'white',
         paddingTop: 20,
         paddingBottom: 20,
-        marginBottom: 30,
+        shadowColor: 'black',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 5,
+        elevation:  Platform.OS == 'android' ? 2 : 0,
     },
     subtitle: {
         marginBottom: 20,
@@ -363,28 +383,9 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         marginBottom: 20,
         marginRight: 20,
     },
-    recipe_view: {
-        margin: 15,
-        marginTop: 20,
-        width: SCREEN_WIDTH/2-20,
-        borderColor: 'transparent',
-        backgroundColor: 'transparent',
-        justifyContent: 'center',
-    },
-    recipe_image: {
-        marginBottom: 5,
-        width: SCREEN_WIDTH/2-20,
-        height: SCREEN_WIDTH/2-20,
-        backgroundColor: 'transparent',
-        borderRadius: 25,
-    },
-    recipe_text: {
-        marginBottom: 10,
-        textAlignVertical: "center",
-        textAlign: 'center',
-        backgroundColor: 'transparent',
-    },
     list_row: {
+        paddingLeft: 10,
+        paddingRight: 10,
 		marginTop: 10,
 		marginBottom: 10,
 		fontSize: 12,
@@ -393,7 +394,7 @@ export default class Recipe_Healthy_Body_Selections extends Component {
         width: (SCREEN_WIDTH-200)/4,
         height: (SCREEN_WIDTH-200)/4,
         backgroundColor: 'transparent',
-        borderRadius: 15,
+        borderRadius: 10,
     },
   });
   
