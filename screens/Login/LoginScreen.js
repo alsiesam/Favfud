@@ -51,7 +51,7 @@ export default class HomeScreen extends React.Component {
     };
   }
 
-  componentDidMount(){
+  componentWillMount(){
     this.getToken();
     this.getEmail();
   }
@@ -150,13 +150,14 @@ export default class HomeScreen extends React.Component {
       await this.storeEmail(email);
       if (actionType == "Login") {
         this.showAlert("Successful", "Login is successful.");
+        this.props.navigation.navigate('App')
       } else if (actionType == "Register") {
         this.showAlert("Successful", "Account is registered.");
+        this.props.navigation.navigate('App')
       } else {
         console.log("[switchToApp] Error");
         this.setState({isLoading: false});
       }
-      this.props.navigation.navigate('App')
       this.setState({isLoading: false});
     } catch (err) {
       console.log("[switchToApp] Error");
