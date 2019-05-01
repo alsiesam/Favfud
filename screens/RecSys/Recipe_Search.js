@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, ScrollView, StatusBar, StyleSheet, View, Text, AsyncStorage, } from 'react-native';
+import { Dimensions, ScrollView, StatusBar, StyleSheet, Text, AsyncStorage, } from 'react-native';
 import { SearchBar, } from "react-native-elements";
 import { Container, } from "native-base";
 import * as func from './Recipe_Functions.js';
@@ -23,6 +23,7 @@ export default class Recipe_Search extends Component {
         searchError: false,
         keyword: '',
         user_token: '',
+        isSearched: false,
       }
     }
 
@@ -61,17 +62,10 @@ export default class Recipe_Search extends Component {
       return fetch('https://django-fyp.herokuapp.com/recsys/search_exact/'+keyword)
       .then((response) => response.json())
       .then((responseJson) => {
-				// console.warn(responseJson);
 				this.setState({
-          //isLoading: false,
 					searchError: false,
           dataSource: [...this.state.dataSource, ...responseJson],
-          //displayData: responseJson.slice(0, span),
-          //pageNum: this.state.pageNum + 1
-        }, function(){
-          // console.log(responseJson);
         });
-
       })
       .catch((error) =>{
 				this.setState({
@@ -86,7 +80,8 @@ export default class Recipe_Search extends Component {
 
         this.setState({
             keyword: event.nativeEvent.text,
-	          dataSource: [],
+            dataSource: [],
+            isSearched: true,
         });
 
         this.fetchData(event.nativeEvent.text);

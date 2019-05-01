@@ -149,7 +149,10 @@ export default class RecSys extends Component {
 
     refresh = () => {
       this.setState({ isRefreshing: true });
-      this.componentWillMount();
+      recipe_categories = ['favoriteRecipes'];
+      recipe_categories.forEach(function(cat){
+        this.fetchRecipes(cat, this.state.user_token);
+      }, this);
       this.setState({ isRefreshing: false });
     }
   
@@ -166,17 +169,17 @@ export default class RecSys extends Component {
         return(
           <View style={styles.screen_container}>
             {/* Release until demo */}
-            {/* <NavigationEvents
+            <NavigationEvents
                 onWillFocus={this.refresh.bind(this)}
-            /> */}
+            />
             <ScrollView
-              refreshControl={
-                <RefreshControl
-                  refreshing={this.state.isRefreshing}
-                  onRefresh={this.refresh.bind(this)}
-                  tintColor={TEXT_COLOR}
-                />
-              }
+              // refreshControl={
+              //   <RefreshControl
+              //     refreshing={this.state.isRefreshing}
+              //     onRefresh={this.refresh.bind(this)}
+              //     tintColor={TEXT_COLOR}
+              //   />
+              // }
               style={{backgroundColor: THEME_COLOR}}
             >
               <StatusBarBackground height='autofix' /> 

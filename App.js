@@ -34,7 +34,6 @@ export default class App extends React.Component {
       'Rubik-Regular': require('./node_modules/@shoutem/ui/fonts/Rubik-Regular.ttf'),
       'rubicon-icon-font': require('./node_modules/@shoutem/ui/fonts/rubicon-icon-font.ttf'),
     });
-    console.log("Finish Loading Fonts");
     this.setState({ fontsAreLoaded: true });
   }
 

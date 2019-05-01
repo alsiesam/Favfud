@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, ImageBackground, TouchableOpacity, Image, Animated, StatusBar } from 'react-native';
+import { Platform, Dimensions, StyleSheet, View, ActivityIndicator, TouchableOpacity, Image, Animated, StatusBar } from 'react-native';
 import { Divider, Rating } from "react-native-elements";
 import { Row, Col } from "react-native-easy-grid";
 import { Title, Text, Heading } from '@shoutem/ui';
@@ -9,10 +9,8 @@ import * as func from './Recipe_Functions.js';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-const ASYNC_STORAGE_KEYS = ['user_token', 'recipe_ratings'];
 const API_HOST = 'http://django-fyp.herokuapp.com/';
 const DIARY_CHOICE_URL = `${API_HOST}recsys/recommendation/diary/selections/`;
-const GET_MULTIPLE_RECIPES_URL = `${API_HOST}recsys/recipe/id/ids`;
 
 const IMAGE_HEIGHT = SCREEN_HEIGHT * 0.5;
 const HEADER_HEIGHT = (Platform.OS === 'ios') ? Constants.statusBarHeight : 0;

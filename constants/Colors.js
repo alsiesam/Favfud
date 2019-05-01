@@ -3,7 +3,7 @@ const tintColor = '#2f95dc';
 const themeColor = {
   recsys: {
     theme: {
-      morning: 'rgba(160,232,255,0.6)',
+      morning: 'rgba(65,105,225,0.6)',
       afternoon: 'rgba(252,162,57,0.8)',
       night: 'rgba(19,23,75,0.8)',
     },
@@ -13,7 +13,7 @@ const themeColor = {
       night: 'rgba(255, 255, 255, 0.8)',
     },
     gradient: {
-      morning: 'rgba(0, 0, 0, 1)',
+      morning: ['rgba(65,105,225,0.6)','rgba(86,157,238,0.6)','rgba(177,250,248,0.6)'],
       afternoon: ['rgba(252,162,57,0.8)','rgba(246,92,64,0.8)','rgba(255,119,87,0.8)',],
       night: ['rgba(19,23,75,0.8)', 'rgba(19,100,200,0.8)', 'rgba(19,150,250,0.8)'],
     },

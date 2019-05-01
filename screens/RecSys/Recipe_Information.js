@@ -32,11 +32,6 @@ export default class Recipe_Information extends Component {
       similar_recipes: '',
       bookmarked: false,
     }
-    if(!this.state.user_token){
-      console.error('User token is not given.');
-    } else {
-      console.log(this.state.user_token);
-    }
   }
 
   componentWillMount(){

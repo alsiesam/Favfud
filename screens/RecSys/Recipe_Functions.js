@@ -341,8 +341,15 @@ export function renderSearchResultsList(title, data, want_divider, navigate, sta
 	if (!Array.isArray(data)) {
 		console.log('undefined data');
 		return;
-	}
-	// console.log(data);
+  }
+  if(!state.isSearched){
+    return;
+  }
+	if(data.length == 0){
+    return(
+      <Title style={styles.subtitle}>No search result.</Title>
+    );
+  }
   divider = null;
   if(want_divider){
     divider = <Divider style={{ marginBottom: 10, }} />

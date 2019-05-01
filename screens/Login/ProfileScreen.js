@@ -75,7 +75,6 @@ export default class ProfileScreen extends React.Component {
 
   async getHealthform(token=this.state.token) {
     try{
-      console.log(token)
       let response = await fetch(RETRIEVE_HEALTHFORM_URL, {
         method: 'GET',
         headers: {
@@ -258,7 +257,6 @@ export default class ProfileScreen extends React.Component {
   };
 
   _handleRefresh = () => {
-    console.log(this.state.token);
     this.setState({isLoadingRecommendation: true})
     fetch(UPDATE_RECOMMENDATION_DEMO_URL, {
       method: 'POST',
@@ -268,7 +266,6 @@ export default class ProfileScreen extends React.Component {
     })
     .then((response) => response.json())
     .then((responseJson) => {
-      console.log(responseJson);
       this.setState({isLoadingRecommendation: false})
     })
     .catch((error) =>{
@@ -315,6 +312,7 @@ const styles = StyleSheet.create({
   sectionListContainer: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingBottom: 20,
   },
   refreshContainer: {
     flex: 1,
