@@ -3,7 +3,6 @@ import { Platform, Button } from 'react-native';
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
 
 import TabBarIcon from '../components/TabBarIcon';
-import HomeScreen from '../screens/Login/HomeScreen';
 import DiaryScreen from '../screens/Diary/DiaryScreen';
 import EditMealFormScreen from '../screens/Diary/EditMealFormScreen';
 
@@ -19,20 +18,6 @@ import Recipe_Bookmarked from '../screens/RecSys/Recipe_Bookmarked';
 import Recipe_Search from '../screens/RecSys/Recipe_Search';
 import Recipe_Healthy_Body_Selections from '../screens/RecSys/Recipe_Healthy_Body_Selections';
 import Recipe_Diary_Selections from '../screens/RecSys/Recipe_Diary_Selections';
-
-const HomeStack = createStackNavigator({
-  Home: HomeScreen,
-});
-
-HomeStack.navigationOptions = {
-  tabBarLabel: 'Home',
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={Platform.OS === 'ios' ? 'ios-home' : 'md-home'}
-    />
-  ),
-};
 
 const DiaryStack = createStackNavigator({
   Diary: {screen: DiaryScreen},

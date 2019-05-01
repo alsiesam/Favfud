@@ -185,7 +185,6 @@ export default class HealthFormScreen extends React.Component {
 				await this.insertHealthFormRecord(form);
 			}
 		}
-		this.setState({'loading': false});
 	}
 
 	async createAccount(credentials) {
@@ -216,12 +215,15 @@ export default class HealthFormScreen extends React.Component {
 			else if(statusCode == 400) {
 				let responseText = response.text();
 				Alert.alert('An error occured in submitting form data', responseText);
+    		this.setState({'loading': false});
 			}
 			else {
 				Alert.alert('An error occured in the server', 'Please try again or contact us.');
+    		this.setState({'loading': false});
 			}
 		}).catch((error) => {
 				console.error(error);
+    		this.setState({'loading': false});
 			}
 		).done();
 	}
