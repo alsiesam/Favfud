@@ -149,6 +149,7 @@ export default class RecSys extends Component {
 
     refresh = () => {
       this.setState({ isRefreshing: true });
+      this.fetchSelectionsExist(this.state.user_token);
       recipe_categories = ['favoriteRecipes'];
       recipe_categories.forEach(function(cat){
         this.fetchRecipes(cat, this.state.user_token);
